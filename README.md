@@ -2,7 +2,7 @@
 
 A Windows-first runner for supported Garak model scans, evidence preservation, concise MITRE ATLAS investigation handoffs, optional authenticated MCP submission, separate Kumu requests and optional Chroma research indexing with local EmbeddingGemma.
 
-**Public v1 candidate, based on runner 0.5.0.** The Windows registry has 191 probe IDs. This runner enables 14. Live results apply to specific probe/model pairs. See the [compatibility table](docs/compatibility.md) and [v1 release instructions](docs/public-v1.md).
+**Private public-v1 candidate, based on runner 0.6.1. Not yet a v1.0.0 release.** The inspected Garak 0.17.0 registry has 191 probe IDs. This runner enables 14; that is permission to test, not proof that all 28 provider/probe pairs work. Live results apply to specific probe/model pairs. See the [compatibility table](docs/compatibility.md) and [v1 release instructions](docs/public-v1.md). The remaining 177 probes are deferred v2 work, not supported by this release candidate.
 
 **Independent project.** This is a personal, independently maintained project. It is not affiliated with, sponsored by, or endorsed by Microsoft, NVIDIA, OpenAI, MITRE, or the other organizations whose products it references. The authors speak only for themselves. Product and project names identify integrations and belong to their respective owners.
 
@@ -11,6 +11,7 @@ A Windows-first runner for supported Garak model scans, evidence preservation, c
 ## What it does
 
 - Runs `base64-32`, `dan-wild-32`, or a reviewed probe selected in the supported-probe browser. Search, pagination and Back do not launch scans; `RUN` does.
+- Batches missing enabled probe/model pairs after one explicit review. Existing scored runs are credited, including gaps; failed/unscored runs are held unless explicitly selected for retry. Each run retains its own evidence and handoff. One consolidated report lists gaps and saved transport diagnostics. See [batch operation](docs/batch.md).
 - Preserves original reports, per-run settings, exact counts and coverage gaps. Null/error outputs are not passes.
 - Produces a compact handoff with input excerpts and detector observations. Full model responses remain in original evidence; ATLAS cannot assess omitted responses from this handoff.
 - Supports explicitly confirmed ATLAS MCP submission and separate Kumu requests. Analysis stays unreviewed; mappings stay candidates. Graph scope includes selected IDs plus one-hop research context.
@@ -48,6 +49,14 @@ With Ollama running, `preflight` inspects local metadata without generation; `me
 & $scannerPython "$repo\playbook.py" preflight --config $config --target ollama-local --campaign base64-32
 & $scannerPython "$repo\playbook.py" menu --config $config
 ```
+
+For the missing enabled local combinations, the batch command reviews all queued probes before `RUN`:
+
+```powershell
+& $scannerPython "$repo\playbook.py" batch --config $config --target ollama-local
+```
+
+Select `--target openai-reasoning` explicitly for an OpenAI batch after configuring the intended model. Its cost estimate and compatibility calls appear before `RUN`; the key is entered once, with hidden input. Omitting `--target` selects all targets offered by the runner, including its historical default OpenAI profile. The local-only command above avoids unintentionally selecting that profile. Existing controls are per run; see the batch guide.
 
 To use another storage location, supply `tools/configure.py --data-root 'D:\YourLab'` during initial setup. Existing configs are never overwritten. Add `--openai-model MODEL_ID` at initial setup to choose your reasoning model. The historical default cloud model is not a guarantee of public availability. OpenAI requires hidden key entry and a paid compatibility request after confirmation; broader probe compatibility remains separate. Verify pricing for your account/model. No credit balance becomes an automatic runner spending cap.
 

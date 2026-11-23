@@ -1,5 +1,7 @@
 # 0.5.0 build validation
 
+Historical build record, not the current candidate's test result. The new candidate's exact-commit receipt is supplied outside the source bundle; later operator reports and release gates are tracked separately.
+
 **165 automated tests passed**, including 14 research-index tests, in 27.319 seconds on Linux/Python 3.12. The complete suite ran in an isolated interpreter with real `chromadb==1.5.9`. The operator's environments were not modified.
 
 Command:

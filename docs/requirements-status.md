@@ -1,11 +1,12 @@
 # Requirements and approved scope changes
 
-The planning documents contain a broader roadmap than the first saved-run checkpoint. Status reflects implementation and operator-supplied Windows evidence available on November 22, 2026.
+The planning documents contain a broader roadmap than the first saved-run checkpoint. Status reflects implementation and operator-supplied Windows evidence available on November 23, 2026. This is a proposed 14-probe public-v1 scope, not completion of the 191-probe roadmap.
 
 | Requirement | Status and limit |
 | --- | --- |
 | Windows runner, native evidence/settings preservation, Ollama/OpenAI paths | Implemented and operator-exercised; not every model/probe/error path validated |
 | Probe browser | Implemented within revised scope: supported probes only, search, 20-per-page pagination, review, RUN and Back; broader validation deferred |
+| Batch execution and saved-run reconciliation | Integrated 0.6.1; synthetic tests only for the new batch path. Missing enabled pairs can run after one review, with original evidence retained. Native Windows batch validation remains pending. |
 | Concise handoff, Copy/Notepad/Exit | Implemented and exercised; approved input-excerpt format, full responses retained in original evidence |
 | Authenticated ATLAS MCP submission | Met for one saved run; exact input/reply archival and unreviewed labeling; internal flow execution not independently traced |
 | Separate Kumu generation | Added and exercised; operator-selected candidate IDs, project/map binding and saved validation; graph neighbors are context |

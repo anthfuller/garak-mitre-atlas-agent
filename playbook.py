@@ -29,7 +29,7 @@ import atlas_mcp
 import kumu_mcp
 import research_index
 
-VERSION = "0.5.0"
+VERSION = "0.6.1"
 ROOT = Path(__file__).resolve().parent
 
 
@@ -845,9 +845,21 @@ def execute(cfg, target_name, campaign_name, yes=False, *, allow_back=False):
         # This resolved profile is ephemeral. Original campaign files are untouched.
         campaign_name = preview["campaign"]
         campaign_name.setdefault("catalog_selection", {"name": campaign_name["spec"], "source": "existing campaign"})
-    folder = new_folder(cfg, "scan")
+    return run_selected(cfg, target_name, campaign_name, interactive=not yes)["exit_code"]
+
+
+def run_selected(cfg, target_name, campaign_name, *, interactive=False, batch_id=None, session_key=None):
+    """Shared execution after single-run or batch review; not an independent CLI."""
     target, campaign = select(cfg, target_name, campaign_name)
+    cloud = target["provider"] == "openai"
+    folder = new_folder(cfg, "scan")
     manifest = plan(cfg, target_name, campaign_name, folder)
+    if batch_id:
+        manifest["batch_id"] = batch_id
+        manifest["batch_runner_sha256"] = sha(ROOT / "coverage_batch.py")
+    if cloud and session_key is not None:
+        manifest["command_argv"].insert(2, "--key-stdin")
+        manifest["credential_policy"] = "Hidden entry once in batch parent; anonymous stdin pipe to each isolated scanner; memory only, never argv/profile/evidence."
     manifest.update({"runner_run_id": folder.name, "started_at": now(), "process_status": "preflight",
                      "runner_sha256": sha(Path(__file__)), "exit_code": None})
     write_json(folder / "manifest.json", manifest)
@@ -862,8 +874,16 @@ def execute(cfg, target_name, campaign_name, yes=False, *, allow_back=False):
         env = child_env(cfg, folder)
         started = time.monotonic()
         kwargs = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if os.name == "nt" else {"start_new_session": True}
+        if cloud and session_key is not None:
+            kwargs["stdin"] = subprocess.PIPE
         process = subprocess.Popen(manifest["command_argv"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    env=env, cwd=folder, **kwargs)
+        if cloud and session_key is not None:
+            try:
+                process.stdin.write((json.dumps(session_key) + "\n").encode("utf-8"))
+                process.stdin.flush()
+            finally:
+                process.stdin.close()
         def copy_output():
             try:
                 with (folder / "console.log").open("wb") as log:
@@ -935,8 +955,9 @@ def execute(cfg, target_name, campaign_name, yes=False, *, allow_back=False):
     write_json(folder / "manifest.json", manifest)
     summary = render_outputs(folder / "scan.report.jsonl", folder, manifest)
     checksums(folder)
-    present_results(folder, summary, interactive=not yes)
-    return 0 if summary["execution_status"] == "completed" else 2
+    present_results(folder, summary, interactive=interactive)
+    return {"exit_code": 0 if summary["execution_status"] == "completed" else 2,
+            "folder": str(folder), "summary": summary, "manifest": manifest}
 
 
 def installed_inventory(cfg):
@@ -1195,6 +1216,8 @@ def main():
     p.add_argument("--graph-dir", required=True, type=Path)
     p.add_argument("--kumu-config", type=Path)
     research_index.add_parsers(sub)
+    import coverage_batch
+    coverage_batch.add_parsers(sub)
     args = parser.parse_args()
     try:
         if args.action.startswith("research-"):
@@ -1227,6 +1250,8 @@ def main():
             print(f"Analysis: {args.out}\nExecution status: {summary['execution_status']}")
             return 0 if summary["execution_status"] == "completed" else 2
         cfg = load_config(args.config)
+        if args.action in ("coverage", "batch"):
+            return coverage_batch.dispatch(args, cfg)
         if args.action == "menu":
             return menu(cfg)
         if args.action == "plan":

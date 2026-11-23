@@ -268,12 +268,47 @@ def quality_gaps(folder):
     return gaps
 
 
-if __name__ == "__main__":
-    # Read directly from the inherited terminal; neither parent nor logs see the key.
-    session_key = profile.read_session_key()
-    if session_key is None:
-        raise SystemExit("No key entered; no OpenAI API check or scan started.")
+def read_pipe_key(stream):
+    """Internal batch transport: no credential in command line or environment."""
+    if stream.isatty():
+        raise ValueError("Batch key input requires a pipe.")
+    line = stream.readline(8193)
+    if len(line) > 8192 or not line.endswith("\n"):
+        raise ValueError("Invalid batch credential input; value was not recorded.")
     try:
-        raise SystemExit(run(sys.argv[1:], session_key))
+        key = json.loads(line)
+    except ValueError:
+        raise ValueError("Invalid batch credential input; value was not recorded.") from None
+    if not isinstance(key, str) or not key or any(ord(c) < 33 or ord(c) > 126 for c in key):
+        raise ValueError("Invalid batch credential input; value was not recorded.")
+    return key
+
+
+def main(arguments=None):
+    arguments = list(sys.argv[1:] if arguments is None else arguments)
+    terminal = None
+    if arguments[:1] == ["--key-stdin"]:
+        arguments = arguments[1:]
+        session_key = read_pipe_key(sys.stdin)
+        # Restore interactive control input for optional alerts/caps after reading
+        # the anonymous pipe. Missing terminal means input reaches EOF and stops.
+        try:
+            terminal = open("CONIN$" if os.name == "nt" else "/dev/tty", "r")
+            sys.stdin = terminal
+        except OSError:
+            pass
+    else:
+        session_key = profile.read_session_key()
+    if session_key is None:
+        print("No key entered; no OpenAI API check or scan started.")
+        return 2
+    try:
+        return run(arguments, session_key)
     finally:
         session_key = None
+        if terminal is not None:
+            terminal.close()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
