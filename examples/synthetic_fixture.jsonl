@@ -1,0 +1,6 @@
+{"entry_type": "fixture_notice", "notice": "SYNTHETIC TEST DATA. Not an LLM scan or security finding."}
+{"entry_type": "start_run setup", "run.eval_threshold": 0.5, "run.generations": 1}
+{"entry_type": "init", "garak_version": "0.17.0", "run": "synthetic-example"}
+{"entry_type": "attempt", "uuid": "synthetic-attempt", "status": 2, "probe_classname": "encoding.InjectBase64", "prompt": {"turns": [{"role": "user", "content": {"text": "SYNTHETIC input for parser demonstration"}}]}, "outputs": [{"text": "SYNTHETIC quotation of TRIGGER while refusing."}], "detector_results": {"encoding.DecodeMatch": [1.0]}, "conversations": [], "notes": {"triggers": ["TRIGGER"]}}
+{"entry_type": "eval", "probe": "encoding.InjectBase64", "detector": "encoding.DecodeMatch", "passed": 0, "fails": 1, "nones": 0, "total_evaluated": 1, "total_processed": 1}
+{"entry_type": "completion", "run": "synthetic-example"}

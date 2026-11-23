@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "garak_version": "0.17.0",
+  "common_source_checks": {
+    "garak/generators/ollama.py": "95ff6f026f11f54412f93a373b1c43367da88dd7c3e0dc3c649a56311e9c5392",
+    "garak/generators/base.py": "1a0c1ec9ed8272c30d7cdf3058f6e5cc9d99ab84d6be08409df94d778c44747b",
+    "garak/probes/encoding.py": "5bf29900b203bbad14fdbb5c9677a60616370c637b290fc2ea20f09d0c3265a4",
+    "garak/probes/dan.py": "ece11be85b8dd84f43e62e3f84d2340adc7109eac6858af474f4834fc23dbb3d",
+    "garak/probes/base.py": "e8e0ff370e6860cd4cd223def333f419da1ad5b589bb8a9fb4dc1b28084ad665",
+    "garak/detectors/encoding.py": "f8152f225c4a93ab8091f2778f567eb81f6719da0a6ac28f271de999d0ef5eb4",
+    "garak/detectors/mitigation.py": "79775807d7da88afeaa5f29d086e6f56adf49f85b992eb79d9566bdfbcea57ad",
+    "garak/detectors/base.py": "ae33929a51fed1c991355299f576bf03a3ff098debaf5e1bb1a4719465a8993b",
+    "garak/attempt.py": "dbf1806023069d4c03a3bbd647735b2838c10723c63672a36bfc1923b5a427ac",
+    "garak/evaluators/base.py": "edd596d3475d72bcba5971e2a6cee4921ed3433a8006ba34d3fa3cf656b64dac",
+    "garak/command.py": "0753f1592f947e91c8dee5655280e368c385d385a62f30bfa1dc04a83b959bf6",
+    "garak/cli.py": "ff620de4e71ddbb0746a499dbd71165ab485f9774723f1e39505a32528f75e3e",
+    "garak/_config.py": "c9e184fe6a863847eed613367944d58ed23e9a2acf9a64e87c2c16d24cc6b175",
+    "garak/configurable.py": "6f02902630ffcca714b9277eeb127667789c77a065ef1e4708f4e949e86a8817",
+    "garak/resources/garak.core.yaml": "ebbaf52c5c7a42561dcef9df1ae80df91ba32b2ca9af72c2184205e86aaa2edf",
+    "garak/data/inthewild_jailbreak_llms.json": "2e3496db26bab605498357a8670523bbca07a14438eee5a4c79e6a32968c1875",
+    "garak/data/payloads/text_en.json": "800f3bdb5e06e823b93827b6ce1775f4fe05030929ea5159769ce585cf74a06c",
+    "garak/data/payloads/web_html_js.json": "ebfd4e54f85c6d870ab68dfc3beb690958d5fb1520ec0d5c61251c6af0929318",
+    "garak/data/payloads/slur_terms_en.json": "8e6c7b385c91294440f0e2e449b875af0d09946771667678122ba2577965ac29",
+    "garak/_plugins.py": "622cad7cfaae922fbb5126e54662dcfcbce0e2e5b0c1255355623c69b7a0ab64",
+    "garak/services/langservice.py": "a1b7065566fbf15650a3d2a195ab5965b04e913a4b4d35898feae7b796182df5",
+    "garak/langproviders/local.py": "55ecbec3b0998605c099b527caa5310088b074c4895cc5a421b16eb0ee403f9c",
+    "garak/langproviders/base.py": "99527d025ca7a40ed1259badfb643c52a4e0e5a5be840db06d5eed43066553b8"
+  },
+  "probes": {
+    "probes.encoding.InjectBase64": {
+      "detector": "encoding.DecodeMatch",
+      "expected_attempts": null,
+      "enforcement": "native_probe_pruning",
+      "workload_basis": "Reviewed EncodingMixin.__init__: samples at most soft_probe_prompt_cap; a smaller generated corpus is retained. Expected count is not assumed from the cap.",
+      "source_checks": {
+        "garak/probes/encoding.py": "5bf29900b203bbad14fdbb5c9677a60616370c637b290fc2ea20f09d0c3265a4",
+        "garak/detectors/encoding.py": "f8152f225c4a93ab8091f2778f567eb81f6719da0a6ac28f271de999d0ef5eb4",
+        "garak/payloads.py": "12590d179faf400a99bb2e89c8eb2195e8f75e2e4ef4c52d99254c2a83d5210d",
+        "garak/resources/encodings.py": "0facfb9f653676b096818e07264935ec016d2b5e03a7cf896575499ae48c0850",
+        "garak/resources/smuggling/__init__.py": "076a2f705dc9463d6493626d3fb5aa093dcabab53ca0eeb826f583515d05780c",
+        "garak/resources/smuggling/smuggle_ascii.py": "2f60c3cb400382f0082ccc9bf01bba78c84fc5717dfc1058f45fc729d8d97312"
+      },
+      "detector_limitations": "DecodeMatch detects exact decoded-payload text, including benign text. A match is not proof of harm or instruction-following."
+    },
+    "probes.encoding.InjectBase16": {
+      "detector": "encoding.DecodeMatch",
+      "expected_attempts": null,
+      "enforcement": "native_probe_pruning",
+      "workload_basis": "Reviewed EncodingMixin.__init__: samples at most soft_probe_prompt_cap; a smaller generated corpus is retained. Expected count is not assumed from the cap.",
+      "source_checks": {
+        "garak/probes/encoding.py": "5bf29900b203bbad14fdbb5c9677a60616370c637b290fc2ea20f09d0c3265a4",
+        "garak/detectors/encoding.py": "f8152f225c4a93ab8091f2778f567eb81f6719da0a6ac28f271de999d0ef5eb4",
+        "garak/payloads.py": "12590d179faf400a99bb2e89c8eb2195e8f75e2e4ef4c52d99254c2a83d5210d",
+        "garak/resources/encodings.py": "0facfb9f653676b096818e07264935ec016d2b5e03a7cf896575499ae48c0850",
+        "garak/resources/smuggling/__init__.py": "076a2f705dc9463d6493626d3fb5aa093dcabab53ca0eeb826f583515d05780c",
+        "garak/resources/smuggling/smuggle_ascii.py": "2f60c3cb400382f0082ccc9bf01bba78c84fc5717dfc1058f45fc729d8d97312"
+      },
+      "detector_limitations": "DecodeMatch detects exact decoded-payload text, including benign text. A match is not proof of harm or instruction-following."
+    },
+    "probes.encoding.InjectBase32": {
+      "detector": "encoding.DecodeMatch",
+      "expected_attempts": null,
+      "enforcement": "native_probe_pruning",
+      "workload_basis": "Reviewed EncodingMixin.__init__: samples at most soft_probe_prompt_cap; a smaller generated corpus is retained. Expected count is not assumed from the cap.",
+      "source_checks": {
+        "garak/probes/encoding.py": "5bf29900b203bbad14fdbb5c9677a60616370c637b290fc2ea20f09d0c3265a4",
+        "garak/detectors/encoding.py": "f8152f225c4a93ab8091f2778f567eb81f6719da0a6ac28f271de999d0ef5eb4",
+        "garak/payloads.py": "12590d179faf400a99bb2e89c8eb2195e8f75e2e4ef4c52d99254c2a83d5210d",
+        "garak/resources/encodings.py": "0facfb9f653676b096818e07264935ec016d2b5e03a7cf896575499ae48c0850",
+        "garak/resources/smuggling/__init__.py": "076a2f705dc9463d6493626d3fb5aa093dcabab53ca0eeb826f583515d05780c",
+        "garak/resources/smuggling/smuggle_ascii.py": "2f60c3cb400382f0082ccc9bf01bba78c84fc5717dfc1058f45fc729d8d97312"
+      },
+      "detector_limitations": "DecodeMatch detects exact decoded-payload text, including benign text. A match is not proof of harm or instruction-following."
+    },
+    "probes.encoding.InjectAscii85": {
+      "detector": "encoding.DecodeMatch",
+      "expected_attempts": null,
+      "enforcement": "native_probe_pruning",
+      "workload_basis": "Reviewed EncodingMixin.__init__: samples at most soft_probe_prompt_cap; a smaller generated corpus is retained. Expected count is not assumed from the cap.",
+      "source_checks": {
+        "garak/probes/encoding.py": "5bf29900b203bbad14fdbb5c9677a60616370c637b290fc2ea20f09d0c3265a4",
+        "garak/detectors/encoding.py": "f8152f225c4a93ab8091f2778f567eb81f6719da0a6ac28f271de999d0ef5eb4",
+        "garak/payloads.py": "12590d179faf400a99bb2e89c8eb2195e8f75e2e4ef4c52d99254c2a83d5210d",
+        "garak/resources/encodings.py": "0facfb9f653676b096818e07264935ec016d2b5e03a7cf896575499ae48c0850",
+        "garak/resources/smuggling/__init__.py": "076a2f705dc9463d6493626d3fb5aa093dcabab53ca0eeb826f583515d05780c",
+        "garak/resources/smuggling/smuggle_ascii.py": "2f60c3cb400382f0082ccc9bf01bba78c84fc5717dfc1058f45fc729d8d97312"
+      },
+      "detector_limitations": "DecodeMatch detects exact decoded-payload text, including benign text. A match is not proof of harm or instruction-following."
+    },
+    "probes.encoding.InjectHex": {
+      "detector": "encoding.DecodeMatch",
+      "expected_attempts": null,
+      "enforcement": "native_probe_pruning",
+      "workload_basis": "Reviewed EncodingMixin.__init__: samples at most soft_probe_prompt_cap; a smaller generated corpus is retained. Expected count is not assumed from the cap.",
+      "source_checks": {
+        "garak/probes/encoding.py": "5bf29900b203bbad14fdbb5c9677a60616370c637b290fc2ea20f09d0c3265a4",
+        "garak/detectors/encoding.py": "f8152f225c4a93ab8091f2778f567eb81f6719da0a6ac28f271de999d0ef5eb4",
+        "garak/payloads.py": "12590d179faf400a99bb2e89c8eb2195e8f75e2e4ef4c52d99254c2a83d5210d",
+        "garak/resources/encodings.py": "0facfb9f653676b096818e07264935ec016d2b5e03a7cf896575499ae48c0850",
+        "garak/resources/smuggling/__init__.py": "076a2f705dc9463d6493626d3fb5aa093dcabab53ca0eeb826f583515d05780c",
+        "garak/resources/smuggling/smuggle_ascii.py": "2f60c3cb400382f0082ccc9bf01bba78c84fc5717dfc1058f45fc729d8d97312"
+      },
+      "detector_limitations": "DecodeMatch detects exact decoded-payload text, including benign text. A match is not proof of harm or instruction-following."
+    },
+    "probes.encoding.InjectROT13": {
+      "detector": "encoding.DecodeMatch",
+      "expected_attempts": null,
+      "enforcement": "native_probe_pruning",
+      "workload_basis": "Reviewed EncodingMixin.__init__: samples at most soft_probe_prompt_cap; a smaller generated corpus is retained. Expected count is not assumed from the cap.",
+      "source_checks": {
+        "garak/probes/encoding.py": "5bf29900b203bbad14fdbb5c9677a60616370c637b290fc2ea20f09d0c3265a4",
+        "garak/detectors/encoding.py": "f8152f225c4a93ab8091f2778f567eb81f6719da0a6ac28f271de999d0ef5eb4",
+        "garak/payloads.py": "12590d179faf400a99bb2e89c8eb2195e8f75e2e4ef4c52d99254c2a83d5210d",
+        "garak/resources/encodings.py": "0facfb9f653676b096818e07264935ec016d2b5e03a7cf896575499ae48c0850",
+        "garak/resources/smuggling/__init__.py": "076a2f705dc9463d6493626d3fb5aa093dcabab53ca0eeb826f583515d05780c",
+        "garak/resources/smuggling/smuggle_ascii.py": "2f60c3cb400382f0082ccc9bf01bba78c84fc5717dfc1058f45fc729d8d97312"
+      },
+      "detector_limitations": "DecodeMatch detects exact decoded-payload text, including benign text. A match is not proof of harm or instruction-following."
+    },
+    "probes.dan.DanInTheWild": {
+      "detector": "mitigation.MitigationBypass",
+      "expected_attempts": 32,
+      "enforcement": "native_probe_pruning",
+      "workload_basis": "Reviewed DanInTheWild calls _prune_data(cap); the hash-checked bundled corpus contains more than 32 prompts, yielding 32 attempts.",
+      "source_checks": {},
+      "detector_limitations": "Missing a recognized refusal phrase is a heuristic flag, not proof of a successful jailbreak."
+    },
+    "probes.goodside.WhoIsRiley": {
+      "detector": "goodside.RileyIsnt",
+      "expected_attempts": 6,
+      "enforcement": "reviewed_fixed_corpus",
+      "workload_basis": "Reviewed source constructs exactly 6 single-turn attempts. Its full corpus is within the 32-attempt ceiling; this probe does not rely on prompt pruning.",
+      "source_checks": {
+        "garak/probes/goodside.py": "9fb56b7c114f25eee6d7e4dd02acf9ecbd7c31ee05f37fd1909ee018298ba2e1",
+        "garak/detectors/goodside.py": "3cb71c6f7cc354239c8ee9e91e38dba1e3e6c6a0da6dbce525387d4f02efef95"
+      },
+      "detector_limitations": "Keyword matches can flag quotation or corrections; verify the actual biographical claim."
+    },
+    "probes.goodside.ThreatenJSON": {
+      "detector": "goodside.PlainJSON",
+      "expected_attempts": 1,
+      "enforcement": "reviewed_fixed_corpus",
+      "workload_basis": "Reviewed source constructs exactly 1 single-turn attempts. Its full corpus is within the 32-attempt ceiling; this probe does not rely on prompt pruning.",
+      "source_checks": {
+        "garak/probes/goodside.py": "9fb56b7c114f25eee6d7e4dd02acf9ecbd7c31ee05f37fd1909ee018298ba2e1",
+        "garak/detectors/goodside.py": "3cb71c6f7cc354239c8ee9e91e38dba1e3e6c6a0da6dbce525387d4f02efef95"
+      },
+      "detector_limitations": "A flag means valid JSON was emitted. That is format compliance, not a demonstrated security failure."
+    },
+    "probes.goodside.Davidjl": {
+      "detector": "goodside.Glitch",
+      "expected_attempts": 4,
+      "enforcement": "reviewed_fixed_corpus",
+      "workload_basis": "Reviewed source constructs exactly 4 single-turn attempts. Its full corpus is within the 32-attempt ceiling; this probe does not rely on prompt pruning.",
+      "source_checks": {
+        "garak/probes/goodside.py": "9fb56b7c114f25eee6d7e4dd02acf9ecbd7c31ee05f37fd1909ee018298ba2e1",
+        "garak/detectors/goodside.py": "3cb71c6f7cc354239c8ee9e91e38dba1e3e6c6a0da6dbce525387d4f02efef95"
+      },
+      "detector_limitations": "An absent expected token indicates a candidate task failure, not a security compromise."
+    },
+    "probes.goodside.Tag": {
+      "detector": "base.TriggerListDetector",
+      "expected_attempts": 32,
+      "enforcement": "reviewed_fixed_corpus",
+      "workload_basis": "Reviewed source constructs exactly 32 single-turn attempts. Its full corpus is within the 32-attempt ceiling; this probe does not rely on prompt pruning.",
+      "source_checks": {
+        "garak/probes/goodside.py": "9fb56b7c114f25eee6d7e4dd02acf9ecbd7c31ee05f37fd1909ee018298ba2e1",
+        "garak/detectors/base.py": "ae33929a51fed1c991355299f576bf03a3ff098debaf5e1bb1a4719465a8993b",
+        "garak/harnesses/probewise.py": "2ab19851b53d3c79b46c7a78f18decaf06793d1a862dde6f25bf94434938eb01",
+        "garak/harnesses/base.py": "2ce574f5c028c14a320984786b08c3f4f76c3b5b77f07a04e76ba70c42598012"
+      },
+      "detector_limitations": "Trigger text can be quoted or occur for other reasons; review whether the hidden instruction was actually followed.",
+      "detector_selection": "probe_primary"
+    },
+    "probes.lmrc.Anthropomorphisation": {
+      "detector": "lmrc.Anthro",
+      "expected_attempts": 6,
+      "enforcement": "reviewed_fixed_corpus",
+      "workload_basis": "Reviewed source constructs exactly 6 single-turn attempts. Its full corpus is within the 32-attempt ceiling; this probe does not rely on prompt pruning.",
+      "source_checks": {
+        "garak/probes/lmrc.py": "d5ddbf895586a33d60fa410c1260934359f8b2d3b57cab9161e90e16fb23d490",
+        "garak/detectors/lmrc.py": "785c7b76cd080ae24511a9fde8608c930057716372a78379395351fc74fcc50f"
+      },
+      "detector_limitations": "First-person pronouns alone do not demonstrate anthropomorphic deception or a security failure."
+    },
+    "probes.lmrc.Deadnaming": {
+      "detector": "base.TriggerListDetector",
+      "expected_attempts": 6,
+      "enforcement": "reviewed_fixed_corpus",
+      "workload_basis": "Reviewed source constructs exactly 6 single-turn attempts. Its full corpus is within the 32-attempt ceiling; this probe does not rely on prompt pruning.",
+      "source_checks": {
+        "garak/probes/lmrc.py": "d5ddbf895586a33d60fa410c1260934359f8b2d3b57cab9161e90e16fb23d490",
+        "garak/detectors/base.py": "ae33929a51fed1c991355299f576bf03a3ff098debaf5e1bb1a4719465a8993b",
+        "garak/harnesses/probewise.py": "2ab19851b53d3c79b46c7a78f18decaf06793d1a862dde6f25bf94434938eb01",
+        "garak/harnesses/base.py": "2ce574f5c028c14a320984786b08c3f4f76c3b5b77f07a04e76ba70c42598012"
+      },
+      "detector_limitations": "Trigger matches require context review; quoted or corrective uses can be false positives.",
+      "detector_selection": "probe_primary"
+    },
+    "probes.lmrc.QuackMedicine": {
+      "detector": "lmrc.QuackMedicine",
+      "expected_attempts": 1,
+      "enforcement": "reviewed_fixed_corpus",
+      "workload_basis": "Reviewed source constructs exactly 1 single-turn attempts. Its full corpus is within the 32-attempt ceiling; this probe does not rely on prompt pruning.",
+      "source_checks": {
+        "garak/probes/lmrc.py": "d5ddbf895586a33d60fa410c1260934359f8b2d3b57cab9161e90e16fb23d490",
+        "garak/detectors/lmrc.py": "785c7b76cd080ae24511a9fde8608c930057716372a78379395351fc74fcc50f"
+      },
+      "detector_limitations": "Keyword matches require assessment of whether the response endorses or rejects the claim."
+    }
+  },
+  "provider_source_checks": {
+    "openai": {
+      "garak/generators/openai.py": "e2d4c344109e894df7d2981119e0868b5d3cfe50a80af2cda7ea9ef768cde056"
+    }
+  }
+}

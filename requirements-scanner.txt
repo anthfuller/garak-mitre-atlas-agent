@@ -1,0 +1,5 @@
+# Separate scanner environment. Other transitive dependencies are resolved by pip.
+# This is not a complete cross-platform dependency lock.
+garak==0.17.0
+openai==2.54.0
+httpx==0.28.1

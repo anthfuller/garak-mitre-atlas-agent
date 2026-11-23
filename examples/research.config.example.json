@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "python": "%LOCALAPPDATA%/GarakPlaybook/research-env/Scripts/python.exe",
+  "storage_root": "%LOCALAPPDATA%/GarakPlaybook/research",
+  "ollama_endpoint": "http://127.0.0.1:11434",
+  "embedding_model": "embeddinggemma:latest"
+}

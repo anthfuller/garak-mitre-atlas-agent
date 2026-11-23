@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "garak_python": "C:/AI-Lab/garak-env/Scripts/python.exe",
+  "evidence_root": "D:/AI-Lab/evidence/garak-playbook",
+  "xdg_data_home": "D:/AI-Lab/artifacts",
+  "targets": {
+    "ollama-local": {
+      "provider": "ollama",
+      "model": "llama3.2:3b",
+      "endpoint": "http://127.0.0.1:11434"
+    }
+  }
+}

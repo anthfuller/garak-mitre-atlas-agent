@@ -1,0 +1,27 @@
+{
+  "package": "garak",
+  "version": "0.17.0",
+  "source": "PyPI distribution garak==0.17.0",
+  "wheel_sha256": "9a67e6298e4d7025358fecafa9d473c77ff70acdae103aa5251ad60fca3db145",
+  "sha256": {
+    "garak/generators/ollama.py": "95ff6f026f11f54412f93a373b1c43367da88dd7c3e0dc3c649a56311e9c5392",
+    "garak/generators/base.py": "1a0c1ec9ed8272c30d7cdf3058f6e5cc9d99ab84d6be08409df94d778c44747b",
+    "garak/probes/encoding.py": "5bf29900b203bbad14fdbb5c9677a60616370c637b290fc2ea20f09d0c3265a4",
+    "garak/probes/dan.py": "ece11be85b8dd84f43e62e3f84d2340adc7109eac6858af474f4834fc23dbb3d",
+    "garak/probes/base.py": "e8e0ff370e6860cd4cd223def333f419da1ad5b589bb8a9fb4dc1b28084ad665",
+    "garak/detectors/encoding.py": "f8152f225c4a93ab8091f2778f567eb81f6719da0a6ac28f271de999d0ef5eb4",
+    "garak/detectors/mitigation.py": "79775807d7da88afeaa5f29d086e6f56adf49f85b992eb79d9566bdfbcea57ad",
+    "garak/detectors/base.py": "ae33929a51fed1c991355299f576bf03a3ff098debaf5e1bb1a4719465a8993b",
+    "garak/attempt.py": "dbf1806023069d4c03a3bbd647735b2838c10723c63672a36bfc1923b5a427ac",
+    "garak/evaluators/base.py": "edd596d3475d72bcba5971e2a6cee4921ed3433a8006ba34d3fa3cf656b64dac",
+    "garak/command.py": "0753f1592f947e91c8dee5655280e368c385d385a62f30bfa1dc04a83b959bf6",
+    "garak/cli.py": "ff620de4e71ddbb0746a499dbd71165ab485f9774723f1e39505a32528f75e3e",
+    "garak/_config.py": "c9e184fe6a863847eed613367944d58ed23e9a2acf9a64e87c2c16d24cc6b175",
+    "garak/configurable.py": "6f02902630ffcca714b9277eeb127667789c77a065ef1e4708f4e949e86a8817",
+    "garak/resources/garak.core.yaml": "ebbaf52c5c7a42561dcef9df1ae80df91ba32b2ca9af72c2184205e86aaa2edf",
+    "garak/data/inthewild_jailbreak_llms.json": "2e3496db26bab605498357a8670523bbca07a14438eee5a4c79e6a32968c1875",
+    "garak/data/payloads/text_en.json": "800f3bdb5e06e823b93827b6ce1775f4fe05030929ea5159769ce585cf74a06c",
+    "garak/data/payloads/web_html_js.json": "ebfd4e54f85c6d870ab68dfc3beb690958d5fb1520ec0d5c61251c6af0929318",
+    "garak/data/payloads/slur_terms_en.json": "8e6c7b385c91294440f0e2e449b875af0d09946771667678122ba2577965ac29"
+  }
+}

@@ -1,0 +1,2 @@
+# Optional research environment and complete offline test suite.
+chromadb==1.5.9
