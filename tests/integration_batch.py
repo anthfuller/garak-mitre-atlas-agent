@@ -39,12 +39,20 @@ raise SystemExit(w.main())
 '''
 
 
-def main(fail=False):
+def main(fail=False, legacy=False):
     key = "sk-DUMMY-BATCH-PIPE-NOT-A-REAL-CREDENTIAL"
     with tempfile.TemporaryDirectory() as temp:
         root = Path(temp)
         cfg = {"schema_version":1, "garak_python":sys.executable, "evidence_root":str(root / "evidence"),
                "xdg_data_home":str(root / "data"), "targets":{p.openai_profile.NAME:dict(p.openai_profile.TARGET)}}
+        old = None
+        if legacy:
+            old = p.new_folder(cfg, "scan")
+            manifest = p.plan(cfg, p.openai_profile.NAME, "base64-32", old)
+            manifest.update(process_status="interrupted", exit_code=None, runner_run_id=old.name)
+            p.write_json(old / "manifest.json", manifest)
+            (old / "console.log").write_text("SYNTHETIC legacy interrupted run; summary never written.")
+            old_bytes = {str(path.relative_to(old)): path.read_bytes() for path in old.rglob("*") if path.is_file()}
         script = root / "mock_worker.py"
         script.write_text(BOOTSTRAP.replace("RUNNER_ROOT", repr(str(p.ROOT))).replace("FAIL", repr(fail)))
         args = argparse.Namespace(action="batch", target=[p.openai_profile.NAME],
@@ -60,7 +68,7 @@ def main(fail=False):
             code = b.dispatch(args, cfg)
         batch = next(Path(cfg["evidence_root"]).glob("*-batch-*"))
         doc = p.read_json(batch / "batch.json")
-        folders = list(Path(cfg["evidence_root"]).glob("*-scan-*"))
+        folders = [Path(item["folder"]) for item in doc["results"]]
         assert code == (2 if fail else 0), (code, doc)
         assert len(folders) == (1 if fail else 2)
         calls = 0
@@ -72,12 +80,18 @@ def main(fail=False):
                 assert (folder / "atlas_handoff.md").is_file()
                 assert p.read_json(folder / "summary.json")["execution_status"] == "completed"
         assert calls == (1 if fail else 9), calls
+        if old is not None:
+            assert not doc["history_read_errors"], doc["history_read_errors"]
+            assert old_bytes == {str(path.relative_to(old)): path.read_bytes() for path in old.rglob("*") if path.is_file()}
+            old_run = next(run for row in doc["rows"] for run in row["runs"] if run["evidence_folder"] == str(old))
+            assert old_run["recorded_summary"] is None and not old_run["credited_live_evidence"]
+            assert "summary.json missing" in (batch / "batch-summary.md").read_text()
         for path in root.rglob("*"):
             if path.is_file():
                 assert key.encode() not in path.read_bytes(), str(path)
         assert len(doc["rows"]) == 191
-        print(f"PASS batch real subprocess integration: fail={fail}; {len(folders)} independent runs; {calls} synthetic HTTP responses; zero live model calls; key absent from artifacts.")
+        print(f"PASS batch real subprocess integration: fail={fail}; legacy_missing_summary={legacy}; {len(folders)} independent runs; {calls} synthetic HTTP responses; zero live model calls; key absent from artifacts.")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:] == ["auth-failure"])
+    main(fail="auth-failure" in sys.argv[1:], legacy="legacy-history" in sys.argv[1:])

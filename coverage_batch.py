@@ -123,7 +123,11 @@ def transport_diagnostics(folder):
 def read_run(folder):
     p = runner()
     manifest = p.read_json(folder / "manifest.json")
-    saved = p.read_json(folder / "summary.json")
+    summary_path = folder / "summary.json"
+    # Interrupted older runs may have a manifest but no rendered summary.
+    # Keep their identity so only that pair is held; never create an original
+    # summary, invent its historical outcome, or discard the evidence folder.
+    saved = p.read_json(summary_path) if summary_path.is_file() else None
     target = manifest["target"]
     spec = manifest["campaign"]["spec"]
     spec = spec if spec.startswith("probes.") else "probes." + spec
@@ -135,21 +139,22 @@ def read_run(folder):
     hashes = {name: p.sha(folder / name) for name in
               ("manifest.json", "summary.json", "scan.report.jsonl", "openai-session.json", "openai-transport.jsonl", "openai-cost.json")
               if (folder / name).is_file()}
-    warnings = []
+    warnings = [] if saved is not None else ["Saved summary.json is missing; historical outcome is unverified. Original files retained."]
     if (folder / "checksums.json").is_file():
         recorded = p.read_json(folder / "checksums.json")
         warnings += ["Source hash differs from saved checksums: " + n for n, h in hashes.items() if recorded.get(n) != h]
     else:
         warnings.append("Original checksums missing; evidence integrity not independently established.")
-    if saved.get("report_sha256") and hashes.get("scan.report.jsonl") != saved["report_sha256"]:
+    if saved is not None and saved.get("report_sha256") and hashes.get("scan.report.jsonl") != saved["report_sha256"]:
         warnings.append("Native report does not match the saved summary hash.")
     for field in ("garak_run_id", "execution_status", "attempts", "valid_response_count", "flagged_response_count", "detectors"):
-        if saved.get(field) != computed.get(field):
+        if saved is not None and saved.get(field) != computed.get(field):
             warnings.append("Saved and current analysis differ: " + field)
     usable = bool(report.is_file() and computed.get("valid_response_count", 0) > 0 and computed.get("detectors") and not warnings)
     return {"provider": target["provider"], "model": target["model"], "endpoint": target["endpoint"], "probe_id": spec,
-            "run_id": saved.get("garak_run_id"), "runner_run_id": manifest.get("runner_run_id", folder.name),
+            "run_id": saved.get("garak_run_id") if saved is not None else computed.get("garak_run_id"), "runner_run_id": manifest.get("runner_run_id", folder.name),
             "evidence_folder": str(folder), "recorded_summary": saved, "recomputed_summary": computed,
+            "saved_summary_available": saved is not None,
             "recorded_settings": manifest.get("resolved_garak_config"), "source_sha256": hashes,
             "integrity_warnings": warnings, "credited_live_evidence": usable,
             "diagnostics": transport_diagnostics(folder),
@@ -165,6 +170,7 @@ def collect_history(root):
             history.append(read_run(folder))
         except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
             issues.append({"evidence_folder": str(folder), "error_type": type(exc).__name__,
+                           "source_file": str(exc.filename) if isinstance(exc, OSError) and exc.filename else None,
                            "message": "Could not reconcile this run; not silently credited or overwritten."})
     return history, issues
 
@@ -262,6 +268,11 @@ def show_plan(document):
         print(f"{target}: {sum(r['runner_enabled'] for r in rows)} enabled; {sum(not r['runner_enabled'] for r in rows)} unavailable; "
               f"{sum(r['evidence_state'] == 'live_evidence' for r in rows)} pairs with credited live evidence (gaps retained).")
     print("Prior scored runs will not be repeated. Incomplete/gapped results remain open; exclusion is not a compatibility verdict.")
+    for row in document["rows"]:
+        for run in row["runs"]:
+            if run["recorded_summary"] is None:
+                disposition = "Usable evidence exists for this pair; no repeat." if row["evidence_state"] == "live_evidence" else "This pair is held unless retry is explicitly selected."
+                print(f"Historical evidence gap: {run['evidence_folder']} / summary.json missing. {disposition}")
     for item in document["plans"]:
         c, t = item["campaign"], item["target"]
         print(f"\n{item['target_profile']} / {t['model']} | {c['spec']} | detector {c['detector']}")
@@ -282,6 +293,12 @@ def show_plan(document):
     print("Authentication/transport failure, operator stop, or environment/preflight failure stops the batch. Scored gaps are recorded; other probes continue. No automatic retries.")
 
 
+def display_summary(run):
+    # Display labels only; recorded_summary stays JSON null when unavailable.
+    return run["recorded_summary"] if run["recorded_summary"] is not None else {
+        "execution_status": "unverified (saved summary.json missing)", "detectors": [], "coverage_gaps": []}
+
+
 def write_report(folder, document):
     p = runner()
     p.write_json(folder / "batch.json", document)
@@ -297,7 +314,7 @@ def write_report(folder, document):
             for row in rows:
                 records = []
                 for run in row["runs"]:
-                    s = run["recorded_summary"]
+                    s = display_summary(run)
                     detectors = s.get("detectors") or []
                     counts = "; ".join(f"{d['detector']}: evaluated {d['evaluated']}, flags {d['flags']}, unscorable {d['unscorable']}" for d in detectors) or "No detector counts; unscored"
                     records.append(f"{s.get('execution_status')}; {counts}; run {run['run_id'] or 'native UUID unavailable'}; {run['evidence_folder']}" + ("; integrity/reanalysis warning" if run["integrity_warnings"] else ""))
@@ -312,7 +329,7 @@ def write_report(folder, document):
     text += ["", "## Runs requiring review", ""]
     for row in document["rows"]:
         for run in row["runs"]:
-            s = run["recorded_summary"]
+            s = display_summary(run)
             if s.get("execution_status") == "completed" and not run["integrity_warnings"]:
                 continue
             text += [f"- {row['target_profile']} / {row['probe_id']}: **{s.get('execution_status')}** — {run['evidence_folder']}",
@@ -357,7 +374,9 @@ def dispatch(args, cfg):
         print("No missing enabled pairs selected. See existing gaps/requirements in the report; no scan started.")
         return 0
     if document["history_read_errors"]:
-        raise ValueError("Evidence read errors prevent reliable duplicate avoidance. See the consolidated report; no scan started.")
+        for issue in document["history_read_errors"]:
+            print(f"Unresolved evidence error: {issue['evidence_folder']} | {issue['error_type']} | source: {issue.get('source_file') or 'see batch.json'}")
+        raise ValueError("Unresolved evidence errors prevent reliable duplicate avoidance. See the paths above; no scan started.")
     if not sys.stdin.isatty():
         raise ValueError("Batch requires interactive RUN confirmation; no scan started.")
     # Optional rates do not alter targets/settings. Missing pricing is not a ban.

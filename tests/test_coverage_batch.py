@@ -103,6 +103,66 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(r["evidence_state"], "recorded_failure_or_unverified_evidence")
         self.assertTrue(r["runs"][0]["integrity_warnings"])
 
+    def legacy_without_summary(self, name="probes.encoding.InjectAscii85", report_present=True, target="local"):
+        result = self.saved(name, target=target, missing=not report_present)
+        folder = Path(result["folder"])
+        (folder / "summary.json").unlink()
+        return folder
+
+    def test_missing_summary_is_unverified_and_original_files_unchanged(self):
+        for report_present, target in ((True, "local"), (False, "local"), (True, p.openai_profile.NAME), (False, p.openai_profile.NAME)):
+            with self.subTest(report_present=report_present, target=target):
+                folder = self.legacy_without_summary(report_present=report_present, target=target)
+                before = {p.name: p.read_bytes() for p in folder.iterdir() if p.is_file()}
+                run = b.read_run(folder)
+                self.assertIsNone(run["recorded_summary"])
+                self.assertFalse(run["saved_summary_available"])
+                self.assertFalse(run["credited_live_evidence"])
+                self.assertIn("missing", " ".join(run["integrity_warnings"]))
+                self.assertEqual(before, {p.name: p.read_bytes() for p in folder.iterdir() if p.is_file()})
+                self.assertFalse((folder / "summary.json").exists())
+
+    def test_missing_summary_holds_only_its_pair_and_keeps_thirteen_planned(self):
+        folder = self.legacy_without_summary(report_present=False)
+        document = b.make_plan(self.cfg, self.args)
+        self.assertEqual(document["history_read_errors"], [])
+        self.assertEqual(len(document["plans"]), 13)
+        self.assertNotIn("probes.encoding.InjectAscii85", [x["campaign"]["spec"] for x in document["plans"]])
+        self.args.retry_failed = True
+        self.assertEqual(len(b.make_plan(self.cfg, self.args)["plans"]), 14)
+        self.assertFalse((folder / "summary.json").exists())
+
+    def test_valid_other_run_for_legacy_pair_still_credited(self):
+        self.legacy_without_summary(report_present=False)
+        self.saved()
+        document = b.make_plan(self.cfg, self.args)
+        pair = next(r for r in document["rows"] if r["probe_id"] == "probes.encoding.InjectAscii85")
+        self.assertEqual(pair["evidence_state"], "live_evidence")
+        self.assertEqual(len(pair["runs"]), 2)
+        self.assertEqual(sum(r["credited_live_evidence"] for r in pair["runs"]), 1)
+        self.assertEqual(document["history_read_errors"], [])
+
+    def test_missing_legacy_summary_allows_unrelated_batch_and_records_gap(self):
+        legacy = self.legacy_without_summary(report_present=False)
+        before = {p.name: p.read_bytes() for p in legacy.iterdir() if p.is_file()}
+        self.args.probe = ["probes.encoding.InjectBase64", "probes.goodside.ThreatenJSON"]
+        with patch("builtins.input", return_value="RUN"), patch.object(p, "run_selected", side_effect=lambda cfg, target, c, **kw: self.saved(c["spec"], target)) as run:
+            self.assertEqual(b.dispatch(self.args, self.cfg), 0)
+            self.assertEqual(run.call_count, 2)
+        batch = next(Path(self.cfg["evidence_root"]).glob("*-batch-*"))
+        self.assertIn("summary.json missing", (batch / "batch-summary.md").read_text())
+        self.assertIn("summary.json missing", (batch / "probe-coverage.csv").read_text(encoding="utf-8-sig"))
+        self.assertEqual(before, {p.name: p.read_bytes() for p in legacy.iterdir() if p.is_file()})
+
+    def test_missing_manifest_still_blocks_and_names_source(self):
+        folder = self.legacy_without_summary(report_present=False)
+        (folder / "manifest.json").unlink()
+        with patch("builtins.input") as confirm, patch.object(p, "run_selected") as run:
+            with self.assertRaisesRegex(ValueError, "Unresolved evidence"):
+                b.dispatch(self.args, self.cfg)
+            confirm.assert_not_called(); run.assert_not_called()
+        self.assertIn(str(folder / "manifest.json"), self.out.getvalue())
+
     def test_cancel_starts_no_scan_or_key_entry(self):
         for choice in ("", "RUN ALL", "3"):
             with patch("builtins.input", return_value=choice), patch.object(p, "run_selected") as execute, patch.object(p.openai_profile, "read_session_key") as key:
