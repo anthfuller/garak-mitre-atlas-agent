@@ -60,7 +60,7 @@ class HandoffPromptTests(unittest.TestCase):
                      {"entry_type": "completion", "run": "SYNTHETIC-RUN-ONLY"}])
         p.write_jsonl(self.report, rows)
         self.summary = p.render_outputs(self.report, self.root, self.manifest)
-        self.observations = [json.loads(x) for x in (self.root / "observations.jsonl").read_text().splitlines()]
+        self.observations = [json.loads(x) for x in (self.root / "observations.jsonl").read_text(encoding="utf-8").splitlines()]
         self.handoff = self.root / "atlas_handoff.md"
         p.checksums(self.root)
 
@@ -238,7 +238,7 @@ class HandoffPromptTests(unittest.TestCase):
         self.assertEqual(self.handoff.read_bytes(), automatic)
         self.assertEqual(originals, {name: (self.root / name).read_bytes() for name in originals})
         # Full input/output strings, including CRLF and trailing whitespace, remain in observations.
-        saved = [json.loads(line) for line in (self.root / "observations.jsonl").read_text().splitlines()]
+        saved = [json.loads(line) for line in (self.root / "observations.jsonl").read_text(encoding="utf-8").splitlines()]
         self.assertEqual(saved, self.observations)
 
     def test_execute_completion_and_handoff_cli_share_real_renderer(self):
