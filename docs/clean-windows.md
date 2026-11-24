@@ -34,4 +34,10 @@ If an earlier validation directory has successful test and scanner installation 
 
 This is a resumed checkout check using documented environments from the earlier fresh installation, not a second independent fresh installation.
 
+The OpenAI synthetic integration runs Garak in its own test process. It closes
+logging handlers before deleting its temporary directory, including when an
+assertion fails. Its PASS line is printed only after cleanup succeeds. This
+test-only correction addresses the observed Windows sharing violation on
+`garak.log`; it does not change the runner, model requests or scan settings.
+
 The bundle retains the sanitized preparation history plus the Builder's batch/error-handling and checkpoint updates. Inspect it with `git log` in the fresh checkout. No GitHub remote or public release is required for this check.

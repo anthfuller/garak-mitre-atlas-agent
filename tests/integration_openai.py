@@ -6,6 +6,7 @@ Garak's configuration and report handles are process-global. Never calls OpenAI.
 import contextlib
 import io
 import json
+import logging
 import os
 from pathlib import Path
 import sys
@@ -24,7 +25,11 @@ def main(case):
             raise AssertionError("Offline integration prohibits network access")
     sys.addaudithook(deny_network)
     import httpx
-    with tempfile.TemporaryDirectory() as tmp:
+    # Garak runs in this process and keeps a logging FileHandler open. Close it
+    # before TemporaryDirectory removes garak.log (required on Windows), even
+    # when a test assertion raises. Each integration case owns its process.
+    with tempfile.TemporaryDirectory() as tmp, contextlib.ExitStack() as cleanup:
+        cleanup.callback(logging.shutdown)
         root = Path(tmp)
         os.environ["XDG_DATA_HOME"] = str(root / "data")
         os.environ["XDG_CONFIG_HOME"] = str(root / "config")
@@ -109,7 +114,7 @@ def main(case):
             assert costs["estimated_reported_usage_usd"] is None
         elif case != "transport_failure":
             assert costs is not None and costs["events"][0]["stage"] == "compatibility"
-        print(f"PASS {case}: {len(requests)} synthetic requests; {summary['execution_status']}; dummy key absent from stdout, stderr and all artifacts.")
+    print(f"PASS {case}: {len(requests)} synthetic requests; {summary['execution_status']}; dummy key absent from stdout, stderr and all artifacts; temporary cleanup completed.")
 
 
 if __name__ == "__main__":
