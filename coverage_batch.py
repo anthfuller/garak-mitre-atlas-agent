@@ -294,6 +294,8 @@ def show_plan(document):
         else:
             print(f"Temperature {c['temperature']}; generation seed {c['seed']}; max_tokens {c['max_tokens']}; local Ollama only, no auxiliary calls.")
             print("Ollama HTTP errors/timeouts stop immediately with the error saved; no error retries. Empty successful responses retain Garak's bounded retries (up to 3 calls).")
+            import ollama_worker
+            print(ollama_worker.FILE_WRITE_POLICY)
             print("Transport-policy change: generation settings are unchanged, but this is not an exact reproduction of older error/retry behavior.")
     cloud = [i for i in document["plans"] if i["target"]["provider"] == "openai"]
     total = sum((Decimal(i["cost_estimate"]["estimated_usd"]) for i in cloud if i["cost_estimate"]), Decimal(0))

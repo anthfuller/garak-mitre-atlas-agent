@@ -1,6 +1,6 @@
 # Public v1 release instructions
 
-**Current status: private preparation.** This candidate integrates the 0.6.3 interactive and batch runner. A v1.0.0 tag belongs on the final accepted commit after its displayed version is updated and that commit is validated. No v1.0.0 tag is included. Synthetic tests are separate from live compatibility.
+**Current status: private preparation.** This candidate integrates the 0.6.4 interactive and batch runner. A v1.0.0 tag belongs on the final accepted commit after its displayed version is updated and that commit is validated. No v1.0.0 tag is included. Synthetic tests are separate from live compatibility. The [0.6.4 correction](patch-0.6.4.md) addresses a session-file publication failure observed during synthetic Windows validation; native validation of that correction is pending.
 
 ## What ships in v1
 

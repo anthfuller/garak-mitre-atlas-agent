@@ -29,7 +29,7 @@ import atlas_mcp
 import kumu_mcp
 import research_index
 
-VERSION = "0.6.3"
+VERSION = "0.6.4"
 ROOT = Path(__file__).resolve().parent
 
 
@@ -201,6 +201,7 @@ def plan(cfg, target_name, campaign_name, folder=None):
     if target["provider"] == "ollama":
         import ollama_worker
         result.update({"ollama_transport_policy": ollama_worker.POLICY,
+            "ollama_session_write_policy": ollama_worker.FILE_WRITE_POLICY,
             "ollama_worker_sha256": sha(ROOT / "ollama_worker.py"),
             "request_bound": ollama_worker.POLICY + " The total wall-time limit still applies.",
             "capture_limit": "HTTP request/response body bytes and settings are archived; headers and provider-side hidden state are not captured.",
@@ -1080,6 +1081,7 @@ def show_probe_plan(preview):
         print(f"Generations/attempt: 1 | Temperature: {c['temperature']} | Seed: {c['seed']} | Output limit: {c['max_tokens']} tokens")
         print(f"Parallel requests: 1 | Wall time: {c['wall_time_seconds']} seconds")
         print("Ollama HTTP errors/timeouts stop immediately; no error retries. Successful empty responses retain Garak's bounded retries (up to 3 calls).")
+        print(preview["ollama_session_write_policy"])
         print("HTTP bodies are saved locally. This transport-policy change is not an exact reproduction of older runs; generation settings are unchanged.")
         print("Extra dependencies: none beyond the existing Garak/Ollama installation | Auxiliary models: none")
     print(f"API use: {c.get('api_use', 'Local Ollama target only')}\nDetector limits: {c['limitations']}")

@@ -12,11 +12,14 @@ import json
 import os
 from pathlib import Path
 import sys
+import tempfile
 import time
 from urllib.parse import urlparse
 
 
 POLICY = "Stop on first HTTP error, transport error or timeout; no error retries. Garak may retry successful empty responses up to three total calls."
+FILE_REPLACE_DELAYS = (0.05, 0.10, 0.20, 0.40, 0.80)
+FILE_WRITE_POLICY = "Status-file replacement only: up to 6 attempts per snapshot for Windows errors 5/32/33, at most 1.55 seconds of retry waits per snapshot. Persistent errors fail the run; no HTTP request is retried."
 
 
 class AbortRun(BaseException):
@@ -24,9 +27,30 @@ class AbortRun(BaseException):
 
 
 def save(path, value):
-    temp = path.with_suffix(path.suffix + ".tmp")
-    temp.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    os.replace(temp, path)
+    """Publish one complete snapshot; retain old/temporary files on failure.
+
+    Only the replace operation is retried, never the surrounding scan/request.
+    A Windows access denial can be permanent: exhausting this short budget
+    still raises the original error. No ACL, permission or security setting changes.
+    """
+    path = Path(path)
+    payload = (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    fd, name = tempfile.mkstemp(prefix=path.name + ".", suffix=".tmp", dir=path.parent)
+    temp = Path(name)
+    with os.fdopen(fd, "wb") as stream:
+        stream.write(payload)
+    for attempt in range(len(FILE_REPLACE_DELAYS) + 1):
+        try:
+            os.replace(temp, path)
+            if attempt:
+                print(f"Evidence file replacement recovered after {attempt} retry/retries: {path.name}. No HTTP request repeated.", file=sys.stderr)
+            return
+        except OSError as exc:
+            if getattr(exc, "winerror", None) not in (5, 32, 33) or attempt == len(FILE_REPLACE_DELAYS):
+                raise
+            delay = FILE_REPLACE_DELAYS[attempt]
+            print(f"Evidence file replacement retry {attempt + 1}/{len(FILE_REPLACE_DELAYS)}: WinError {exc.winerror}; {path.name}; wait {delay:.2f}s. No HTTP request repeated.", file=sys.stderr)
+            time.sleep(delay)
 
 
 def run(arguments, *, test_transport=None, scan=None):
