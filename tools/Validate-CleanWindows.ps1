@@ -37,10 +37,12 @@ function Invoke-Checked {
     $priorPreference = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     $PSNativeCommandUseErrorActionPreference = $false
-    $LASTEXITCODE = $null
+    # Native processes write the global automatic variable. A local variable
+    # with the same name would shadow that result and cause a false failure.
+    $global:LASTEXITCODE = $null
     try {
         & $Executable @Arguments *> $log
-        $code = $LASTEXITCODE
+        $code = $global:LASTEXITCODE
     } finally {
         $ErrorActionPreference = $priorPreference
     }
