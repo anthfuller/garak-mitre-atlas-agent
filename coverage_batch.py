@@ -83,7 +83,8 @@ def transport_diagnostics(folder):
     """Summarize saved transport outcomes without publishing request/response text."""
     p = runner()
     result = {"http_statuses": {}, "finish_reasons": {}, "scan_response_issues": [], "errors": []}
-    path = folder / "openai-transport.jsonl"
+    local = (folder / "ollama-transport.jsonl").is_file()
+    path = folder / ("ollama-transport.jsonl" if local else "openai-transport.jsonl")
     if not path.is_file():
         return result
     http, finishes = Counter(), Counter()
@@ -101,6 +102,12 @@ def transport_diagnostics(folder):
                 if row.get("stage") != "scan":
                     continue
                 body = row.get("body") or {}
+                if local:
+                    if row.get("http_status") != 200:
+                        result["errors"].append({"sequence": row.get("sequence"), "type": "HTTPError", "http_status": row.get("http_status"), "message": "Full error body retained in ollama-transport.jsonl."})
+                    elif isinstance(body, dict):
+                        finishes[str(body.get("done_reason"))] += 1
+                    continue
                 choices = body.get("choices") or []
                 for choice in choices:
                     reason = choice.get("finish_reason")
@@ -135,9 +142,12 @@ def read_run(folder):
     fresh_manifest = dict(manifest)
     if target["provider"] == "openai":
         fresh_manifest["transport_coverage_gaps"] = p.openai_worker.quality_gaps(folder)
+    elif manifest.get("ollama_transport_policy"):
+        import ollama_worker
+        fresh_manifest["transport_coverage_gaps"] = ollama_worker.quality_gaps(folder)
     computed, _ = p.analyze(report, fresh_manifest)
     hashes = {name: p.sha(folder / name) for name in
-              ("manifest.json", "summary.json", "scan.report.jsonl", "openai-session.json", "openai-transport.jsonl", "openai-cost.json")
+              ("manifest.json", "summary.json", "scan.report.jsonl", "openai-session.json", "openai-transport.jsonl", "openai-cost.json", "ollama-session.json", "ollama-transport.jsonl")
               if (folder / name).is_file()}
     warnings = [] if saved is not None else ["Saved summary.json is missing; historical outcome is unverified. Original files retained."]
     if (folder / "checksums.json").is_file():
@@ -252,7 +262,7 @@ def make_plan(cfg, args, inventory=None):
     # Local batch first; cloud calls start only within the same approved plan.
     plans.sort(key=lambda x: (x["target"]["provider"] == "openai", x["target_profile"], x["campaign"]["spec"]))
     return {"schema_version": 1, "created_at": p.now(), "runner_version": p.VERSION,
-            "component_sha256": {n: p.sha(p.ROOT / n) for n in ("playbook.py", "coverage_batch.py", "openai_worker.py", "probe-support.json")},
+            "component_sha256": {n: p.sha(p.ROOT / n) for n in ("playbook.py", "coverage_batch.py", "openai_worker.py", "ollama_worker.py", "probe-support.json")},
             "inventory": inventory, "targets": targets, "rows": rows, "history_read_errors": issues,
             "plans": plans, "results": [], "status": "planned", "publication": "ON HOLD",
             "scope": "Enabled missing pairs only. Excluded probes remain explicit requirements. Scored existing runs are credited, including gaps; not automatically release-accepted.",
@@ -283,6 +293,8 @@ def show_plan(document):
             p.show_cloud_cost(c, t)
         else:
             print(f"Temperature {c['temperature']}; generation seed {c['seed']}; max_tokens {c['max_tokens']}; local Ollama only, no auxiliary calls.")
+            print("Ollama HTTP errors/timeouts stop immediately with the error saved; no error retries. Empty successful responses retain Garak's bounded retries (up to 3 calls).")
+            print("Transport-policy change: generation settings are unchanged, but this is not an exact reproduction of older error/retry behavior.")
     cloud = [i for i in document["plans"] if i["target"]["provider"] == "openai"]
     total = sum((Decimal(i["cost_estimate"]["estimated_usd"]) for i in cloud if i["cost_estimate"]), Decimal(0))
     print(f"\nBatch: {len(document['plans'])} separate scans; {sum(i['constructed_prompts'] for i in document['plans'])} constructed scan prompts.")
@@ -290,7 +302,7 @@ def show_plan(document):
         print(f"Planned OpenAI requests including compatibility: {sum(i['constructed_prompts'] + 1 for i in cloud)}.")
         print("Batch estimated OpenAI cost: " + (f"${total:.6f}" if all(i["cost_estimate"] for i in cloud) else "Estimate unavailable (some rates/input estimates missing)."))
     print("Per-run completion menus are suppressed; ATLAS prompts are still generated. No ATLAS, Kumu or Chroma calls. No settings are changed automatically.")
-    print("Authentication/transport failure, operator stop, or environment/preflight failure stops the batch. Scored gaps are recorded; other probes continue. No automatic retries.")
+    print("Authentication/transport failure, operator stop, or environment/preflight failure stops the batch. Scored gaps are recorded; other probes continue. No automatic reruns after errors.")
 
 
 def display_summary(run):
@@ -344,9 +356,15 @@ def write_report(folder, document):
 def stop_reason(result):
     p = runner()
     manifest = result["manifest"]
+    folder = Path(result["folder"])
+    # Repeat the actionable local error at batch completion, where the operator
+    # sees it, rather than only in the earlier scanner console stream.
+    if manifest.get("ollama_transport_policy") and (folder / "ollama-session.json").is_file():
+        session = p.read_json(folder / "ollama-session.json")
+        if session.get("status") == "failed":
+            return "Ollama stopped: " + session.get("error", "See ollama-session.json.")
     if manifest.get("process_status") != "exited" or manifest.get("exit_code") != 0:
         return "Scanner did not exit successfully; remaining scans were not started. Inspect its saved status and exit code."
-    folder = Path(result["folder"])
     if manifest["target"]["provider"] == "openai":
         if not (folder / "openai-session.json").is_file():
             return "OpenAI session missing; remaining scans were not started."

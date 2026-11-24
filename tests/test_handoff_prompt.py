@@ -250,6 +250,8 @@ class HandoffPromptTests(unittest.TestCase):
             folder = Path(kwargs["cwd"])
             folders.append(folder)
             (folder / "scan.report.jsonl").write_bytes(self.report.read_bytes())
+            from test_probe_browser import transport_fixture
+            transport_fixture(folder, 32)
             process = MagicMock(returncode=0, stdout=io.BytesIO(b"Synthetic scanner only\n"))
             process.poll.return_value = process.wait.return_value = 0
             return process

@@ -47,6 +47,10 @@ class BatchTests(unittest.TestCase):
         folder = p.new_folder(self.cfg, "scan")
         c = self.campaign(name, target)
         manifest = p.plan(self.cfg, target, c, folder)
+        # Deliberately model legacy saved evidence without HTTP capture. The
+        # separate native integration covers current worker/session evidence.
+        manifest.pop("ollama_transport_policy", None)
+        manifest.pop("ollama_worker_sha256", None)
         manifest.update(process_status="exited", exit_code=0, runner_run_id=folder.name)
         p.write_json(folder / "manifest.json", manifest)
         if not missing:

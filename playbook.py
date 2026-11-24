@@ -29,7 +29,7 @@ import atlas_mcp
 import kumu_mcp
 import research_index
 
-VERSION = "0.6.2"
+VERSION = "0.6.3"
 ROOT = Path(__file__).resolve().parent
 
 
@@ -159,7 +159,7 @@ def command(cfg, target, campaign, folder):
     # probewise harness loads the exact primary detector with extended detectors off.
     detector_spec = "auto" if campaign.get("detector_selection") == "probe_primary" else campaign["detector"]
     cloud = target["provider"] == "openai"
-    prefix = [cfg["garak_python"], str(ROOT / "openai_worker.py")] if cloud else [cfg["garak_python"], "-m", "garak"]
+    prefix = [cfg["garak_python"], str(ROOT / ("openai_worker.py" if cloud else "ollama_worker.py"))]
     return prefix + ["--config", str(folder / "garak-config.json"),
             "--target_type", openai_profile.GENERATOR if cloud else "ollama.OllamaGeneratorChat", "--target_name", target["model"],
             "--spec", campaign["spec"], "--detectors", detector_spec,
@@ -198,6 +198,13 @@ def plan(cfg, target_name, campaign_name, folder=None):
             "system_prompt": "No runner-added system prompt. Ollama model template/system captured by preflight; probe text remains part of the test.",
             "network_policy": "Local HTTP requests bypass ambient proxies; HTTP_PROXY/HTTPS_PROXY/ALL_PROXY (and lowercase equivalents) are omitted only in the Garak child environment. The parent shell is unchanged.",
             "paid_calls": "No cloud targets or paid helper models in the shipped profiles."}
+    if target["provider"] == "ollama":
+        import ollama_worker
+        result.update({"ollama_transport_policy": ollama_worker.POLICY,
+            "ollama_worker_sha256": sha(ROOT / "ollama_worker.py"),
+            "request_bound": ollama_worker.POLICY + " The total wall-time limit still applies.",
+            "capture_limit": "HTTP request/response body bytes and settings are archived; headers and provider-side hidden state are not captured.",
+            "experimental_effect": "Local HTTP error/timeout retries are disabled. Generation settings and successful response bodies are unchanged; this is not an exact reproduction of the previous transport behavior."})
     if target["provider"] == "openai":
         result["runner_components_sha256"] = {name: sha(ROOT / name) for name in
             ("playbook.py", "probe_catalog.py", "probe-support.json", "openai_profile.py", "openai_worker.py", "openai_cost.py", "openai-pricing.json")}
@@ -952,6 +959,9 @@ def run_selected(cfg, target_name, campaign_name, *, interactive=False, batch_id
             session = read_json(folder / "openai-session.json")
             manifest["model_access"] = session.get("model_access", "unverified")
             manifest["openai_session_record"] = "openai-session.json"
+    elif manifest.get("ollama_transport_policy"):
+        import ollama_worker
+        manifest["transport_coverage_gaps"] = ollama_worker.quality_gaps(folder)
     write_json(folder / "manifest.json", manifest)
     summary = render_outputs(folder / "scan.report.jsonl", folder, manifest)
     checksums(folder)
@@ -1068,7 +1078,9 @@ def show_probe_plan(preview):
         show_cloud_cost(c, t)
     else:
         print(f"Generations/attempt: 1 | Temperature: {c['temperature']} | Seed: {c['seed']} | Output limit: {c['max_tokens']} tokens")
-        print(f"Parallel requests: 1 | Wall time: {c['wall_time_seconds']} seconds | HTTP request count: not bounded (retries possible)")
+        print(f"Parallel requests: 1 | Wall time: {c['wall_time_seconds']} seconds")
+        print("Ollama HTTP errors/timeouts stop immediately; no error retries. Successful empty responses retain Garak's bounded retries (up to 3 calls).")
+        print("HTTP bodies are saved locally. This transport-policy change is not an exact reproduction of older runs; generation settings are unchanged.")
         print("Extra dependencies: none beyond the existing Garak/Ollama installation | Auxiliary models: none")
     print(f"API use: {c.get('api_use', 'Local Ollama target only')}\nDetector limits: {c['limitations']}")
     print(f"Evidence root: {Path(preview['command_argv'][-1]).parent.parent}")

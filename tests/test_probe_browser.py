@@ -12,6 +12,17 @@ from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import playbook as p
+
+
+def transport_fixture(folder, count):
+    """Synthetic companion records for fake-scanner UI tests; no HTTP occurs."""
+    p.write_json(folder / "ollama-session.json", {"status": "scan_returned", "http_requests": count})
+    rows = []
+    for seq in range(1, count + 1):
+        rows.extend([{"entry_type": "request", "sequence": seq, "stage": "scan", "body": {"synthetic": True}},
+                     {"entry_type": "response", "sequence": seq, "stage": "scan", "http_status": 200,
+                      "body": {"message": {"content": "SYNTHETIC UI fixture"}, "done": True, "done_reason": "stop"}}])
+    p.write_jsonl(folder / "ollama-transport.jsonl", rows)
 import probe_catalog as c
 
 
@@ -265,6 +276,7 @@ class ProbeBrowserTests(unittest.TestCase):
             folders.append(folder)
             p.write_jsonl(folder / "scan.report.jsonl",
                           report_fixture("probes.goodside.WhoIsRiley", "goodside.RileyIsnt", 6))
+            transport_fixture(folder, 6)
             child = MagicMock(returncode=0, stdout=io.BytesIO(b"SYNTHETIC scanner\n"))
             child.poll.return_value = child.wait.return_value = 0
             return child
@@ -301,6 +313,7 @@ class ProbeBrowserTests(unittest.TestCase):
             self.assertEqual(argv[argv.index("--spec") + 1], "probes.goodside.WhoIsRiley")
             self.assertEqual(argv[argv.index("--detectors") + 1], "goodside.RileyIsnt")
             p.write_jsonl(folder / "scan.report.jsonl", expected_rows)
+            transport_fixture(folder, 6)
             child = MagicMock(returncode=0, stdout=io.BytesIO(b"SYNTHETIC scanner\n"))
             child.poll.return_value = child.wait.return_value = 0
             return child
