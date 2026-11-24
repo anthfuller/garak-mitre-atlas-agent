@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$BundlePath,
-    [string]$CheckRoot = (Join-Path $env:LOCALAPPDATA ('GarakPlaybook-check-' + (Get-Date -Format 'yyyyMMdd-HHmmss')))
+    [string]$CheckRoot = (Join-Path $env:LOCALAPPDATA ('GarakPlaybook-check-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))),
+    [string]$ReuseEnvironmentsFrom
 )
 $ErrorActionPreference = 'Stop'
 if ($env:OS -ne 'Windows_NT') { throw 'Run this validation in Windows PowerShell on Windows.' }
@@ -26,8 +27,13 @@ $receipt = [ordered]@{
 }
 $savedPythonPath = $env:PYTHONPATH
 $savedPythonHome = $env:PYTHONHOME
+$savedPythonIOEncoding = $env:PYTHONIOENCODING
 $env:PYTHONPATH = $null
 $env:PYTHONHOME = $null
+# Redirected Python output otherwise uses the Windows legacy code page, which
+# cannot represent Garak's Unicode log markers. File-reading defaults are unchanged.
+$env:PYTHONIOENCODING = 'utf-8'
+$receipt['python_io_encoding'] = 'utf-8'
 function Invoke-Checked {
     param([string]$Executable, [string[]]$Arguments, [string]$LogName)
     $log = Join-Path $CheckRoot $LogName
@@ -56,19 +62,61 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Could not identify checkout commit.' }
     $testEnv = Join-Path $CheckRoot 'test-env'
     $scannerEnv = Join-Path $CheckRoot 'scanner-env'
-    Invoke-Checked -Executable 'py' -Arguments @('-3.11', '-m', 'venv', $testEnv) -LogName 'test-env.log'
+    if ($ReuseEnvironmentsFrom) {
+        $previous = (Resolve-Path -LiteralPath $ReuseEnvironmentsFrom).Path
+        $previousReceiptPath = Join-Path $previous 'windows-validation.json'
+        $previousReceipt = Get-Content -LiteralPath $previousReceiptPath -Raw | ConvertFrom-Json
+        foreach ($step in @('test-install.log', 'scanner-install.log')) {
+            $passed = @($previousReceipt.checks | Where-Object { $_.log -eq $step -and $_.exit_code -eq 0 })
+            if ($passed.Count -ne 1) { throw "Previous checkpoint has no successful $step receipt." }
+        }
+        foreach ($name in @('requirements-research.txt', 'requirements-scanner.txt')) {
+            $oldHash = (Get-FileHash -LiteralPath (Join-Path "$previous\garak-playbook" $name) -Algorithm SHA256).Hash
+            $newHash = (Get-FileHash -LiteralPath (Join-Path $repo $name) -Algorithm SHA256).Hash
+            if ($oldHash -ne $newHash) { throw "Requirements changed: $name. Environment reuse refused." }
+        }
+        $testEnv = Join-Path $previous 'test-env'
+        $scannerEnv = Join-Path $previous 'scanner-env'
+        foreach ($environment in @($testEnv, $scannerEnv)) {
+            if (-not (Test-Path -LiteralPath (Join-Path $environment 'Scripts\python.exe') -PathType Leaf)) {
+                throw "Previous validation Python is missing: $environment"
+            }
+        }
+        $receipt['reused_environments_from'] = $previous
+        $receipt['previous_receipt_sha256'] = (Get-FileHash -LiteralPath $previousReceiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $receipt.note = 'Fresh checkout; test/scanner environments reused from recorded successful installations with unchanged requirements/package inventories. UTF-8 output; synthetic responses only; desktop actions mocked.'
+        Write-Host 'Reusing both installed validation environments. No dependency installation; previous checkout and receipts preserved.'
+    } else {
+        Invoke-Checked -Executable 'py' -Arguments @('-3.11', '-m', 'venv', $testEnv) -LogName 'test-env.log'
+    }
     $testPython = Join-Path $testEnv 'Scripts\python.exe'
-    Invoke-Checked -Executable $testPython -Arguments @('-m', 'pip', 'install', '-r', "$repo\requirements-research.txt") -LogName 'test-install.log'
+    if (-not $ReuseEnvironmentsFrom) {
+        Invoke-Checked -Executable $testPython -Arguments @('-m', 'pip', 'install', '-r', "$repo\requirements-research.txt") -LogName 'test-install.log'
+    }
     Invoke-Checked -Executable $testPython -Arguments @('-m', 'pip', 'freeze') -LogName 'test-freeze.txt'
+    if ($ReuseEnvironmentsFrom) {
+        $before = @(Get-Content -LiteralPath "$previous\test-freeze.txt")
+        $after = @(Get-Content -LiteralPath "$CheckRoot\test-freeze.txt")
+        if (Compare-Object -ReferenceObject $before -DifferenceObject $after) { throw 'Test package inventory changed; reuse refused.' }
+    }
     Invoke-Checked -Executable $testPython -Arguments @("$repo\tools\run_tests.py", '--out', "$CheckRoot\test-results") -LogName 'test-console.log'
     $tests = Get-Content -LiteralPath "$CheckRoot\test-results\test-result.json" -Raw | ConvertFrom-Json
     if ($tests.status -ne 'passed' -or $tests.skipped -ne 0 -or $tests.commit -ne $receipt.commit) {
         throw 'Complete tests must pass with zero skips on the cloned commit.'
     }
-    Invoke-Checked -Executable 'py' -Arguments @('-3.11', '-m', 'venv', $scannerEnv) -LogName 'scanner-env.log'
+    if (-not $ReuseEnvironmentsFrom) {
+        Invoke-Checked -Executable 'py' -Arguments @('-3.11', '-m', 'venv', $scannerEnv) -LogName 'scanner-env.log'
+    }
     $scannerPython = Join-Path $scannerEnv 'Scripts\python.exe'
-    Invoke-Checked -Executable $scannerPython -Arguments @('-m', 'pip', 'install', '-r', "$repo\requirements-scanner.txt") -LogName 'scanner-install.log'
+    if (-not $ReuseEnvironmentsFrom) {
+        Invoke-Checked -Executable $scannerPython -Arguments @('-m', 'pip', 'install', '-r', "$repo\requirements-scanner.txt") -LogName 'scanner-install.log'
+    }
     Invoke-Checked -Executable $scannerPython -Arguments @('-m', 'pip', 'freeze') -LogName 'scanner-freeze.txt'
+    if ($ReuseEnvironmentsFrom) {
+        $before = @(Get-Content -LiteralPath "$previous\scanner-freeze.txt")
+        $after = @(Get-Content -LiteralPath "$CheckRoot\scanner-freeze.txt")
+        if (Compare-Object -ReferenceObject $before -DifferenceObject $after) { throw 'Scanner package inventory changed; reuse refused.' }
+    }
     foreach ($name in @('integration_quickstart', 'integration_catalog', 'integration_stub', 'integration_openai', 'integration_batch')) {
         Invoke-Checked -Executable $scannerPython -Arguments @("$repo\tests\$name.py") -LogName "$name.log"
     }
@@ -83,6 +131,7 @@ try {
 } finally {
     $env:PYTHONPATH = $savedPythonPath
     $env:PYTHONHOME = $savedPythonHome
+    $env:PYTHONIOENCODING = $savedPythonIOEncoding
     $receipt['finished_at'] = (Get-Date).ToUniversalTime().ToString('o')
     $receipt | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $CheckRoot 'windows-validation.json') -Encoding UTF8
     Write-Host "Windows validation: $($receipt.status)"

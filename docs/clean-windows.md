@@ -4,6 +4,8 @@ Extract the preparation ZIP into its own folder. Use **normal Windows PowerShell
 
 The helper creates a new checkout and two new environments under `%LOCALAPPDATA%\GarakPlaybook-check-<timestamp>`. It does not use the working lab's private configuration, evidence or environments. Dependency installation requires internet access and can take time. No live model generation, API key or paid call is part of this validation.
 
+Python stdout/stderr use UTF-8 during validation so Garak's Unicode log markers can be captured on Windows. The helper restores the prior `PYTHONIOENCODING` value on exit. It does not change the machine locale, Python file-reading defaults or generation settings.
+
 After reviewing the supplied script, run:
 
 ```powershell
@@ -25,5 +27,11 @@ The helper performs these steps and stops on failure:
 Expected final output: `Windows validation: passed` followed by the receipt directory. Preserve that directory and share `windows-validation.json` for review. If it fails, share the indicated failing log; do not repeat the successful steps in the working lab.
 
 This is **pending native Windows execution** in the candidate. Linux results do not establish Windows compatibility. Desktop clipboard/editor/browser actions remain mocked even when the suite runs on Windows; actual batch console control and live probe/model compatibility require their own evidence. This helper's receipt does not repair the separate research failure-receipt gap R-01.
+
+## Reuse successful dependency installations after a failed check
+
+If an earlier validation directory has successful test and scanner installation receipts, add `-ReuseEnvironmentsFrom 'C:\Path\To\EarlierValidation'` to the helper command. The helper still clones the supplied bundle into a new directory and reruns the checks on that commit, but uses the earlier validation interpreters without running pip install or recreating environments. It requires identical requirements files and package inventories. The new receipt records the earlier directory and receipt hash. Existing logs, the previous checkout and the working lab are preserved. If either installation did not succeed, this option refuses reuse.
+
+This is a resumed checkout check using documented environments from the earlier fresh installation, not a second independent fresh installation.
 
 The bundle retains the sanitized preparation history plus the Builder's batch/error-handling and checkpoint updates. Inspect it with `git log` in the fresh checkout. No GitHub remote or public release is required for this check.
