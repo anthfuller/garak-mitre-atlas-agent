@@ -67,7 +67,7 @@ try {
     $scannerPython = Join-Path $scannerEnv 'Scripts\python.exe'
     Invoke-Checked -Executable $scannerPython -Arguments @('-m', 'pip', 'install', '-r', "$repo\requirements-scanner.txt") -LogName 'scanner-install.log'
     Invoke-Checked -Executable $scannerPython -Arguments @('-m', 'pip', 'freeze') -LogName 'scanner-freeze.txt'
-    foreach ($name in @('integration_catalog', 'integration_stub', 'integration_openai', 'integration_batch')) {
+    foreach ($name in @('integration_quickstart', 'integration_catalog', 'integration_stub', 'integration_openai', 'integration_batch')) {
         Invoke-Checked -Executable $scannerPython -Arguments @("$repo\tests\$name.py") -LogName "$name.log"
     }
     Invoke-Checked -Executable $scannerPython -Arguments @("$repo\tests\integration_batch.py", 'auth-failure') -LogName 'integration_batch-auth-failure.log'

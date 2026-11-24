@@ -6,7 +6,7 @@ The planning documents contain a broader roadmap than the first saved-run checkp
 | --- | --- |
 | Windows runner, native evidence/settings preservation, Ollama/OpenAI paths | Implemented and operator-exercised; not every model/probe/error path validated |
 | Probe browser | Implemented within revised scope: supported probes only, search, 20-per-page pagination, review, RUN and Back; broader validation deferred |
-| Batch execution and saved-run reconciliation | Integrated 0.6.1; synthetic tests only for the new batch path. Missing enabled pairs can run after one review, with original evidence retained. Native Windows batch validation remains pending. |
+| Batch execution and saved-run reconciliation | Integrated through 0.6.3. Operator Windows batch evidence supplies 27 scored pairs, including three OpenAI gaps; subsequent Ollama DAN failed unscored. Clean Windows installation remains separate and pending. |
 | Concise handoff, Copy/Notepad/Exit | Implemented and exercised; approved input-excerpt format, full responses retained in original evidence |
 | Authenticated ATLAS MCP submission | Met for one saved run; exact input/reply archival and unreviewed labeling; internal flow execution not independently traced |
 | Separate Kumu generation | Added and exercised; operator-selected candidate IDs, project/map binding and saved validation; graph neighbors are context |
@@ -25,3 +25,5 @@ The planning documents contain a broader roadmap than the first saved-run checkp
 4. A dedicated research database was approved, reusing the existing Chroma environment while preserving earlier demonstration/reviewed-finding collections.
 
 These decisions should be reflected in the requirements baseline. Broader research features remain deferred requirements, not silently removed commitments. The saved-run checks establish operation, not search ranking quality or confirmed security impact.
+
+5. On November 23, 2026 the operator directed closing Ollama DAN investigation for v1 as an attempted but failed/unscored pair and proceeding to clean Windows validation. This exception does not close OpenAI gaps or establish broad probe compatibility.

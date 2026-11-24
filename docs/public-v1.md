@@ -1,6 +1,6 @@
 # Public v1 release instructions
 
-**Current status: private preparation.** This candidate integrates the 0.6.1 interactive and batch runner. A v1.0.0 tag belongs on the final accepted commit after its displayed version is updated and that commit is validated. No v1.0.0 tag is included. Synthetic tests are separate from live compatibility.
+**Current status: private preparation.** This candidate integrates the 0.6.3 interactive and batch runner. A v1.0.0 tag belongs on the final accepted commit after its displayed version is updated and that commit is validated. No v1.0.0 tag is included. Synthetic tests are separate from live compatibility.
 
 ## What ships in v1
 
@@ -8,7 +8,7 @@ One Windows PowerShell entry point, 14 selectable Garak probes, optional batch e
 
 ## Release sequence for the maintainer
 
-1. Run the helper in the clean-checkout guide. It clones the supplied bundle, preserves the working lab, creates separate test and scanner environments, records the commit and package versions, runs the full suite and five scanner integration checks, and checks the final Git status. Retain its receipt and logs outside the repository.
+1. Run the helper in the clean-checkout guide. It clones the supplied bundle, preserves the working lab, creates separate test and scanner environments, records the commit and package versions, runs the full suite and the configuration/plan plus scanner integration checks, and checks the final Git status. Retain its receipt and logs outside the repository.
 2. Reconcile all 28 probe/model cells against the private run archive. Reuse matching evidence. Check model, settings, detector, execution status and actual evaluated, flagged and unscorable counts. Record a short public evidence alias for each reviewed result and keep its mapping to original files privately. Inspect gaps and failures. Obtain the owner's explicit decision on any limitation that will ship. A pair can have an honest failed result without earning a compatibility claim.
 3. Update the public compatibility table and README for the final commit. Include the tested versions and limitations. Batch skipping, gap handling, error stopping and evidence limits are described in batch.md. Verify clean Windows installation and tests on the resulting code. Make the software's displayed version and release notes agree with the tag. If any required v1 pair remains untested or incomplete, obtain an explicit exception decision rather than silently interpreting a table label as acceptance.
 4. Review the final tracked file list and Git history. Include source, synthetic fixtures and sanitized documentation only. Keep API keys, environment files, private endpoints, operator paths, original reports, run IDs and Chroma databases outside the repository. Confirm the right to distribute the included code, copyright holder line and third-party notices. Use the project independence statement in the README.

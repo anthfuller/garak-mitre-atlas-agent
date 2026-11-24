@@ -2,7 +2,7 @@
 
 Run a defined Garak campaign, retain original evidence, check execution quality, and prepare a research handoff for a MITRE ATLAS knowledge-base agent.
 
-Candidate 0.6.1 adds [batch execution and consolidated coverage reports](batch.md). Release 0.5.0 added optional **local Chroma research indexing and search of existing runs**, using explicit Ollama EmbeddingGemma embeddings. Private paths remain outside the source. See [research setup, commands and validation limits](patch-0.5.0.md). One saved-run Windows checkpoint with real local EmbeddingGemma is operator-exercised; broader retrieval-quality validation remains pending.
+Candidate 0.6.3 includes [batch execution and consolidated coverage reports](batch.md). Release 0.5.0 added optional **local Chroma research indexing and search of existing runs**, using explicit Ollama EmbeddingGemma embeddings. Private paths remain outside the source. See [research setup, commands and validation limits](patch-0.5.0.md). One saved-run Windows checkpoint with real local EmbeddingGemma is operator-exercised; broader retrieval-quality validation remains pending.
 
 Release 0.4.2 binds Kumu validation to an independently configured expected project and map. It also adds offline `kumu-validate` for existing graph archives. See [0.4.2 correction](patch-0.4.2.md).
 

@@ -2,7 +2,7 @@
 
 A Windows-first runner for supported Garak model scans, evidence preservation, concise MITRE ATLAS investigation handoffs, optional authenticated MCP submission, separate Kumu requests and optional Chroma research indexing with local EmbeddingGemma.
 
-**Private public-v1 candidate, based on runner 0.6.1. Not yet a v1.0.0 release.** The inspected Garak 0.17.0 registry has 191 probe IDs. This runner enables 14; that is permission to test, not proof that all 28 provider/probe pairs work. Live results apply to specific probe/model pairs. See the [compatibility table](docs/compatibility.md) and [v1 release instructions](docs/public-v1.md). The remaining 177 probes are deferred v2 work, not supported by this release candidate.
+**Private public-v1 candidate, based on runner 0.6.3. Not yet a v1.0.0 release.** The inspected Garak 0.17.0 registry has 191 probe IDs. This runner enables 14; that is permission to test, not proof that all 28 provider/probe pairs work. Live results apply to specific probe/model pairs. See the [compatibility table](docs/compatibility.md) and [v1 release instructions](docs/public-v1.md). The remaining 177 probes are deferred v2 work, not supported by this release candidate.
 
 **Independent project.** This is a personal, independently maintained project. It is not affiliated with, sponsored by, or endorsed by Microsoft, NVIDIA, OpenAI, MITRE, or the other organizations whose products it references. The authors speak only for themselves. Product and project names identify integrations and belong to their respective owners.
 
@@ -35,28 +35,31 @@ if ($LASTEXITCODE -ne 0) { throw 'Environment creation failed.' }
 $scannerPython = "$labRoot\scanner-env\Scripts\python.exe"
 & $scannerPython -m pip install -r "$repo\requirements-scanner.txt"
 if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
-& $scannerPython "$repo\tools\configure.py" --garak-python $scannerPython
+$openaiModel = Read-Host 'OpenAI reasoning model ID you intend to use'
+if ([string]::IsNullOrWhiteSpace($openaiModel)) { throw 'A model ID is required; no API call made.' }
+& $scannerPython "$repo\tools\configure.py" --garak-python $scannerPython --openai-model $openaiModel
 if ($LASTEXITCODE -ne 0) { throw 'Configuration creation failed.' }
 $config = "$labRoot\garak-playbook-private\config.private.json"
-& $scannerPython "$repo\playbook.py" plan --config $config --target ollama-local --campaign base64-32
+& $scannerPython "$repo\playbook.py" plan --config $config --target openai-reasoning --campaign base64-32
 ```
 
-The plan makes no model requests. Garak dependencies may be substantial. Directly tested package versions are pinned; transitive dependencies are resolved by pip, not fully locked across platforms. Do not install into an existing working environment. Install Ollama separately using its [official instructions](https://docs.ollama.com/quickstart). The example model is `llama3.2:3b`; explicitly install it or select an already-installed model in private configuration. No model is downloaded by this runner.
+The plan makes no model requests and does not verify model access. Garak dependencies may be substantial. Directly tested package versions are pinned; transitive dependencies are resolved by pip, not fully locked across platforms. Use the new environment above.
 
-With Ollama running, `preflight` inspects local metadata without generation; `menu` offers the reviewed scans:
+For OpenAI, start the menu and choose the OpenAI target. Review the selected probe, effective completion budget and estimated cost before `RUN`. Only then enter the API key at the hidden prompt. No Ollama service or Langflow instance is required for OpenAI scanning.
 
 ```powershell
-& $scannerPython "$repo\playbook.py" preflight --config $config --target ollama-local --campaign base64-32
 & $scannerPython "$repo\playbook.py" menu --config $config
 ```
 
-For the missing enabled local combinations, the batch command reviews all queued probes before `RUN`:
+For missing enabled OpenAI combinations, review one batch before `RUN`:
 
 ```powershell
-& $scannerPython "$repo\playbook.py" batch --config $config --target ollama-local
+& $scannerPython "$repo\playbook.py" batch --config $config --target openai-reasoning
 ```
 
-Select `--target openai-reasoning` explicitly for an OpenAI batch after configuring the intended model. Its cost estimate and compatibility calls appear before `RUN`; the key is entered once, with hidden input. Omitting `--target` selects all targets offered by the runner, including its historical default OpenAI profile. The local-only command above avoids unintentionally selecting that profile. Existing controls are per run; see the batch guide.
+The batch skips existing scored pairs, including gaps. It does not automatically retest gaps at a larger limit. The default is still 1500 total completion tokens, including reasoning; three recorded OpenAI pairs have empty-output gaps at that budget. See the compatibility table. Omitting `--target` selects all configured targets, so choose the provider explicitly.
+
+Ollama remains optional. Install it and a chosen local model separately using its [official instructions](https://docs.ollama.com/quickstart); this runner downloads no models. Select `ollama-local` when intentionally testing it. DAN on the recorded `llama3.2:3b` setup failed and its investigation is closed for v1. Existing local evidence remains retained.
 
 To use another storage location, supply `tools/configure.py --data-root 'D:\YourLab'` during initial setup. Existing configs are never overwritten. Add `--openai-model MODEL_ID` at initial setup to choose your reasoning model. The historical default cloud model is not a guarantee of public availability. OpenAI requires hidden key entry and a paid compatibility request after confirmation; broader probe compatibility remains separate. Verify pricing for your account/model. No credit balance becomes an automatic runner spending cap.
 

@@ -14,7 +14,7 @@ Completed saved-run checks need not be repeated solely because a new reviewer jo
 | R-08 | Broader research workflow | DEFERRED, NOT COMPLETE. Automatic indexing; observations/findings/notes; analyst dispositions; baseline/retest links. |
 | R-09 | Requirements reconciliation | Recorded in requirements-status.md; preserve explicit approvals for handoff, probe visibility, graph scope and dedicated research storage. |
 | R-10 | Search quality | DEFERRED. Multiple distinct runs and prespecified queries/expected matches are required. |
-| R-11 | Public v1 probe coverage | OPEN. Review all 28 enabled probe/model cells and document accepted limitations. See [v1 release instructions](public-v1.md). |
-| R-12 | Batch Windows execution | OPEN. Integrated 0.6.1 source has offline and synthetic subprocess tests; native Windows batch/console behavior and actual missing-pair runs still require evidence. |
+| R-11 | Public v1 probe coverage | OPEN. Table updated: 24 completed, three OpenAI pairs with gaps, one Ollama DAN failed/unscored. Ollama DAN investigation closed for v1 by operator direction; OpenAI gaps remain open. See [v1 release instructions](public-v1.md). |
+| R-12 | Batch Windows execution | EXERCISED on the existing Windows lab from supplied batch records and console output. Fresh checkout/scanner installation remain R-02/R-03; this does not validate every error path. |
 
 Moving forward with preparation does not imply every open item blocks progress or has been accepted as complete. Publication must accurately describe unresolved limits.
