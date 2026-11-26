@@ -32,7 +32,9 @@ class OpenAITests(unittest.TestCase):
         row = next(r for r in self.inventory["probes"] if r["name"] == "probes.goodside.WhoIsRiley")
         self.campaign = p.probe_catalog.campaign_for(row, profile.TARGET, self.inventory)
         self.campaign["input_estimate"] = {"max_input_units_per_request": 100}
-        self.campaign["pricing"] = cost.published_rates("gpt-5.6-sol", date(2026, 11, 22))
+        # Exercise this price record within its verified validity window.
+        verified = date.fromisoformat(p.read_json(p.ROOT / "openai-pricing.json")["verified_on"])
+        self.campaign["pricing"] = cost.published_rates("gpt-5.6-sol", verified)
 
     def tearDown(self):
         self.temp.cleanup()
