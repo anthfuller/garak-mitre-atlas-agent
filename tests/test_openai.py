@@ -48,13 +48,17 @@ class OpenAITests(unittest.TestCase):
         self.assertIn("unverified", out.getvalue())
         self.assertEqual(original, self.cfg)
 
-    def test_multiple_openai_choices_and_no_cap_by_default(self):
+    def test_multiple_openai_choices_and_no_request_cap_by_default(self):
         rows = p.probe_catalog.supported_rows(self.inventory, profile.TARGET)
         self.assertEqual(len(rows), 14)
         for row in rows:
             campaign = p.probe_catalog.campaign_for(row, profile.TARGET, self.inventory)
             self.assertIsNone(campaign["workload"]["http_request_limit"])
-            self.assertEqual(campaign["max_completion_tokens"], 1500)
+            headroom = row["name"] in {
+                "probes.encoding.InjectAscii85", "probes.encoding.InjectBase32",
+                "probes.encoding.InjectBase64",
+            }
+            self.assertEqual(campaign["max_completion_tokens"], 20000 if headroom else 1500)
 
     def test_reasoning_config_has_real_limit_not_max_tokens_or_temperature(self):
         config = p.garak_config(profile.TARGET, self.campaign)
