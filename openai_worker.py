@@ -136,6 +136,11 @@ def run(arguments, key, *, test_transport=None):
             payload = json.loads(request.read())
             if set(payload) != {"model", "messages", "max_completion_tokens"} or payload["model"] != model or payload["max_completion_tokens"] != limit:
                 raise AbortRun("Effective OpenAI request parameters differ from the reviewed plan; request blocked.")
+            guard = manifest["campaign"].get("headroom_request_guard")
+            if guard is not None:
+                index = session["http_requests"]
+                if index >= len(guard) or payload != guard[index]:
+                    raise AbortRun("Headroom retest request differs from the saved baseline (apart from the approved token cap); request blocked.")
             session["http_requests"] += 1
             seq = session["http_requests"]
             record({"entry_type": "request", "sequence": seq, "stage": stage, "body": payload})
@@ -205,6 +210,8 @@ def run(arguments, key, *, test_transport=None):
             stage = "scan"
             from garak import cli
             cli.main(arguments)
+            if manifest["campaign"].get("headroom_request_guard") is not None and session["http_requests"] != len(manifest["campaign"]["headroom_request_guard"]):
+                raise AbortRun("Headroom retest ended before all baseline requests were made; coverage remains incomplete.")
             session.update({"status": "scan_returned", "probe_compatibility": "Inspect native report and summary for selected-probe execution and coverage; no broad compatibility claim."})
             return 0
         except (Exception, AbortRun) as exc:

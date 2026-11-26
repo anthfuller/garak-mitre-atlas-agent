@@ -29,7 +29,7 @@ import atlas_mcp
 import kumu_mcp
 import research_index
 
-VERSION = "0.6.4"
+VERSION = "0.6.5"
 ROOT = Path(__file__).resolve().parent
 
 

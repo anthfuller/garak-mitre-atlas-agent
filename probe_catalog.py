@@ -156,6 +156,7 @@ def estimate_probe(name):
         if maximum >= 272000:
             raise ValueError("Input estimate exceeds this profile's short-context pricing boundary.")
         return {"probe": name, "sampled_prompt_count": len(probe.prompts),
+                "scan_messages": [[{"role": "user", "content": p}] for p in probe.prompts],
                 "max_input_units_per_request": maximum,
                 "sample_sha256": hashlib.sha256(json.dumps(prompts, ensure_ascii=False).encode()).hexdigest(),
                 "method": "UTF-8 JSON bytes plus 64 units per request; conservative proxy, not actual tokenization. No API requests."}

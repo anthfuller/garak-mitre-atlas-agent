@@ -11,6 +11,7 @@ docs/changes-0.6.1.md
 docs/clean-windows.md
 docs/compatibility.md
 docs/evidence.md
+docs/headroom-diagnostic.md
 docs/operator-guide.md
 docs/patch-0.1.1.md
 docs/patch-0.1.2.md
@@ -38,6 +39,7 @@ examples/config.example.json
 examples/kumu.config.example.json
 examples/research.config.example.json
 examples/synthetic_fixture.jsonl
+headroom_retest.py
 kumu_mcp.py
 ollama_worker.py
 openai-pricing.json
@@ -53,6 +55,7 @@ research_index.py
 source-audit.json
 tests/integration_batch.py
 tests/integration_catalog.py
+tests/integration_headroom.py
 tests/integration_ollama_failure.py
 tests/integration_openai.py
 tests/integration_quickstart.py
@@ -61,6 +64,7 @@ tests/test_atlas_mcp.py
 tests/test_coverage_batch.py
 tests/test_handoff_access.py
 tests/test_handoff_prompt.py
+tests/test_headroom.py
 tests/test_kumu_mcp.py
 tests/test_mcp_discovery.py
 tests/test_ollama_worker.py
