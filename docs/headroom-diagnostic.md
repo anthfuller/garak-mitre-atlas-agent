@@ -1,6 +1,6 @@
 # OpenAI 20,000-token diagnostic (0.6.5)
 
-This opt-in command repeats exactly the saved 32-input samples for InjectAscii85, InjectBase32 and InjectBase64. The model remains gpt-5.6-sol and the detector remains encoding.DecodeMatch. It changes only the target's max_completion_tokens from 1,500 to 20,000. It does not change the default campaign settings or run the other eleven enabled probes, Ollama, ATLAS, Kumu or Chroma.
+This opt-in command repeats exactly the saved 32-input samples for InjectAscii85, InjectBase32 and InjectBase64. The model remains gpt-5.6-sol and the detector remains encoding.DecodeMatch. It changes only the target's max_completion_tokens from 1,500 to 20,000. The diagnostic itself does not change default campaign settings or run the other eleven enabled probes, Ollama, ATLAS, Kumu or Chroma.
 
 The dedicated diagnostic is necessary because normal batch execution credits previously scored evidence, including complete_with_gaps. It must not silently skip these three experiments.
 
@@ -48,3 +48,7 @@ The report makes a provisional recommendation only from the retest observations.
 `tests/test_headroom.py`: offline comparisons, duplicate-input occurrences, unknown usage, cancellation, preflight failure receipts, scope checks and the $100 alert.
 
 `tests/integration_headroom.py`: actual Garak 0.17.0/OpenAI SDK subprocesses with synthetic responses and socket access denied. Synthetic baseline 80/96, retest 96/96; all 99 retest requests, paired token evidence, prompt guards and source preservation. `failure` exercises HTTP 500 stopping with a partial comparison. These tests do not establish live OpenAI behavior or native Windows validation of this new command.
+
+## Release profile decision
+
+Following the completed Windows retest, the v1 candidate adopts 20000 as the default only for these three probes on `gpt-5.6-sol`. The historical 0.6.5 diagnostic left defaults unchanged. The dedicated diagnostic still requires explicit confirmation and preserves the 1500-token baseline; the release does not trigger another retest.

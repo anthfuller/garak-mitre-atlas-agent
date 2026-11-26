@@ -2,7 +2,7 @@
 
 A Windows-first runner for supported Garak model scans, evidence preservation, concise MITRE ATLAS investigation handoffs, optional authenticated MCP submission, separate Kumu requests and optional Chroma research indexing with local EmbeddingGemma.
 
-**Private public-v1 candidate, based on runner 0.6.5. Not yet a v1.0.0 release.** The inspected Garak 0.17.0 registry has 191 probe IDs. This runner enables 14; that is permission to test, not proof that all 28 provider/probe pairs work. Live results apply to specific probe/model pairs. See the [compatibility table](docs/compatibility.md) and [v1 release instructions](docs/public-v1.md). The remaining 177 probes are deferred v2 work, not supported by this release candidate.
+**Unpublished v1.0.0 candidate; no public release or tag yet.** The inspected Garak 0.17.0 registry has 191 probe IDs. This runner enables 14; that is permission to test, not proof that all 28 provider/probe pairs work. Live results apply to specific probe/model pairs. See the [compatibility table](docs/compatibility.md) and [v1 release instructions](docs/public-v1.md). The remaining 177 probes are deferred v2 work, not supported by this release candidate.
 
 **Independent project.** This is a personal, independently maintained project. It is not affiliated with, sponsored by, or endorsed by Microsoft, NVIDIA, OpenAI, MITRE, or the other organizations whose products it references. The authors speak only for themselves. Product and project names identify integrations and belong to their respective owners.
 
@@ -57,7 +57,7 @@ For missing enabled OpenAI combinations, review one batch before `RUN`:
 & $scannerPython "$repo\playbook.py" batch --config $config --target openai-reasoning
 ```
 
-The batch skips existing scored pairs, including gaps. It does not automatically retest gaps at a larger limit. The default is still 1500 total completion tokens, including reasoning; three recorded OpenAI pairs have empty-output gaps at that budget. See the compatibility table. Omitting `--target` selects all configured targets, so choose the provider explicitly.
+The batch skips existing scored pairs, including gaps. It does not automatically retest gaps at a larger limit. For `gpt-5.6-sol`, Ascii85, Base32 and Base64 default to 20000 total completion tokens (reasoning included), based on the paired 96/96-scorable retest. The other 11 probes retain 1500; other model IDs also retain 1500. Explicit operator limits take precedence. Original 1500-token baselines and their gaps remain recorded. See the compatibility table. Omitting `--target` selects all configured targets, so choose the provider explicitly.
 
 Ollama remains optional. Install it and a chosen local model separately using its [official instructions](https://docs.ollama.com/quickstart); this runner downloads no models. Select `ollama-local` when intentionally testing it. DAN on the recorded `llama3.2:3b` setup failed and its investigation is closed for v1. Existing local evidence remains retained.
 
@@ -79,8 +79,10 @@ For Chroma, create a separate environment using `requirements-research.txt`, ins
 
 ## Validation and release
 
-[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. A fresh local Git history is prepared for review. No GitHub publication has occurred. Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
+[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. Tracked source and reachable Git history are reviewed for publication. No GitHub publication has occurred. Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
 
 ## Optional encoding headroom diagnostic
 
 The [paired OpenAI diagnostic](docs/headroom-diagnostic.md) compares three saved 1,500-token encoding scans against a separately confirmed 20,000-token retest. It preserves exact prompt samples, produces paired usage/scorability evidence, and leaves campaign defaults unchanged.
+
+A [sanitized worked example](docs/worked-example.md) traces one recovered detector flag to its supporting records and states the limits of the evidence. See [v1 validation and changes](docs/release-v1.md) for the carried Windows checkpoint and later validation. The single optional AVID export smoke test stopped on a missing `avidtools` dependency; AVID is deferred, with no added dependency or integration.

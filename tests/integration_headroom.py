@@ -62,6 +62,7 @@ def main(failure=False):
             for spec,count in zip(h.SPECS,(24,25,31)):
                 row=next(r for r in inventory['probes'] if r['name']==spec)
                 campaign=p.probe_catalog.campaign_for(row,p.openai_profile.TARGET,inventory)
+                campaign['max_completion_tokens']=1500  # Deliberately recreate the historical fixture, not the release default.
                 campaign['pricing']=p.openai_cost.published_rates('gpt-5.6-sol')
                 result=p.run_selected(cfg,'openai-reasoning',campaign,session_key=key)
                 folder=Path(result['folder'])

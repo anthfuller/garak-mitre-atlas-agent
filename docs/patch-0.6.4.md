@@ -1,6 +1,6 @@
 # 0.6.4: Bounded recovery from Windows session-file replacement errors
 
-Status: implementation and fault-injection tests; native Windows acceptance pending.
+Historical implementation note. Update: the complete Windows validator passed at commit `09e8128` on November 26, 2026. See [release validation](release-v1.md) for scope and later changes.
 
 The supplied Windows synthetic integration log records `WinError 5: Access is
 denied` while replacing `ollama-session.json`. The first Base64 case stopped

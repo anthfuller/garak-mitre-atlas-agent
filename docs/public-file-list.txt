@@ -31,11 +31,14 @@ docs/patch-0.6.4.md
 docs/public-file-list.txt
 docs/public-v1.md
 docs/release-checklist.md
+docs/release-v1.md
 docs/requirements-status.md
 docs/validation-0.5.0.md
 docs/validation.md
+docs/worked-example.md
 examples/README.md
 examples/config.example.json
+examples/headroom-worked-example.json
 examples/kumu.config.example.json
 examples/research.config.example.json
 examples/synthetic_fixture.jsonl
@@ -71,9 +74,11 @@ tests/test_ollama_worker.py
 tests/test_openai.py
 tests/test_playbook.py
 tests/test_probe_browser.py
+tests/test_release_profile.py
 tests/test_research_index.py
 tests/test_setup.py
 tools/Validate-CleanWindows.ps1
+tools/Validate-ReleaseDelta.ps1
 tools/configure.py
 tools/inspect_atlas_mcp.py
 tools/run_tests.py

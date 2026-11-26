@@ -33,7 +33,8 @@ def add_parsers(sub):
         p.add_argument("--config", required=True, type=Path)
         p.add_argument("--target", action="append", help="Named target; repeat to choose several. Default: all configured targets, including the existing OpenAI profile.")
         if action == "batch":
-            p.add_argument("--completion-tokens", type=int, default=openai_profile.COMPLETION_LIMIT)
+            p.add_argument("--completion-tokens", type=int, default=None,
+                           help="Override the model/probe-specific OpenAI allowance. Omit to use the release profile (20000 for three tested encoding probes on gpt-5.6-sol, otherwise 1500).")
             p.add_argument("--request-cap", type=int, help="Optional per-run cap including compatibility; off by default.")
             p.add_argument("--spending-alert", help="Optional per-run USD alert; off by default.")
             p.add_argument("--retry-failed", action="store_true", help="Include pairs with only failed/unscored runs. Scored evidence is always credited; no automatic retry of gaps.")
@@ -220,7 +221,7 @@ def make_plan(cfg, args, inventory=None):
         if unavailable:
             raise ValueError("Selected probe is unavailable: " + unavailable[0]["probe_id"] + ": " + "; ".join(unavailable[0]["requirements"]))
     if args.action == "batch":
-        if not 1 <= args.completion_tokens <= 128000:
+        if args.completion_tokens is not None and not 1 <= args.completion_tokens <= 128000:
             raise ValueError("Completion limit must be 1–128000.")
         if args.request_cap is not None and args.request_cap <= 0:
             raise ValueError("Optional request cap must be positive; omit it for OFF.")
@@ -250,8 +251,9 @@ def make_plan(cfg, args, inventory=None):
             # separately. A cap is not silently converted into an expected count.
             campaign["batch_workload_check"] = estimate
             if row["target"]["provider"] == "openai":
-                campaign["max_completion_tokens"] = args.completion_tokens
-                campaign = openai_profile.campaign_settings(campaign)
+                if args.completion_tokens is not None:
+                    campaign["max_completion_tokens"] = args.completion_tokens
+                campaign = openai_profile.campaign_settings(campaign, row["target"]["model"])
                 campaign["workload"]["planned_http_requests"] = count + 1
                 campaign["workload"]["http_request_limit"] = args.request_cap
                 campaign["input_estimate"] = estimate

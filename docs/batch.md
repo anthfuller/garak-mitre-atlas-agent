@@ -36,8 +36,8 @@ Existing completed/scored runs are skipped when the batch command is repeated. T
 
 ## Limits and stopping
 
-- Defaults preserve the existing profiles: Ollama temperature 0, seed 42, 256 output tokens; OpenAI 1500 total completion tokens including reasoning, sampling seed 42, generation temperature/seed not sent, API-default reasoning effort. One generation and sequential requests. They are not matched settings for cross-model comparisons.
-- `--completion-tokens N` explicitly changes the OpenAI limit and is recorded as a modified experiment. `--probe probes.FAMILY.CLASS` restricts the batch to exact enabled IDs and can be repeated.
+- Defaults preserve the existing profiles: Ollama temperature 0, seed 42, 256 output tokens; OpenAI 20000 total completion tokens for `gpt-5.6-sol` with Ascii85/Base32/Base64 and 1500 for the other probes or other model IDs, including reasoning, sampling seed 42, generation temperature/seed not sent, API-default reasoning effort. One generation and sequential requests. They are not matched settings for cross-model comparisons.
+- `--completion-tokens N` overrides the model/probe-specific OpenAI limit for every selected OpenAI probe and is recorded as a modified experiment. `--probe probes.FAMILY.CLASS` restricts the batch to exact enabled IDs and can be repeated.
 - `--request-cap N` and `--spending-alert AMOUNT` are optional, off by default, and **per run**, not batch-wide. Compatibility requests count. The existing raise/remove/continue/stop controls remain interactive. Account credit balance is not read or used as a cap.
 - Usage-based totals include reported compatibility usage and can undercount when usage is missing. The displayed estimate is not an invoice or a hard dollar ceiling. SDK retries remain disabled.
 - Authentication/transport failure, operator Stop/interrupt, runner/preflight failure or an evidence reconciliation error stops further execution. Other scored gaps are retained while remaining approved probes continue. No automatic retries occur.

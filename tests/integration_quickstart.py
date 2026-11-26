@@ -56,6 +56,18 @@ def main():
         assert repeat.returncode != 0 and 'already exists' in repeat.stderr
         assert hashlib.sha256(config.read_bytes()).hexdigest() == before
         assert not (data / 'evidence').exists()
+        # A separate explicit model profile exercises the new release default through the public CLI.
+        release_data = Path(temp) / 'release profile'
+        configured = run('tools/configure.py', '--data-root', release_data,
+                         '--garak-python', sys.executable, '--openai-model', 'gpt-5.6-sol')
+        assert configured.returncode == 0, configured.stderr
+        release_config = release_data / 'garak-playbook-private' / 'config.private.json'
+        for campaign, expected_limit in [('base64-32', 20000), ('dan-wild-32', 1500)]:
+            result = run('playbook.py', 'plan', '--config', release_config,
+                         '--target', 'openai-reasoning', '--campaign', campaign)
+            assert result.returncode == 0, result.stderr
+            assert json.loads(result.stdout)['campaign']['max_completion_tokens'] == expected_limit
+        assert not (release_data / 'evidence').exists()
         print('PASS quick-start CLI: new private configuration; both plan paths; paths with spaces; existing config preserved; network denied; zero model requests.')
 
 

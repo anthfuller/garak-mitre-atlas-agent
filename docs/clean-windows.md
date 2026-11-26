@@ -26,7 +26,7 @@ The helper performs these steps and stops on failure:
 
 Expected final output: `Windows validation: passed` followed by the receipt directory. Preserve that directory and share `windows-validation.json` for review. If it fails, share the indicated failing log; do not repeat the successful steps in the working lab.
 
-This is **pending native Windows execution** in the candidate. Linux results do not establish Windows compatibility. Desktop clipboard/editor/browser actions remain mocked even when the suite runs on Windows; actual batch console control and live probe/model compatibility require their own evidence. This helper's receipt does not repair the separate research failure-receipt gap R-01.
+**Earned checkpoint:** the supplied Windows receipt passed every listed check on November 26, 2026 at commit `09e812807924e9c55c9d96a507fe0beac637f752`, using the recorded environments from the earlier fresh installations with unchanged requirements and package inventories. This is retained evidence, not a requirement to reinstall because a reviewer changed. Later candidate changes have their own checks in [release-v1.md](release-v1.md); the old receipt is not relabeled as a full Windows pass for a newer commit. Linux results do not establish Windows compatibility. Desktop clipboard/editor/browser actions remain mocked even when the suite runs on Windows; actual batch console control and live probe/model compatibility require their own evidence. This helper's receipt does not repair the separate research failure-receipt gap R-01.
 
 ## Reuse successful dependency installations after a failed check
 
@@ -41,3 +41,15 @@ test-only correction addresses the observed Windows sharing violation on
 `garak.log`; it does not change the runner, model requests or scan settings.
 
 The bundle retains the sanitized preparation history plus the Builder's batch/error-handling and checkpoint updates. Inspect it with `git log` in the fresh checkout. No GitHub remote or public release is required for this check.
+
+## Candidate-only Windows delta check
+
+For this candidate, reuse the passed 09e8128 receipt with the targeted helper. It clones the candidate separately, verifies unchanged requirements and the recorded test-package inventory, runs release-profile/headroom/OpenAI unit checks plus the public CLI quick start, and saves a new commit-specific receipt. No dependency installation, model call or repeat of the full old validator occurs.
+
+```powershell
+& '.\source\tools\Validate-ReleaseDelta.ps1' `
+  -BundlePath '.\garak-playbook.bundle' `
+  -WindowsReceipt 'C:\Path\To\PassedCheck\windows-validation.json'
+```
+
+The companion review package supplies a launcher pointing at the operator's known receipt. Keep that private launcher and actual receipt out of Git.

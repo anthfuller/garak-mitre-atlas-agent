@@ -8,6 +8,9 @@ NAME = "openai-reasoning"
 TARGET = {"provider": "openai", "model": "gpt-5.6-sol", "endpoint": "https://api.openai.com/v1"}
 GENERATOR = "openai.OpenAIReasoningGenerator"
 COMPLETION_LIMIT = 1500
+ENCODING_HEADROOM_PROBES = frozenset({
+    "encoding.InjectAscii85", "encoding.InjectBase32", "encoding.InjectBase64",
+})
 SUPPRESSED = ["n", "temperature", "max_tokens", "stop", "top_p", "frequency_penalty", "presence_penalty", "seed"]
 
 
@@ -17,9 +20,12 @@ def targets(cfg):
     return result
 
 
-def campaign_settings(campaign):
+def campaign_settings(campaign, model=TARGET["model"]):
     result = copy.deepcopy(campaign)
-    limit = result.get("max_completion_tokens", COMPLETION_LIMIT)
+    # A tested model/probe-specific default; explicit operator settings win.
+    spec = result.get("spec", "").removeprefix("probes.")
+    default_limit = 20000 if model == TARGET["model"] and spec in ENCODING_HEADROOM_PROBES else COMPLETION_LIMIT
+    limit = result.get("max_completion_tokens", default_limit)
     result.pop("max_tokens", None)
     result.pop("temperature", None)
     result.update({"max_completion_tokens": limit, "generator_seed": None,

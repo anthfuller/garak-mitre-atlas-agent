@@ -111,7 +111,7 @@ def campaign_for(row, target, inventory, rules=None):
                               "inventory_count": len(inventory["probes"]),
                               "inventory_sha256": hashlib.sha256(json.dumps(inventory, sort_keys=True).encode()).hexdigest()},
     }
-    return openai_profile.campaign_settings(result) if target["provider"] == "openai" else result
+    return openai_profile.campaign_settings(result, target["model"]) if target["provider"] == "openai" else result
 
 
 def supported_rows(inventory, target, rules=None):

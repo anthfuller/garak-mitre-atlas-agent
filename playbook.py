@@ -29,7 +29,7 @@ import atlas_mcp
 import kumu_mcp
 import research_index
 
-VERSION = "0.6.5"
+VERSION = "1.0.0"
 ROOT = Path(__file__).resolve().parent
 
 
@@ -117,7 +117,7 @@ def select(cfg, target_name, campaign_name):
             raise PlaybookError("OpenAI requires https://api.openai.com/v1; custom endpoints are not enabled.")
         if not isinstance(target["model"], str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}", target["model"]):
             raise PlaybookError("An explicit OpenAI model ID is required; access remains unverified until the live check.")
-        campaign = openai_profile.campaign_settings(campaign)
+        campaign = openai_profile.campaign_settings(campaign, target["model"])
         campaign["source_checks"] = campaign.get("source_checks", {}) | probe_catalog.policy()["provider_source_checks"]["openai"]
         return target, campaign
     if target["provider"] != "ollama":
@@ -832,7 +832,7 @@ def execute(cfg, target_name, campaign_name, yes=False, *, allow_back=False):
                         print("Invalid completion limit; no setting changed and no scan started.")
                     else:
                         preview["campaign"]["max_completion_tokens"] = int(value)
-                        preview["campaign"] = openai_profile.campaign_settings(preview["campaign"])
+                        preview["campaign"] = openai_profile.campaign_settings(preview["campaign"], preview["target"]["model"])
                 continue
             if cloud and confirmation.lower() in ("r", "a", "p"):
                 try:
