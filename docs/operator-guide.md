@@ -1,8 +1,8 @@
-# Garak Playbook
+# Operator guide: Garak evidence and the MITRE ATLAS Agent
 
-Run a defined Garak campaign, retain original evidence, check execution quality, and prepare a research handoff for a MITRE ATLAS knowledge-base agent.
+Run a defined Garak campaign, retain original evidence, check execution quality, and investigate candidate mappings with your MITRE ATLAS Agent in Langflow. The runner generates the handoff and can submit it over authenticated MCP after confirmation. Start with the [Windows quick start](../README.md#windows-quick-start); the [release record](release-v1.md) is authoritative for current validation. Older patch notes describe the status at their original checkpoints.
 
-Candidate 0.6.3 includes [batch execution and consolidated coverage reports](batch.md). Release 0.5.0 added optional **local Chroma research indexing and search of existing runs**, using explicit Ollama EmbeddingGemma embeddings. Private paths remain outside the source. See [research setup, commands and validation limits](patch-0.5.0.md). One saved-run Windows checkpoint with real local EmbeddingGemma is operator-exercised; broader retrieval-quality validation remains pending.
+The v1 candidate retains [batch execution and consolidated coverage reports](batch.md). Release 0.5.0 added optional **local Chroma research indexing and search of existing runs**, using explicit Ollama EmbeddingGemma embeddings. Private paths remain outside the source. See [research setup, commands and validation limits](patch-0.5.0.md). One saved-run Windows checkpoint with real local EmbeddingGemma is operator-exercised; broader retrieval-quality validation remains pending.
 
 Release 0.4.2 binds Kumu validation to an independently configured expected project and map. It also adds offline `kumu-validate` for existing graph archives. See [0.4.2 correction](patch-0.4.2.md).
 
@@ -24,7 +24,7 @@ Version 0.2.0 adds an installed-probe browser with search, twenty results per pa
 - A locally generated `atlas_handoff.md`; optional MCP transmission requires a separate explicit `SEND` confirmation.
 - A structured run record and response observations for later research indexing.
 
-Chroma research indexing is optional; it does not mark a run as an analyst-confirmed finding. Analyst disposition editing, comparison reports, adaptive PyRIT scenarios and clean-checkout public release validation remain **unfinished**. No application, agent, or RAG target is required for these model scans.
+Chroma research indexing is optional; it does not mark a run as an analyst-confirmed finding. Analyst disposition editing, general comparison workflows and adaptive PyRIT scenarios remain deferred. The narrow encoding headroom comparison is implemented; Windows full validation at `09e8128` and delta validation at `4fedd3f` passed. Publication remains subject to owner approval. No application, agent, or RAG target is required for these model scans.
 
 ## Start in Windows PowerShell
 
@@ -75,7 +75,7 @@ The installed inventory is broader than runner support. Hidden entries are not c
 
 OpenAI appears as target option 2 after the first Ollama profile, using `openai.OpenAIReasoningGenerator` and initial model `gpt-5.6-sol`. The profile is added in memory; private configuration is not rewritten. Account/model access stays unverified until a complete compatibility response is received. That check is not probe-compatibility validation.
 
-The OpenAI review offers `L` for `max_completion_tokens` (default 1,500; includes reasoning and visible output), `R` to set/raise/remove an optional request cap, `A` for an optional spending alert, and `P` to supply pricing. Both optional controls are OFF by default. The existing logical workload and wall-time limits still apply. No generation temperature or seed is sent; seed 42 is used for probe sampling. Changes apply only to the selected run and are shown again before `RUN`.
+The OpenAI review offers `L` for `max_completion_tokens` (includes reasoning and visible output). The default is 20,000 only for `gpt-5.6-sol` with Ascii85, Base32 and Base64, and 1,500 for other probes/model IDs; explicit limits take precedence. It also offers `R` to set/raise/remove an optional request cap, `A` for an optional spending alert, and `P` to supply pricing. Both optional controls are OFF by default. The existing logical workload and wall-time limits still apply. No generation temperature or seed is sent; seed 42 is used for probe sampling. Changes apply only to the selected run and are shown again before `RUN`.
 
 Before `RUN`, a conservative total-cost estimate uses offline input-size estimates, the completion limit, and dated published or supplied rates. If rates/input estimation are unavailable, the review says **Estimate unavailable** and still permits `RUN`. The bundled promotional rates expire November 30, 2026; no automatic live pricing query occurs. Usage-based running estimates include the compatibility check and all reported responses. Missing usage is identified; costs are not invoices or a dollar cap. No account credit balance is read or converted into a runner limit.
 
@@ -197,7 +197,7 @@ These tests use synthetic records, not model findings. `tests/integration_stub.p
 
 ## Public distribution
 
-Publish only this source folder. Keep the sibling private folder and all evidence outside Git. The allowlist in `docs/public-file-list.txt` records the intended public files; inspect release bytes and history before publishing. `.gitignore` alone is not a sanitizer. No real lab evidence is included in this public source folder. The original project files use the MIT license in the repository root.
+Publish only this source folder. Keep the sibling private folder and all evidence outside Git. The allowlist in `docs/public-file-list.txt` records the intended public files; inspect the final tracked tree and all history reachable from the release branch before publishing. The same boundary applies to GitHub release attachments. Anything marked `NOGIT` or private, outer review ZIPs, Git bundles, `PRIVATE-REVIEW/`, receipts/logs, real transcripts and IDs, keys, private endpoints/configs/paths, databases, models and environments remain outside both. Reviewed generic configs, synthetic fixtures and the sanitized worked example are permitted. `.gitignore` alone is not a sanitizer. No real lab evidence is included in this public source folder. The original project files use the MIT license in the repository root.
 
 ## Sources inspected
 

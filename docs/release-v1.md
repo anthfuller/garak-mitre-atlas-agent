@@ -1,12 +1,16 @@
 # v1.0.0 candidate: changes and validation
 
-Status: prepared for owner review; unpublished and untagged. The exact candidate commit and package hashes are recorded in the accompanying candidate receipt, outside the public source. `git rev-parse HEAD` identifies the source commit after cloning the bundle. The displayed version is 1.0.0 so the approved commit can receive the v1.0.0 tag without another code/version change.
+Status: finalized for `anthfuller/garak-mitre-atlas-agent`, pending owner publication and tag approval. `git rev-parse HEAD` identifies the exact candidate; the private release check records its SHA and diff from reviewed `4fedd3f`. The displayed version is 1.0.0 so the approved commit can receive the v1.0.0 tag without another code/version change.
 
 ## Carried evidence
 
 The original Windows receipt passed at **09e812807924e9c55c9d96a507fe0beac637f752** on November 26, 2026. Its eleven checks include clone/version, full offline suite, resolved test/scanner inventories, public quick start, installed catalog, synthetic Ollama/OpenAI integrations, and batch success/auth-failure handling. The successful run reused the recorded environments from the earlier fresh installations, with requirements and package inventories checked. It did not perform a new dependency installation or any paid call. Clipboard/editor/browser behavior remained mocked.
 
 This checkpoint remains earned. It is not represented as a full Windows pass for every later commit. Original receipt, prior environment reference, hashes and logs remain private.
+
+The targeted Windows delta passed at **4fedd3f008088a408825a39ec284c5b3bbcdaf7e**, also on November 26, 2026. All seven expected checks returned exit code 0: clone, unchanged requirements, test-package inventory, release-profile tests, headroom tests, OpenAI tests and public quick-start CLI. The receipt's candidate SHA, delivered-bundle hash and prior-receipt hash matched the retained artifacts. It records no live model calls, paid calls or dependency installation. This is native Windows evidence for the delta, not a repeat of the full scanner installation/validation. The receipt was inspected; its separate native log files were not uploaded for independent inspection.
+
+The same candidate passed 242 offline tests on Linux with zero failures, errors or skips, including Chroma 1.5.9, plus synthetic Garak integrations. Synthetic results do not establish model security or replace live compatibility evidence.
 
 The later 0.6.5 paired headroom diagnostic was exercised on the operator's Windows lab: 99 OpenAI requests including compatibility; 96/96 scorable test responses; 16 recovered gaps; no newly unscorable answers. The supplied comparison supports these counts and usage. That is live workflow evidence for this diagnostic, not a new full-suite Windows receipt or proof of broad model security.
 
@@ -21,7 +25,13 @@ The later 0.6.5 paired headroom diagnostic was exercised on the operator's Windo
 | Version, compatibility table, worked example, release/privacy instructions | Documentation and data consistency review against the supplied comparison and consolidated evidence; source/history review |
 | Optional AVID export smoke | One attempt on the existing synthetic fixture. Missing `avidtools`; export not created. Deferred without troubleshooting, dependency changes or model calls |
 
-The package includes the exact-candidate offline receipts and full logs. A targeted Windows delta helper can exercise the new profile/diagnostic tests and public CLI using the previously validated environments, without dependency installation or live scans. The full historical validator is retained for a new installation or a future change that warrants it; it is not required again merely because a new reviewer joined.
+Underlying receipts and logs remain private. Both Windows checkpoints are complete for their stated scope. The historical full validator and targeted helper remain available for reproducibility; neither needs to be rerun for these documentation-only changes.
+
+## Final documentation changes after 4fedd3f
+
+The README now leads with the MITRE ATLAS Agent in Langflow and uses the approved repository name, description, clone URL and brief personal-capacity disclaimer. Public setup and maintainer guidance no longer require the private review package. Release records carry both Windows checkpoints and distinguish them from the final documentation-only diff. No-Git rules apply to the full reachable history and GitHub release attachments, with ignore rules as an additional guard.
+
+The final diff and internal documentation links/anchors are checked, and final tracked files plus reachable commit trees, blobs and metadata are reviewed against the allowlist and privacy rules. The approved GitHub URL is not proof of public availability before publication. Runtime source, tests, model settings, dependency files and the MIT license are byte-identical to `4fedd3f`; no new live scan or claim of new runtime validation is made.
 
 ## Release scope and remaining limits
 
@@ -31,6 +41,6 @@ The package includes the exact-candidate offline receipts and full logs. A targe
 - R-01 research failure receipts and the broader research-record/search-quality roadmap remain disclosed deferrals. The narrow headroom comparison does not complete a general baseline/retest research system.
 - The worked example omits private transcripts and cannot establish a confirmed vulnerability. Detector flags and candidate mappings require analyst review.
 - Transitive dependencies are not fully locked across platforms. Model access and pricing can change. Exact scanned model labels are not guarantees of access for another user.
-- The MIT license and current copyright line remain subject to owner acceptance before publication. No external source/corpora/models are bundled. Product names identify integrations and do not imply affiliation or endorsement.
+- The owner directed retaining the MIT license and `Copyright (c) 2026 Garak Playbook contributors`; any replacement requires separate confirmation. No external source/corpora/models are bundled. Product names identify integrations and do not imply affiliation or endorsement.
 
-Publication requires acceptance of the candidate, its validation boundaries and limitations, the intended repository owner/name and attribution. No repository is created, made public or tagged by preparing this package.
+Publication and the `v1.0.0` tag require the owner's explicit approval of the final candidate and its disclosed boundaries. The approved destination is `anthfuller/garak-mitre-atlas-agent`; start private and change visibility only after approval. Documentation preparation does not authorize a repository upload, visibility change or tag.

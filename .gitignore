@@ -19,3 +19,15 @@ research-env/
 chroma/
 *.sqlite3
 *.sqlite3-*
+
+# Never stage private review packages, evidence receipts or local model/runtime data.
+NOGIT/
+*NOGIT*
+PRIVATE-REVIEW/
+*.bundle
+receipts/
+*-submissions/
+*.db
+models/
+scanner-env/
+test-env/

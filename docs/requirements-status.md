@@ -6,7 +6,7 @@ The planning documents contain a broader roadmap than the first saved-run checkp
 | --- | --- |
 | Windows runner, native evidence/settings preservation, Ollama/OpenAI paths | Implemented and operator-exercised; not every model/probe/error path validated |
 | Probe browser | Implemented within revised scope: supported probes only, search, 20-per-page pagination, review, RUN and Back; broader validation deferred |
-| Batch execution and saved-run reconciliation | Implemented and exercised. Original batch evidence plus paired headroom retests support 27 completed pairs at documented settings; Ollama DAN remains failed/unscored. Windows checkpoint passed at `09e8128`; later deltas are separately documented. |
+| Batch execution and saved-run reconciliation | Implemented and exercised. Original batch evidence plus paired headroom retests support 27 completed pairs at documented settings; Ollama DAN remains failed/unscored. Full Windows checkpoint passed at `09e8128`; seven targeted Windows delta checks passed at `4fedd3f`. Final documentation-only changes have separate diff/link checks. |
 | Concise handoff, Copy/Notepad/Exit | Implemented and exercised; approved input-excerpt format, full responses retained in original evidence |
 | Authenticated ATLAS MCP submission | Met for one saved run; exact input/reply archival and unreviewed labeling; internal flow execution not independently traced |
 | Separate Kumu generation | Added and exercised; operator-selected candidate IDs, project/map binding and saved validation; graph neighbors are context |
@@ -15,7 +15,7 @@ The planning documents contain a broader roadmap than the first saved-run checkp
 | Separate observations, reviewed findings and research notes | Not completed; native observation export exists but is not a separate managed research-record workflow |
 | Baseline/retest relationships and recorded changes | Narrow paired encoding diagnostic implemented and exercised; general managed research relationships remain deferred |
 | Private setup/change log | Partial records exist; no verified consolidated historical setup/change log |
-| Sanitized repo, defaults, quick start, history inspection, clean Windows checkout, publication | Candidate preparation and carried Windows checkpoint documented; exact commit/delta checks supplied with candidate. Publication remains pending owner approval |
+| Sanitized repo, defaults, quick start, history inspection, clean Windows checkout, publication | Sanitized candidate and both Windows checkpoints documented; destination is `anthfuller/garak-mitre-atlas-agent`. Final diff/link and tree/history checks recorded separately. Publication and tag remain pending owner approval |
 
 ## Approved changes from older wording
 

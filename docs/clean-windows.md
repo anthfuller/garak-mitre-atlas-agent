@@ -1,55 +1,61 @@
-# Clean Windows checkout validation
+# Maintainer Windows validation
 
-Extract the preparation ZIP into its own folder. Use **normal Windows PowerShell**, opened in the extracted folder containing `garak-playbook.bundle` and `source`. Do not activate Garak, Ollama or Langflow environments. No model service needs to be running. Prerequisites are Git for Windows and Python 3.11 available through `py -3.11`.
+For ordinary installation, use the [Windows quick start](../README.md#windows-quick-start). The procedures here reproduce maintainer checks; they are not extra steps every researcher must run.
 
-The helper creates a new checkout and two new environments under `%LOCALAPPDATA%\GarakPlaybook-check-<timestamp>`. It does not use the working lab's private configuration, evidence or environments. Dependency installation requires internet access and can take time. No live model generation, API key or paid call is part of this validation.
+## Earned validation
 
-Python stdout/stderr use UTF-8 during validation so Garak's Unicode log markers can be captured on Windows. The helper restores the prior `PYTHONIOENCODING` value on exit. It does not change the machine locale, Python file-reading defaults or generation settings.
+- The full Windows validator passed at `09e812807924e9c55c9d96a507fe0beac637f752` on November 26, 2026. It reused recorded environments from the earlier fresh installations with unchanged requirements and package inventories.
+- The seven targeted Windows delta checks passed at `4fedd3f008088a408825a39ec284c5b3bbcdaf7e` the same day. The exact candidate and bundle hash matched the delivered source; the prior Windows receipt hash also matched. No model call, paid request or dependency installation was recorded.
+- Final documentation and ignore-rule edits preserve runtime code, tests, requirements and profiles byte-for-byte. They receive a diff/link check and final tree/history review. No Windows rerun or live scan is required for these edits.
 
-After reviewing the supplied script, run:
+Receipts/logs remain private. These checkpoints are not relabeled as a full Windows run for every later commit. Desktop clipboard/editor/browser actions remain mocked in the automated suite; actual model compatibility and native UI behavior need their own evidence. See the [release record](release-v1.md).
+
+## Reproduce the full synthetic validation when needed
+
+Use **normal Windows PowerShell** in a clean `main` checkout cloned from `https://github.com/anthfuller/garak-mitre-atlas-agent.git`. Git for Windows and Python 3.11 (`py -3.11`) are prerequisites. No Garak/Ollama/Langflow environment activation, model service or API key is needed.
+
+The existing validator accepts a local Git bundle so it can test a fixed snapshot independently. Generate that input locally, outside the checkout; it is private validation input and must not be committed or attached to a GitHub release. No downloaded private review ZIP is required.
 
 ```powershell
-Unblock-File -LiteralPath '.\source\tools\Validate-CleanWindows.ps1'
-& '.\source\tools\Validate-CleanWindows.ps1' -BundlePath '.\garak-playbook.bundle'
+# From the clean main checkout containing playbook.py and tools.
+$validationInput = Join-Path $env:LOCALAPPDATA ('GarakPlaybook-validation-input-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+if (Test-Path -LiteralPath $validationInput) { throw 'Choose a new validation input directory.' }
+New-Item -ItemType Directory -Path $validationInput -ErrorAction Stop | Out-Null
+$bundle = Join-Path $validationInput 'source.bundle'
+git bundle create $bundle main HEAD
+if ($LASTEXITCODE -ne 0) { throw 'Snapshot creation failed.' }
+& '.\tools\Validate-CleanWindows.ps1' -BundlePath $bundle
 ```
 
-Unblock applies only to this downloaded script. It does not lower the system execution policy; managed policy may still require signing. Administrator elevation is not required.
+The helper creates a separate checkout and two validation environments under `%LOCALAPPDATA%\GarakPlaybook-check-<timestamp>`. Dependency installation needs internet access and can take time. The working lab's configuration, evidence and environments are not used. No live model generation or paid call is part of this validation.
 
-The helper performs these steps and stops on failure:
+The helper stops on failure and records each step:
 
-1. Clone the bundle into a new directory and record its SHA-256 and exact commit.
-2. Create a fresh Python 3.11 test environment, install `requirements-research.txt`, and record all resolved package versions.
-3. Run the complete synthetic suite, including real embedded Chroma 1.5.9. Require zero failures, errors, expected failures and skips, on the cloned commit.
-4. Create a separate fresh scanner environment, install `requirements-scanner.txt`, and record resolved package versions.
-5. Run the configuration/plan smoke check with network denied, then the installed-registry, Ollama stub, OpenAI mock and two batch integrations (success and authentication failure). The batch check exercises the actual parent/child key pipe and separate evidence archives with synthetic HTTP responses.
-6. Require an unchanged Git checkout. Write `windows-validation.json` and individual logs outside it, including a failure receipt if a validation step fails.
+1. Clone the fixed snapshot and record its hash and commit.
+2. Create the Python 3.11 test environment, install `requirements-research.txt` and record resolved packages.
+3. Run the complete synthetic suite, including real embedded Chroma 1.5.9; require zero failures, errors, expected failures and skips on the cloned commit.
+4. Create the separate scanner environment, install `requirements-scanner.txt` and record resolved packages.
+5. Run public configuration/plan and installed-registry checks, then synthetic Ollama, OpenAI and batch success/auth-failure integrations using real Garak. These do not test real model responses.
+6. Require an unchanged checkout; save `windows-validation.json` and logs outside it, including a failure receipt if a step fails.
 
-Expected final output: `Windows validation: passed` followed by the receipt directory. Preserve that directory and share `windows-validation.json` for review. If it fails, share the indicated failing log; do not repeat the successful steps in the working lab.
+Python stdout/stderr use UTF-8 during validation; the helper restores the prior `PYTHONIOENCODING` afterward. It does not change the machine locale or generation settings. The OpenAI synthetic integration closes logging handlers before temporary-directory cleanup; its PASS line follows successful cleanup.
 
-**Earned checkpoint:** the supplied Windows receipt passed every listed check on November 26, 2026 at commit `09e812807924e9c55c9d96a507fe0beac637f752`, using the recorded environments from the earlier fresh installations with unchanged requirements and package inventories. This is retained evidence, not a requirement to reinstall because a reviewer changed. Later candidate changes have their own checks in [release-v1.md](release-v1.md); the old receipt is not relabeled as a full Windows pass for a newer commit. Linux results do not establish Windows compatibility. Desktop clipboard/editor/browser actions remain mocked even when the suite runs on Windows; actual batch console control and live probe/model compatibility require their own evidence. This helper's receipt does not repair the separate research failure-receipt gap R-01.
+Expected final output is `Windows validation: passed` and the receipt directory. Preserve that directory privately. On failure, inspect the named log before proposing a change or rerun. These checks do not repair the separate research failure-receipt gap R-01.
 
-## Reuse successful dependency installations after a failed check
+## Reuse recorded installations
 
-If an earlier validation directory has successful test and scanner installation receipts, add `-ReuseEnvironmentsFrom 'C:\Path\To\EarlierValidation'` to the helper command. The helper still clones the supplied bundle into a new directory and reruns the checks on that commit, but uses the earlier validation interpreters without running pip install or recreating environments. It requires identical requirements files and package inventories. The new receipt records the earlier directory and receipt hash. Existing logs, the previous checkout and the working lab are preserved. If either installation did not succeed, this option refuses reuse.
+If an earlier validation directory has successful test and scanner installation receipts, add `-ReuseEnvironmentsFrom 'C:\Path\To\EarlierValidation'` to the full-validator command. It still clones the snapshot into a new directory but uses the recorded interpreters without running pip install. It requires identical requirements and package inventories, records the earlier directory/receipt hash, and preserves the old checkout and logs. Failed installations are not reusable. This is a resumed checkout check, not a second independent fresh installation.
 
-This is a resumed checkout check using documented environments from the earlier fresh installation, not a second independent fresh installation.
+## Reproduce the targeted delta check
 
-The OpenAI synthetic integration runs Garak in its own test process. It closes
-logging handlers before deleting its temporary directory, including when an
-assertion fails. Its PASS line is printed only after cleanup succeeds. This
-test-only correction addresses the observed Windows sharing violation on
-`garak.log`; it does not change the runner, model requests or scan settings.
+This check is already earned for `4fedd3f`. It is provided for reproducing that checkpoint or checking a later relevant change, not as a release-preparation rerun requirement.
 
-The bundle retains the sanitized preparation history plus the Builder's batch/error-handling and checkpoint updates. Inspect it with `git log` in the fresh checkout. No GitHub remote or public release is required for this check.
-
-## Candidate-only Windows delta check
-
-For this candidate, reuse the passed 09e8128 receipt with the targeted helper. It clones the candidate separately, verifies unchanged requirements and the recorded test-package inventory, runs release-profile/headroom/OpenAI unit checks plus the public CLI quick start, and saves a new commit-specific receipt. No dependency installation, model call or repeat of the full old validator occurs.
+Using a local snapshot created above and the original passed `09e8128` receipt, run in **normal Windows PowerShell**:
 
 ```powershell
-& '.\source\tools\Validate-ReleaseDelta.ps1' `
-  -BundlePath '.\garak-playbook.bundle' `
+& '.\tools\Validate-ReleaseDelta.ps1' `
+  -BundlePath $bundle `
   -WindowsReceipt 'C:\Path\To\PassedCheck\windows-validation.json'
 ```
 
-The companion review package supplies a launcher pointing at the operator's known receipt. Keep that private launcher and actual receipt out of Git.
+It clones separately, checks unchanged requirements and the recorded test-package inventory, runs release-profile/headroom/OpenAI unit checks plus the public quick-start CLI, and saves a commit-specific receipt. It installs no dependencies and invokes no live model. Keep any private launcher, original receipt, generated bundle and resulting logs outside Git and GitHub release attachments.

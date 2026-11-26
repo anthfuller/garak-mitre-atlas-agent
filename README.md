@@ -1,12 +1,16 @@
-# Garak Playbook
+# Garak Evidence for the MITRE ATLAS Agent
 
-A Windows-first runner for supported Garak model scans, evidence preservation, concise MITRE ATLAS investigation handoffs, optional authenticated MCP submission, separate Kumu requests and optional Chroma research indexing with local EmbeddingGemma.
+Investigate Garak detector flags with the MITRE ATLAS Agent in Langflow. Review candidate technique mappings and search saved evidence locally with Chroma and EmbeddingGemma.
+
+The Windows runner turns a saved Garak run into a concise `atlas_handoff.md`. You can copy it to your configured MITRE ATLAS Agent in Langflow, or review and confirm submission over authenticated MCP. The runner archives the handoff and the agent's reply beside the run; the reply remains unreviewed analysis. You supply and configure the Langflow agent and its model provider separately. This repository does not bundle the agent, flow, ATLAS dataset or model credentials.
+
+ATLAS supports investigation of candidate techniques and related mitigations/case studies. Its answers require analyst review and authoritative source verification. A separate confirmed Kumu request explores selected candidate mappings; optional Chroma indexing with local EmbeddingGemma makes saved run records searchable while original evidence stays separate.
 
 **Unpublished v1.0.0 candidate; no public release or tag yet.** The inspected Garak 0.17.0 registry has 191 probe IDs. This runner enables 14; that is permission to test, not proof that all 28 provider/probe pairs work. Live results apply to specific probe/model pairs. See the [compatibility table](docs/compatibility.md) and [v1 release instructions](docs/public-v1.md). The remaining 177 probes are deferred v2 work, not supported by this release candidate.
 
-**Independent project.** This is a personal, independently maintained project. It is not affiliated with, sponsored by, or endorsed by Microsoft, NVIDIA, OpenAI, MITRE, or the other organizations whose products it references. The authors speak only for themselves. Product and project names identify integrations and belong to their respective owners.
+This is an independent community project maintained in a personal capacity. It does not represent Microsoft or imply its endorsement. Use it on systems you own or have permission to test. The software is provided as is under the MIT License.
 
-**Use and interpretation.** Evaluate only systems you own or have explicit authorization to test. Detector flags are screening results. ATLAS mappings are candidates pending analyst review. A paid provider can charge for requests made through the runner. Inspect the destination, settings and prompts before confirmation. Keep credentials and real evidence outside public issues and pull requests.
+**Interpretation:** detector flags are screening results, ATLAS mappings are candidates, and confirmed findings require analyst review. Cloud scans and the backing model/tools of a Langflow agent can incur charges. Review the destination, settings and handoff before confirmation. Keep credentials and real evidence outside public issues and pull requests. See [third-party notices](THIRD_PARTY.md) for integration attribution.
 
 ## What it does
 
@@ -21,13 +25,17 @@ This is a model-testing and research workflow. It does not by itself establish e
 
 ## Windows quick start
 
-Use normal Windows PowerShell, Git for Windows and Python 3.11. An external SSD is optional. Default private configuration, evidence and optional research storage use `%LOCALAPPDATA%\GarakPlaybook`, outside the checkout. Clone the supplied local review bundle using [clean Windows testing](docs/clean-windows.md); a public repository URL has not yet been selected.
+Use **normal Windows PowerShell**, Git for Windows and Python 3.11. An external SSD is optional. Default private configuration, evidence and optional research storage use `%LOCALAPPDATA%\GarakPlaybook`, outside the checkout. The approved repository is `anthfuller/garak-mitre-atlas-agent`; the clone URL below requires repository access while private and becomes public only after publication approval.
 
 ```powershell
+$sourceRoot = Join-Path $env:USERPROFILE 'source'
+$repo = Join-Path $sourceRoot 'garak-mitre-atlas-agent'
+if (Test-Path -LiteralPath $repo) { throw 'Checkout already exists; preserve it and choose a new source location.' }
+New-Item -ItemType Directory -Path $sourceRoot -Force | Out-Null
+git clone https://github.com/anthfuller/garak-mitre-atlas-agent.git $repo
+if ($LASTEXITCODE -ne 0) { throw 'Clone failed; check repository access.' }
+Set-Location -LiteralPath $repo
 $labRoot = Join-Path $env:LOCALAPPDATA 'GarakPlaybook'
-# Start in the cloned source folder containing playbook.py.
-$repo = (Get-Location).Path
-if (-not (Test-Path -LiteralPath "$repo\playbook.py")) { throw 'Open PowerShell in the source checkout.' }
 New-Item -ItemType Directory -Path $labRoot -Force | Out-Null
 if (Test-Path "$labRoot\scanner-env") { throw 'Preserve the existing environment.' }
 py -3.11 -m venv "$labRoot\scanner-env"
@@ -63,7 +71,7 @@ Ollama remains optional. Install it and a chosen local model separately using it
 
 To use another storage location, supply `tools/configure.py --data-root 'D:\YourLab'` during initial setup. Existing configs are never overwritten. Add `--openai-model MODEL_ID` at initial setup to choose your reasoning model. The historical default cloud model is not a guarantee of public availability. OpenAI requires hidden key entry and a paid compatibility request after confirmation; broader probe compatibility remains separate. Verify pricing for your account/model. No credit balance becomes an automatic runner spending cap.
 
-## Optional ATLAS and research
+## Connect your Langflow ATLAS Agent
 
 Deploy your own [MITRE ATLAS agent](https://github.com/mitre-atlas/atlas-knowledge-base-agent), verify its actual LLM provider and enable project MCP authentication. Read the exact endpoint from Langflow. Authenticated discovery is included:
 
@@ -73,13 +81,17 @@ Deploy your own [MITRE ATLAS agent](https://github.com/mitre-atlas/atlas-knowled
   --output-dir "$labRoot\garak-playbook-private\mcp-discovery" --api-key-prompt
 ```
 
-Discovery invokes no ATLAS tools. Use the resulting report with `playbook.py atlas`; review the handoff and type `SEND`. A different flow/schema requires review. Kumu uses a separate command and independent private project/map configuration. See [operator guide](docs/operator-guide.md) and [target binding](docs/patch-0.4.2.md).
+Discovery invokes no ATLAS tools. Use the resulting report with `playbook.py atlas`, or select **Send saved handoff to ATLAS over MCP** from the completion/existing-run menu. Review the saved handoff and destination, then type `SEND` to authorize submission. The Langflow key uses hidden input. Full model responses remain in the original Garak evidence; the compact handoff includes selected input excerpts and detector observations, so ATLAS cannot assess omitted responses. A different flow/schema requires review.
+
+Kumu remains a separate action using approved candidate IDs and independently configured project/map binding. The view contains selected IDs plus one-hop research context, not additional confirmed findings. See the [operator guide](docs/operator-guide.md) and [target binding](docs/patch-0.4.2.md).
+
+## Optional local research search
 
 For Chroma, create a separate environment using `requirements-research.txt`, install EmbeddingGemma locally through Ollama, and use a new dedicated research directory. `tools/configure.py --research-python PATH` can create the research profile during initial setup. See [research commands](docs/patch-0.5.0.md). Research indexing is an explicit action. Some failures exit before receipt creation (R-01); successful receipts do not establish complete failure auditing.
 
 ## Validation and release
 
-[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. Tracked source and reachable Git history are reviewed for publication. No GitHub publication has occurred. Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
+[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. Tracked source and reachable Git history are reviewed for publication. Windows full validation passed at `09e8128`, and the seven targeted Windows delta checks passed at `4fedd3f`. The final documentation-only changes are checked by diff and links; no new scan is required. No public GitHub release or tag has been authorized. Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
 
 ## Optional encoding headroom diagnostic
 
