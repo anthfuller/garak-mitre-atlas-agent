@@ -25,6 +25,8 @@ This is a model-testing and research workflow. It does not by itself establish e
 
 ## Windows quick start
 
+For the full path from Windows setup to an archived ATLAS reply and optional local search, follow [Install and verify](docs/install-and-verify.md). It reuses this quick start and identifies the fresh-install steps still awaiting validation.
+
 Use **normal Windows PowerShell**, Git for Windows and Python 3.11. An external SSD is optional. Default private configuration, evidence and optional research storage use `%LOCALAPPDATA%\GarakPlaybook`, outside the checkout. The approved repository is `anthfuller/garak-mitre-atlas-agent`; the clone URL below requires repository access while private and becomes public only after publication approval.
 
 ```powershell
