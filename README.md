@@ -6,6 +6,8 @@ The Windows runner turns a saved Garak run into a concise `atlas_handoff.md`. Yo
 
 ATLAS supports investigation of candidate techniques and related mitigations/case studies. Its answers require analyst review and authoritative source verification. A separate confirmed Kumu request explores selected candidate mappings; optional Chroma indexing with local EmbeddingGemma makes saved run records searchable while original evidence stays separate.
 
+![Workflow from a saved Garak run and reviewed handoff to the MITRE ATLAS Agent in Langflow and an archived reply with candidate mappings for analyst review; optional local search uses EmbeddingGemma via Ollama and a Chroma index.](docs/images/garak-atlas-workflow.png)
+
 **Unpublished v1.0.0 candidate; no public release or tag yet.** The inspected Garak 0.17.0 registry has 191 probe IDs. This runner enables 14; that is permission to test, not proof that all 28 provider/probe pairs work. Live results apply to specific probe/model pairs. See the [compatibility table](docs/compatibility.md) and [v1 release instructions](docs/public-v1.md). The remaining 177 probes are deferred v2 work, not supported by this release candidate.
 
 This is an independent community project maintained in a personal capacity. It does not represent Microsoft or imply its endorsement. Use it on systems you own or have permission to test. The software is provided as is under the MIT License.

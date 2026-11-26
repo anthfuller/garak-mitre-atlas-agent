@@ -218,6 +218,27 @@ notepad.exe "$savedRun\atlas_handoff.md"
 
 Review the handoff in Notepad. Then submit the **saved file** through the existing runner:
 
+```mermaid
+flowchart TD
+    scan["Garak scan"] --> saved["Saved run: original report, settings, and evidence"]
+    saved --> handoff["Runner prepares ATLAS handoff"]
+    handoff --> confirm["Operator types `SEND` to submit the handoff"]
+    confirm -->|"Authenticated MCP"| agent["MITRE ATLAS Agent in Langflow"]
+    agent --> reply["Archived reply: candidate mappings for analyst review"]
+    saved -->|"Optional local search"| selectRun["Researcher selects a run to index"]
+    selectRun --> embed["EmbeddingGemma via local Ollama"]
+    embed --> index["Local Chroma index: search saved runs and open linked evidence"]
+
+    classDef evidence fill:#f1f5f9,stroke:#64748b,color:#1e293b
+    classDef investigation fill:#e7f1ff,stroke:#3178bd,color:#173c60
+    classDef confirmation fill:#f4faff,stroke:#b8cddd,color:#00549e
+    classDef research fill:#e3f4ed,stroke:#2d8b70,color:#174f42
+    class scan,saved evidence
+    class handoff,agent,reply investigation
+    class confirm,selectRun confirmation
+    class embed,index research
+```
+
 **Windows PowerShell — interactive normal terminal:**
 
 ```powershell

@@ -12,6 +12,7 @@ docs/clean-windows.md
 docs/compatibility.md
 docs/evidence.md
 docs/headroom-diagnostic.md
+docs/images/garak-atlas-workflow.png
 docs/install-and-verify.md
 docs/operator-guide.md
 docs/patch-0.1.1.md
