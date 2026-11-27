@@ -20,26 +20,17 @@ The sample results are made-up demonstration data included in the repository. **
 
 **Where:** the normal Windows PowerShell window from step 1.
 
+### Check Git
+
 **Windows PowerShell:**
 
 ```powershell
 git --version
-py -3.11 --version
 ```
 
-**You should see:** `git version ...` and `Python 3.11...`. A different Python version does not replace 3.11 for this guide. If both appear, go to step 3.
+**You should see:** `git version ...`. Git is ready; check Python below.
 
-If either command is not recognized, or the Python launcher says 3.11 is unavailable, check Windows' app installer:
-
-**Windows PowerShell:**
-
-```powershell
-winget --version
-```
-
-**You should see:** a version starting with `v`. If `winget` is missing, open **Start → Microsoft Store**, find **App Installer** published by **Microsoft Corporation**, and choose **Install** or **Update**. Close PowerShell, reopen it from Start, and repeat the check.
-
-Run **only** the installation command for the missing tool. Accept an installer prompt if Windows displays one.
+If Windows does not recognize `git`, install it:
 
 **Windows PowerShell — only if Git is missing:**
 
@@ -47,13 +38,44 @@ Run **only** the installation command for the missing tool. Accept an installer 
 winget install --id Git.Git --exact --source winget
 ```
 
-**Windows PowerShell — only if Python 3.11 is missing:**
+When installation finishes, close PowerShell, reopen **Start → Windows PowerShell** normally, and run `git --version` again. Continue only when it prints `git version ...`. If `winget` is missing, use the fallback below, then return here.
+
+### Check Python 3.11
+
+**Windows PowerShell:**
+
+```powershell
+py -3.11 --version
+```
+
+- **You see `Python 3.11.x`:** Python is ready. Continue to Step 3. If you already cloned the repo, use the **Step 4 recovery** below; do not clone again.
+- **You see `No suitable Python runtime found`, or Windows doesn't recognize `py`:** **Stay here. Install Python 3.11 with the command below.** Do not continue to cloning or environment creation yet.
+
+**Windows PowerShell — install Python 3.11:**
 
 ```powershell
 winget install --id Python.Python.3.11 --exact --source winget --architecture x64
 ```
 
-**After installation:** close all PowerShell/Terminal windows, reopen **Start → Windows PowerShell** normally, and repeat `git --version` and `py -3.11 --version`. If an installer requires a Windows restart, restart first, then reopen **this guide in your browser** and **Windows PowerShell** and repeat those two checks. Continue only when both succeed.
+When it finishes, **close PowerShell**, reopen **Start → Windows PowerShell** normally, and check again:
+
+**Windows PowerShell — after reopening:**
+
+```powershell
+py -3.11 --version
+```
+
+**Continue only when it prints `Python 3.11.x`.** If an installer asks for a Windows restart, restart, reopen this guide and normal Windows PowerShell, and repeat the check. Another Python version does not replace 3.11 for this guide.
+
+**If `winget` is missing:** open **Start → Microsoft Store**, find **App Installer** published by **Microsoft Corporation**, and choose **Install** or **Update**. Close and reopen PowerShell, then check:
+
+**Windows PowerShell:**
+
+```powershell
+winget --version
+```
+
+**You should see:** a version starting with `v`. Return to the installation command for the missing tool above. Accept an installer prompt if Windows displays one.
 
 If the launcher still cannot find 3.11, use the [Python 3.11.9 Windows installer](https://www.python.org/downloads/release/python-3119/): select **Windows installer (64-bit)**, run it, enable the **Python launcher** and **Add python.exe to PATH**, and install. Reopen PowerShell and check again. These are the [Git for Windows](https://git-scm.com/downloads/win) and [Python package](https://github.com/microsoft/winget-pkgs/tree/master/manifests/p/Python/Python/3/11) installation sources.
 
@@ -80,9 +102,20 @@ While the repository is private, Git may open a GitHub sign-in window. Sign in w
 
 ## 4. Install the Windows runner's dependencies
 
-**Where:** the same normal Windows PowerShell window, in the repository folder.
+**Where:** normal Windows PowerShell. Python must have printed `Python 3.11.x` in Step 2.
+
+**Already cloned the repo and reopened PowerShell?** Restore the repository variable and folder with these two lines. Keep your existing clone.
 
 **Windows PowerShell:**
+
+```powershell
+$repo = Join-Path $env:USERPROFILE 'source\garak-mitre-atlas-agent'
+Set-Location -LiteralPath $repo
+```
+
+**You should see:** the prompt ends in `\source\garak-mitre-atlas-agent>`.
+
+**Create the scanner environment — Windows PowerShell:**
 
 ```powershell
 $labRoot = Join-Path $env:LOCALAPPDATA 'GarakPlaybook'
@@ -91,6 +124,22 @@ New-Item -ItemType Directory -Path $labRoot -Force | Out-Null
 if (Test-Path -LiteralPath "$labRoot\scanner-env") { throw 'Scanner environment already exists. Preserve it and use the existing-installation section.' }
 py -3.11 -m venv "$labRoot\scanner-env"
 if ($LASTEXITCODE -ne 0) { throw 'Python environment creation failed.' }
+```
+
+Before installing dependencies, check the Python executable inside that new environment:
+
+**Windows PowerShell — verify the environment:**
+
+```powershell
+& $scannerPython --version
+```
+
+- **You see `Python 3.11.x`:** the environment is ready. Paste the dependency-install block below.
+- **You see any error or a different version:** **Stop here. Do not paste the dependency-install commands.** If creation reported `No suitable Python runtime found`, return to **Check Python 3.11** in Step 2. Preserve any existing environment; do not delete it to get past an error.
+
+**Install dependencies — Windows PowerShell, only after the environment check passes:**
+
+```powershell
 & $scannerPython -m pip install -r "$repo\requirements-scanner.txt"
 if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed. Stop and keep the error.' }
 & $scannerPython -c "import importlib.metadata; print(importlib.metadata.version('garak'))"
