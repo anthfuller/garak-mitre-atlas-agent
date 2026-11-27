@@ -250,7 +250,9 @@ This downloads the upstream agent and its dependencies. It may take several minu
 
 **Where:** **WSL — Ubuntu**, in the new ATLAS Agent folder.
 
-The upstream download includes somebody else's prepared Langflow database. This step gives your installation a **new database and your own account**. It keeps the upstream ATLAS dataset and vector store.
+MITRE's package includes a prepared Langflow database, and its supplied `.env` enables automatic login. **This guide deliberately uses a separate, fresh database with password sign-in as `atlas-researcher`.** Langflow supports a custom `LANGFLOW_SUPERUSER` with `LANGFLOW_AUTO_LOGIN=False`; see its [authentication settings](https://docs.langflow.org/1.10.0/api-keys-and-authentication#langflow_superuser-and-langflow_superuser_password).
+
+This does **not** rename the bundled `langflow` account or transfer its flows. Stay signed in as **`atlas-researcher`** when importing the flow and uploading its files in Steps 11–12, then create the Langflow API key under that same account in Step 14. The upstream ATLAS dataset and vector store remain in place. The complete fresh-account ATLAS/MCP workflow is still undergoing clean-laptop validation.
 
 **WSL — Ubuntu:**
 
@@ -391,7 +393,7 @@ MCP is the connection the Windows runner uses to send the handoff to your flow.
 1. Return to the project containing your imported **ATLAS Agent v1.1.0** flow and open its **MCP Server** tab. Use that project's actual name; it need not be named **ATLAS Agent**. This is the project tab, not **Settings → Langflow MCP Client**.
 2. Click **Edit Tools**. Enable the checkbox for the imported ATLAS flow. Click its tool name and set it to **`atlas_agent_v110`**. Close the dialog to save.
 3. Beside **Auth**, choose **Add Auth** or **Edit Auth**, then **API Key**. If **API Key** is already shown, keep it enabled.
-4. Open your profile menu at the top right → **Settings → Langflow API Keys → Add New**. Name the key **Garak runner**. If asked for expiry, choose a period that covers your test. Click **Create API Key** and copy the key into your password manager/private notes.
+4. Stay signed in as **`atlas-researcher`**, the account that imported the flow. Open your profile menu at the top right → **Settings → Langflow API Keys → Add New**. Name the key **Garak runner**. If asked for expiry, choose a period that covers your test. Click **Create API Key** and copy the key into your password manager/private notes. Use this installation's key; do not reuse a key from the bundled account or another Langflow database.
 5. Return to that same project's **MCP Server** tab. Select **JSON → Windows → Streamable HTTP**.
 6. Find the URL ending in `/api/v1/mcp/project/.../streamable`. Copy **just that URL**, without quotes. Keep its actual localhost port. You will paste it into PowerShell next.
 
