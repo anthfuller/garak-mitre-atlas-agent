@@ -1,6 +1,10 @@
 # Garak Evidence for the MITRE ATLAS Agent
 
-Investigate Garak detector flags with the MITRE ATLAS Agent in Langflow. Review candidate technique mappings and search saved evidence locally with Chroma and EmbeddingGemma.
+Investigate Garak detector flags with the MITRE ATLAS Agent in Langflow.
+
+**New laptop? Start with [Install on Windows and open your first ATLAS reply](docs/install-and-verify.md).**
+
+Review candidate technique mappings and search saved evidence locally with Chroma and EmbeddingGemma.
 
 The Windows runner turns a saved Garak run into a concise `atlas_handoff.md`. You can copy it to your configured MITRE ATLAS Agent in Langflow, or review and confirm submission over authenticated MCP. The runner archives the handoff and the agent's reply beside the run; the reply remains unreviewed analysis. You supply and configure the Langflow agent and its model provider separately. This repository does not bundle the agent, flow, ATLAS dataset or model credentials.
 
@@ -27,7 +31,7 @@ This is a model-testing and research workflow. It does not by itself establish e
 
 ## Install on Windows and open your first ATLAS reply
 
-**New laptop? Start with [Install on Windows and open your first ATLAS reply](docs/install-and-verify.md).** Follow it from Step 1 through **Open the saved ATLAS reply**. It installs Git, Python, Ubuntu/WSL and Langflow, prepares the ATLAS flow with the tested OpenAI Responses model component, verifies a dataset lookup in Playground, and sends the included synthetic Garak handoff over MCP. You do not run a Garak scan during installation.
+Follow the installation guide from Step 1 through **Open the saved ATLAS reply**. It installs Git, Python, Ubuntu/WSL and Langflow, prepares the ATLAS flow with the tested OpenAI Responses model component, verifies a dataset lookup in Playground, and sends the included synthetic Garak handoff over MCP. You do not run a Garak scan during installation.
 
 ## Configure Garak for live scans after installation
 
