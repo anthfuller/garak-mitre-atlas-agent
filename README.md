@@ -4,9 +4,11 @@ Investigate Garak detector flags with the MITRE ATLAS Agent in Langflow.
 
 **New laptop? Start with [Install on Windows and open your first ATLAS reply](docs/install-and-verify.md).**
 
+Start at Step 1 and follow the guide until you open the Kumu graph from your saved ATLAS reply. Return here only if you want to run live scans.
+
 The local guide runs Langflow on `127.0.0.1` over HTTP. Use a unique Langflow password. An InPrivate window keeps the lab login separate from your regular browser session. HTTP traffic remains unencrypted. Before allowing access from another device, configure HTTPS with a trusted certificate matching the server hostname. See the [guide's browser and HTTPS guidance](docs/install-and-verify.md#10-start-langflow-and-sign-in). **HTTPS deployment remains unverified by this walkthrough.**
 
-**Current-laptop checkpoint passed:** one `SEND` returned candidate analysis and a full Kumu URL together in the saved reply; the browser displayed **AML.T0068 — LLM Prompt Obfuscation**. See [evidence and limits](docs/inline-kumu-acceptance.md). The next guide-only clean-laptop test may proceed; public release and tagging remain unapproved.
+**The assisted Windows walkthrough passed. An independent guide-only install remains unverified.** On the current laptop, one observed `SEND` returned candidate analysis and a full Kumu URL together in the saved reply; the browser displayed **AML.T0068 — LLM Prompt Obfuscation**. See [evidence and limits](docs/inline-kumu-acceptance.md). Public release and tagging remain unapproved.
 
 Review candidate technique mappings and search saved evidence locally with Chroma and EmbeddingGemma.
 
@@ -74,6 +76,8 @@ Set-Location -LiteralPath $repo
 
 The sample-to-ATLAS installation did not need scan configuration. This block creates it only if missing. If a configuration already exists, it keeps that file and lists its configured targets.
 
+At the model-ID prompt, `gpt-5.6-sol` is the **scan-target example used in the [compatibility table](docs/compatibility.md)**, subject to access on your account. This is the model Garak will test; it is separate from the ATLAS Agent's model.
+
 ```powershell
 $config = Join-Path $labRoot 'garak-playbook-private\config.private.json'
 if (-not (Test-Path -LiteralPath $config)) {
@@ -89,7 +93,7 @@ if (-not (Test-Path -LiteralPath $config)) {
 
 ### Review a plan before a live scan
 
-For the configured OpenAI target, run:
+Stay in the same normal **Windows PowerShell** window. For the configured OpenAI target, run:
 
 ```powershell
 & $scannerPython "$repo\playbook.py" plan --config $config --target openai-reasoning --campaign base64-32
@@ -97,17 +101,21 @@ For the configured OpenAI target, run:
 
 **You should see:** a plan with the target/model, probe and completion budget. Planning makes no model requests and does not verify access. If your existing configuration has no `openai-reasoning` target, use its intended target name or follow the [operator guide](docs/operator-guide.md#start-in-windows-powershell); do not replace the configuration to get past an error. Check the [compatibility table](docs/compatibility.md) before selecting a scan model. The closed fourteen-probe validation campaign is not an installation step.
 
-For OpenAI, start the menu and choose the OpenAI target. Review the selected probe, effective completion budget and estimated cost before `RUN`. Only then enter the API key at the hidden prompt. No Ollama service or Langflow instance is required for OpenAI scanning.
+In the **same Windows PowerShell window**, start the menu below. At **Target/model profile**, type the displayed number for your OpenAI target and press **Enter**. Choose a campaign or browse the supported probes, then review the selected probe, effective completion budget and estimated cost. At final confirmation, type uppercase **`RUN`** and press **Enter**. Enter your OpenAI scan key at the hidden prompt. No Ollama service or Langflow instance is required for OpenAI scanning.
 
 ```powershell
 & $scannerPython "$repo\playbook.py" menu --config $config
 ```
 
-For missing enabled OpenAI combinations, review one batch before `RUN`:
+After a single scan, read **Execution status** and **Evidence folder**. Review the saved evidence and any gaps before interpreting detector flags.
+
+For a batch of missing enabled OpenAI combinations, stay in the **same Windows PowerShell window** and run the command below. Review its plan, then type uppercase **`RUN`** at final confirmation and press **Enter**. Enter your OpenAI scan key when prompted.
 
 ```powershell
 & $scannerPython "$repo\playbook.py" batch --config $config --target openai-reasoning
 ```
+
+After the batch, open the printed **Consolidated report** path and review its per-pair results, including failures and unscorable responses.
 
 The batch skips existing scored pairs, including gaps. It does not automatically retest gaps at a larger limit. For `gpt-5.6-sol`, Ascii85, Base32 and Base64 default to 20000 total completion tokens (reasoning included), based on the paired 96/96-scorable retest. The other 11 probes retain 1500; other model IDs also retain 1500. Explicit operator limits take precedence. Original 1500-token baselines and their gaps remain recorded. See the compatibility table. Omitting `--target` selects all configured targets, so choose the provider explicitly.
 
@@ -117,13 +125,7 @@ Keep the storage location chosen during installation and any existing private co
 
 ## Connect your Langflow ATLAS Agent
 
-Deploy your own [MITRE ATLAS agent](https://github.com/mitre-atlas/atlas-knowledge-base-agent), verify its actual LLM provider and enable project MCP authentication. Read the exact endpoint from Langflow. Authenticated discovery is included:
-
-```powershell
-& $scannerPython "$repo\tools\inspect_atlas_mcp.py" `
-  --url 'http://localhost:PORT/api/v1/mcp/project/YOUR_PROJECT_ID/streamable' `
-  --output-dir "$labRoot\garak-playbook-private\mcp-discovery" --api-key-prompt
-```
+For a working Langflow ATLAS Agent, follow [Steps 14–18: enable MCP, verify discovery, and open the saved reply](docs/install-and-verify.md#14-enable-mcp-access-and-create-a-langflow-api-key). They show where to copy your actual project URL, where to paste it in PowerShell, which key to enter, and the expected `Validated tool: atlas_agent_v110` result. If the installation walkthrough already completed these steps, reuse that setup.
 
 Discovery invokes no ATLAS tools. Use the resulting report with `playbook.py atlas`, or select **Send saved handoff to ATLAS over MCP** from the completion/existing-run menu. Review the saved handoff and destination, then type `SEND` to authorize submission. The Langflow key uses hidden input. Full model responses remain in the original Garak evidence; the compact handoff includes selected input excerpts and detector observations, so ATLAS cannot assess omitted responses. A different flow/schema requires review.
 
@@ -131,11 +133,13 @@ The submission now requests the Graph Generator result in the same reply and sav
 
 ## Optional local research search
 
-For Chroma, create a separate environment using `requirements-research.txt`, install EmbeddingGemma locally through Ollama, and use a new dedicated research directory. `tools/configure.py --research-python PATH` can create the research profile during initial setup. See [research commands](docs/patch-0.5.0.md). Research indexing is an explicit action. Some failures exit before receipt creation (R-01); successful receipts do not establish complete failure auditing.
+Follow [Optional: index and search locally](docs/install-and-verify.md#optional-index-and-search-locally) for the Chroma and local EmbeddingGemma setup, commands, and expected results. The sample search should return `synthetic-example` and open its hash-checked evidence. Research indexing is an explicit action. Some failures exit before receipt creation (R-01); successful receipts do not establish complete failure auditing. Broader search quality remains unverified.
 
 ## Validation and release
 
-[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. Tracked source and reachable Git history are reviewed for publication. Windows full validation passed at `09e8128`, and the seven targeted Windows delta checks passed at `4fedd3f`. The installation guide records the clean-laptop checkpoint and remaining documentation test. Setup-file preparation is checked offline; no new scan is required. No public GitHub release or tag has been authorized. Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
+[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Windows full validation passed at `09e8128`, and seven targeted Windows delta checks passed at `4fedd3f`. Later reply-formatting, prepared-flow and inline Kumu code changes have separate offline checks and the observed assisted Windows walkthrough; they are listed in the [release record](docs/release-v1.md). An independent guide-only install remains unverified.
+
+Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. The final tree and reachable history are checked for the exact candidate submitted for approval. No public visibility change or tag has been authorized. Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
 
 ## Optional encoding headroom diagnostic
 

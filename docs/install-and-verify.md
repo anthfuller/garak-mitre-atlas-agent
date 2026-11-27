@@ -93,12 +93,12 @@ $repo = Join-Path $sourceRoot 'garak-mitre-atlas-agent'
 if (Test-Path -LiteralPath $repo) { throw 'This checkout already exists. Use the existing-installation section at the end; do not overwrite it.' }
 New-Item -ItemType Directory -Path $sourceRoot -Force | Out-Null
 git clone https://github.com/anthfuller/garak-mitre-atlas-agent.git $repo
-if ($LASTEXITCODE -ne 0) { throw 'Clone failed. Check your GitHub access before continuing.' }
+if ($LASTEXITCODE -ne 0) { throw 'Clone failed. Stop and check the message and access guidance below before continuing.' }
 Set-Location -LiteralPath $repo
 git rev-parse HEAD
 ```
 
-While the repository is private, Git may open a GitHub sign-in window. Sign in with the GitHub account that can view this repository. If Git reports **Repository not found**, confirm that you can open [the repository](https://github.com/anthfuller/garak-mitre-atlas-agent) in your browser with that account; the clone cannot proceed without access.
+After the repository is made public, this HTTPS clone needs no GitHub account or sign-in. **During private candidate review**, only accounts granted access can clone it; Git may open a browser sign-in window. Use the account that can view [the repository](https://github.com/anthfuller/garak-mitre-atlas-agent). If Git reports **Repository not found**, check the URL and, while the repository is private, that account's access. A network error needs resolving before continuing. The clone command does not publish the repository or change its visibility.
 
 **You should see:** cloning completes, the prompt ends in `\source\garak-mitre-atlas-agent>`, and Git prints a 40-character commit ID. Record that ID with your test results. It identifies the instructions and code you tested.
 
@@ -153,7 +153,7 @@ The download/install may take several minutes. Wait for the prompt to return.
 
 **You should see:** Garak version `0.17.0`, then help containing `atlas`, `research-index`, and `research-search`. This installs the scanner but does not scan a model. The included sample does not need a scan-target configuration or an OpenAI scan key. Do not start the menu or a batch for this check.
 
-## 5. Install Ubuntu through WSL and restart Windows
+## 5. Install Ubuntu through WSL; restart if requested
 
 **Where:** a **new administrator Windows PowerShell** window.
 
@@ -165,19 +165,17 @@ Right-click **Start → Windows PowerShell → Run as administrator**, or search
 wsl --install -d Ubuntu-24.04
 ```
 
-**You should see:** WSL/Ubuntu installation messages. When Windows asks for a restart, save other work and choose **Start → Power → Restart**. Do not repeat the installer while it is running.
+**You should see:** WSL/Ubuntu installation messages. Do not repeat the installer while it is running.
 
-After the restart:
-
-1. Open **this guide in your Windows browser** and return to step 6.
-2. Open **Start → Ubuntu 24.04 LTS**. If it is not listed, open normal Windows PowerShell and run `wsl -d Ubuntu-24.04`.
-3. If WSL said a restart was required but Ubuntu was not installed yet, reopen **administrator Windows PowerShell**, run the step 5 command again, and then open Ubuntu.
+- **If WSL requests a restart:** save your work and restart Windows. Reopen this guide, then open normal Windows PowerShell and run `wsl -d Ubuntu-24.04` to open Ubuntu. Continue at Step 6. If that command says no distribution with that name is installed, open administrator Windows PowerShell and run the Step 5 installation command again to finish installing Ubuntu.
+- **If Ubuntu opens and asks for a username without requesting a restart:** continue directly to Step 6 in that window. Do not close it or restart during account creation.
+- **If installation finishes without opening Ubuntu or requesting a restart:** run `wsl -d Ubuntu-24.04` in normal Windows PowerShell, then continue at Step 6.
 
 The [Microsoft WSL installation guide](https://learn.microsoft.com/en-us/windows/wsl/install) covers WSL installation errors such as virtualization being disabled. Stop on those errors; Langflow cannot run in Ubuntu until WSL works.
 
 ## 6. Create your Ubuntu user and reopen the runner window
 
-**Where:** the **Ubuntu** window opened after the restart.
+**Where:** the **Ubuntu** window opened in Step 5, with or without a Windows restart.
 
 **Note:** If your name is already shown at `Create a default Unix user account:` and pressing **Enter** leaves the cursor sitting there, use **Backspace** to erase the displayed name, retype your name, and press **Enter** again.
 
@@ -192,7 +190,7 @@ pwd
 
 **You should see:** your Linux username and a path such as `/home/yourname`. The prompt ends with `$`, not the Windows `PS ...>` prompt.
 
-Now open **Start → Windows PowerShell** normally in a separate window. Restore the paths that were lost during the restart:
+Now open **Start → Windows PowerShell** normally in a separate window. Set the runner paths in this new window:
 
 **Windows PowerShell — normal:**
 
@@ -729,7 +727,7 @@ Record your commit ID from step 3, both final statuses, the reply path and the b
 
 ### Reopen after shutting down or restarting
 
-**Where:** **Start → Ubuntu 24.04 LTS**. If it is not listed, use normal Windows PowerShell to run `wsl -d Ubuntu-24.04`. If Langflow is already running, keep that instance; do not start another.
+**Where:** normal Windows PowerShell. Run `wsl -d Ubuntu-24.04` to open the existing Ubuntu installation, then run the block below at its Linux prompt. If Langflow is already running in another Ubuntu window, keep that instance; do not start another. Normal restarts do not require `wsl --install`, another database, or another flow import.
 
 **WSL — Ubuntu, for the installation created by this guide:**
 
@@ -740,7 +738,7 @@ export UV_CACHE_DIR="$HOME/.cache/atlas-uv"
 uv run --locked langflow run --host 127.0.0.1 --port 7860 --env-file "$HOME/.config/garak-atlas/langflow.env"
 ```
 
-**You should see:** the Welcome message. Leave Ubuntu running, open its printed localhost address in your Windows browser, and sign in. Your flow and uploaded files should still be present. Do not repeat account creation or flow import.
+**You should see:** the Welcome message. Leave this Ubuntu terminal running while using Langflow or the MCP runner. Open its printed localhost address in your Windows browser and sign in; your flow and uploaded files should still be present. If Langflow stops, restart it with this same command. Do not repeat account creation or flow import.
 
 Open **Start → Windows PowerShell** normally and restore the paths:
 
@@ -904,11 +902,11 @@ Open the indexed original summary:
 | --- | --- |
 | Windows runner installation and integrations | Full Windows pass at `09e8128`; seven Windows delta checks at `4fedd3f`. See the [release record](release-v1.md). This documentation revision does not claim a new full Windows pass. Record the actual clean-laptop commit and result separately. |
 | Existing Langflow/ATLAS deployment | Startup, authenticated discovery, confirmed MCP submission and reply archival were exercised in the maintainer's existing Windows/WSL lab. |
-| First clean-laptop core walkthrough | Authenticated `atlas-researcher` login, flow import/file attachments, a live `atlas_dataset_sandbox` lookup returning `AML.T0054 — LLM Jailbreak`, MCP discovery/submission and opening the archived reply were observed. Chat assistance was required; this is **not** a guide-only installation pass. |
+| Assisted Windows walkthrough | **Passed.** Authenticated `atlas-researcher` login, flow import/file attachments, a live `atlas_dataset_sandbox` lookup returning `AML.T0054 — LLM Jailbreak`, MCP discovery/submission and opening the archived reply were observed. The later inline Kumu check below completes the observed finish line. Chat assistance and a manual model-component edit were used. An **independent guide-only install remains unverified**. |
 | Revised prepared-flow installation path | The setup helper preserves upstream tools/instructions/wires and prepares a model component matching the tested code. Offline request checks cover Responses API, medium reasoning, ATLAS tool schemas and omitted temperature. Importing the generated file and following this revised guide on another clean Windows laptop remain **unverified**. |
 | Synthetic saved-run preparation and archive routing | The guide's fixture assembly is checked offline against the existing renderer/loader. MCP archival is exercised with a synthetic protocol server; this does not validate a new Langflow deployment or paid model. |
 | Optional research search | The maintainer exercised real local EmbeddingGemma indexing, unchanged reindexing, model/probe filters, search and evidence opening. This guide's synthetic example is checked with real embedded Chroma and fake embedding vectors; a fresh Windows installation following every new instruction remains **unverified**. |
 | Analysis and Kumu in one submission | Passed for the current-laptop AML.T0068 case at `82ba06f` on November 27, 2026. Operator console output reports successful analysis and graph URL checks; the uploaded saved reply contains candidate analysis and the same URL; the browser screenshot shows AML.T0068 — LLM Prompt Obfuscation. Internal tool execution remains agent-reported for this submission, and broader research quality remains unverified. See [acceptance evidence](inline-kumu-acceptance.md). |
 | Release scope | The ATLAS submission now requests analysis and its Kumu URL together. Scanner execution, profiles, credentials and the closed fourteen-probe campaign are unchanged. AVID and broader probes remain deferred, and public release/tagging require owner approval. |
 
-The revised instructions still require the clean-laptop test; a documentation or syntax check is not an installation pass. Keep the guide's expected results distinct from observed validation evidence.
+An independent guide-only install remains unverified; document and syntax checks do not establish that pass. The assisted walkthrough is the installation evidence available for this candidate. Publication requires owner approval with this limitation disclosed. Keep expected results distinct from observed validation evidence.

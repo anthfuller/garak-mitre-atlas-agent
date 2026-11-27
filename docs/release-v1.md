@@ -1,6 +1,8 @@
 # v1.0.0 candidate: changes and validation
 
-Status: finalized for `anthfuller/garak-mitre-atlas-agent`, pending owner publication and tag approval. `git rev-parse HEAD` identifies the exact candidate; the private release check records its SHA and diff from reviewed `4fedd3f`. The displayed version is 1.0.0 so the approved commit can receive the v1.0.0 tag without another code/version change.
+Status: public-facing candidate prepared on private `main` for `anthfuller/garak-mitre-atlas-agent`, pending owner approval of the exact SHA before public visibility or tagging. The private final-tree/history check records that SHA. The displayed version is 1.0.0; this does not mean a `v1.0.0` tag or public release exists.
+
+**The assisted Windows walkthrough passed. An independent guide-only install remains unverified.** The current-laptop finish line includes opening the archived ATLAS analysis and its full Kumu URL to the AML.T0068 view. The original Windows automated checkpoints and the later runtime changes have distinct evidence, recorded below.
 
 ## Carried evidence
 
@@ -25,22 +27,35 @@ The later 0.6.5 paired headroom diagnostic was exercised on the operator's Windo
 | Version, compatibility table, worked example, release/privacy instructions | Documentation and data consistency review against the supplied comparison and consolidated evidence; source/history review |
 | Optional AVID export smoke | One attempt on the existing synthetic fixture. Missing `avidtools`; export not created. Deferred without troubleshooting, dependency changes or model calls |
 
-Underlying receipts and logs remain private. Both Windows checkpoints are complete for their stated scope. The historical full validator and targeted helper remain available for reproducibility; neither needs to be rerun for these documentation-only changes.
+Underlying receipts and logs remain private. Both Windows checkpoints are complete for their stated scope. They do not establish a full Windows automated pass for the later code changes below.
 
-## Final documentation changes after 4fedd3f
+## Later code and installation changes
 
-The README now leads with the MITRE ATLAS Agent in Langflow and uses the approved repository name, description, clone URL and brief personal-capacity disclaimer. Public setup and maintainer guidance no longer require the private review package. Release records carry both Windows checkpoints and distinguish them from the final documentation-only diff. No-Git rules apply to the full reachable history and GitHub release attachments, with ignore rules as an additional guard.
+These changes supersede the earlier description of everything after `4fedd3f` as documentation-only.
 
-The final diff and internal documentation links/anchors are checked, and final tracked files plus reachable commit trees, blobs and metadata are reviewed against the allowlist and privacy rules. The approved GitHub URL is not proof of public availability before publication. Runtime source, tests, model settings, dependency files and the MIT license are byte-identical to `4fedd3f`; no new live scan or claim of new runtime validation is made.
+| Source commit | Actual change | Evidence and boundary |
+| --- | --- | --- |
+| `cfd4521d3890f7b2aa426ee3572c50193774ee64` | ATLAS Markdown rendering displays equivalent duplicate table analyses once while preserving distinct content, raw responses and existing archives. | 50 offline tests passed, including equivalent and distinct reply cases. |
+| `e591ba006dc5f7c2cafa30b3b2dc4a0e0ed2fea1` | Added `tools/prepare_atlas_flow.py` and tests. The helper prepares MITRE's pinned flow with the tested OpenAI Responses component, preserves ATLAS tools/wires/instructions, and clears foreign file bindings and credentials for the new account. | Offline helper and request checks cover preserved flow structure, `/v1/responses`, ATLAS tool schemas, medium reasoning and omitted temperature. The manually edited component was exercised on the laptop with `langchain-openai==1.3.5`; a fresh import of the generated file by an independent guide-only user remains unverified. |
+| `82ba06f63c582b933f7493c77a60656ccf2e51b3` | Added `atlas_graph.py`; updated ATLAS submission, archive readers, CLI/menu and tests to request analysis plus a full Kumu URL in one confirmed submission. Checks project, map and coverage of discussed AML IDs. Analysis survives graph failure. | 157 targeted offline tests passed, plus two checks of the pinned Graph Generator's methods with schema stubs. The later current-laptop AML.T0068 saved-reply/browser result passed. Internal agent tool execution for that submission and its matching submission-record counters were not independently inspected. |
+| `de5c7380f5d6f7f834982b6765c4b5f916b5a416` and `373ba130928d22939bd19bea66d4a46574f54fcd` | Documented the observed finish line and added the two approved Kumu illustrations with links to full-size images. | Operator-supplied reply and browser screenshot reviewed; committed image bytes and links checked. These are evidence/documentation updates, not new model calls. |
+
+The assisted Windows walkthrough covered authenticated `atlas-researcher` login, flow import and file attachments, the traced Dataset Sandbox lookup of `AML.T0054 — LLM Jailbreak`, authenticated MCP discovery, saved-handoff submission, and opening the archived reply. With runtime `82ba06f`, the supplied console shows one `SEND`; the saved analysis includes the checked Kumu URL and the screenshot shows **AML.T0068 — LLM Prompt Obfuscation**. That saved-file/browser checkpoint passed. See [inline Kumu evidence and remaining record-level check](inline-kumu-acceptance.md). The synthetic handoff is not a new Garak scan or a confirmed finding.
+
+## Final candidate preparation
+
+The current preparation reconciles these records and clarifies public/private clone access, conditional WSL restart and normal Langflow reopening. The README directs first-time users through the saved-reply/Kumu finish line, then offers a separate live-scan path that reuses the checkout and scanner environment. The illustrated investigation, security guidance, personal-capacity disclaimer and full MIT License remain included.
+
+This preparation changes documentation only relative to `373ba13`. Runtime code, tests, dependency files, scan profiles, images, the allowlist, MIT License and third-party notices remain unchanged from that parent. Final checks cover the diff, relative links/anchors, exact allowlist membership, every reachable historical tree/blob and commit metadata. The check result and exact candidate SHA are returned for approval; public availability and tagging remain on hold. No new scan or paid call is required or performed for this documentation preparation.
 
 ## Release scope and remaining limits
 
 - Fourteen enabled probes. OpenAI: fourteen completed model/probe pairs at the documented mixed allowances. Ollama: thirteen completed and the documented failed/unscored DAN attempt, closed for v1 by operator direction.
 - All 177 other inventory IDs remain outside v1 support. No new live scans are required by this release-preparation task.
-- Garak evidence and handoffs, authenticated ATLAS MCP, separate Kumu, and optional Chroma/EmbeddingGemma stay in scope. Existing live integration evidence is limited to the saved runs already exercised; no new ATLAS/Kumu/Chroma call was made for this candidate.
+- Garak evidence and handoffs, authenticated ATLAS MCP with inline Kumu analysis/link, optional separate graph follow-up, and optional Chroma/EmbeddingGemma stay in scope. Live evidence is limited to the cases already exercised. The assisted walkthrough passed; an independent guide-only install remains unverified.
 - R-01 research failure receipts and the broader research-record/search-quality roadmap remain disclosed deferrals. The narrow headroom comparison does not complete a general baseline/retest research system.
 - The worked example omits private transcripts and cannot establish a confirmed vulnerability. Detector flags and candidate mappings require analyst review.
 - Transitive dependencies are not fully locked across platforms. Model access and pricing can change. Exact scanned model labels are not guarantees of access for another user.
 - The owner directed retaining the MIT license and `Copyright (c) 2026 Garak Playbook contributors`; any replacement requires separate confirmation. No external source/corpora/models are bundled. Product names identify integrations and do not imply affiliation or endorsement.
 
-Publication and the `v1.0.0` tag require the owner's explicit approval of the final candidate and its disclosed boundaries. The approved destination is `anthfuller/garak-mitre-atlas-agent`; start private and change visibility only after approval. Documentation preparation does not authorize a repository upload, visibility change or tag.
+Publication and the `v1.0.0` tag require the owner's explicit approval of the final candidate and its disclosed boundaries. The approved destination is `anthfuller/garak-mitre-atlas-agent`. Preparing and committing this candidate on private `main` is authorized; public visibility and tagging remain on hold.

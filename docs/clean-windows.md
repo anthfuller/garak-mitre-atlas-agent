@@ -6,7 +6,9 @@ For ordinary installation, use the [Install on Windows and open your first ATLAS
 
 - The full Windows validator passed at `09e812807924e9c55c9d96a507fe0beac637f752` on November 26, 2026. It reused recorded environments from the earlier fresh installations with unchanged requirements and package inventories.
 - The seven targeted Windows delta checks passed at `4fedd3f008088a408825a39ec284c5b3bbcdaf7e` the same day. The exact candidate and bundle hash matched the delivered source; the prior Windows receipt hash also matched. No model call, paid request or dependency installation was recorded.
-- Final documentation and ignore-rule edits preserve runtime code, tests, requirements and profiles byte-for-byte. They receive a diff/link check and final tree/history review. No Windows rerun or live scan is required for these edits.
+- Later reply-formatting, prepared-flow and inline Kumu code changes have their own offline evidence in the [release record](release-v1.md); they are not documentation-only changes after `4fedd3f`.
+- The assisted Windows walkthrough passed, including the observed saved reply and AML.T0068 Kumu view. An independent guide-only install remains unverified. Chat assistance and a manual model-component edit were used; the generated-flow import has not received an independent installation pass.
+- Final documentation preparation after `373ba13` preserves code, tests, requirements and profiles byte-for-byte. It receives diff/link and final tree/history checks. No Windows rerun or live scan is required for those documentation edits.
 
 Receipts/logs remain private. These checkpoints are not relabeled as a full Windows run for every later commit. Desktop clipboard/editor/browser actions remain mocked in the automated suite; actual model compatibility and native UI behavior need their own evidence. See the [release record](release-v1.md).
 
