@@ -6,9 +6,11 @@ The dedicated diagnostic is necessary because normal batch execution credits pre
 
 ## Invocation
 
-Run the included Start-OpenAI-Headroom.ps1 in normal Windows PowerShell. It reads the existing private config and uses its configured Garak Python. No activation, installation, new credentials file or working-runner replacement is required. The private baseline JSON identifies three exact saved runs and pins their evidence hashes. Private paths are not part of public source.
+Use the shipped [`headroom_retest.py`](../headroom_retest.py) command from the repository folder in normal Windows PowerShell.
 
-For other operators the underlying command is:
+This diagnostic requires a private runner configuration and the matching saved InjectAscii85, InjectBase32 and InjectBase64 baseline runs, identified by a private baseline JSON file. Those configurations and saved runs are not included in the repository. **A fresh clone alone cannot reproduce this historical comparison.**
+
+Before running the command, set `$scannerPython` to the existing scanner environment's Python executable, `$privateConfig` to the private runner configuration file, and `$baselineConfig` to the baseline JSON file:
 
 ```powershell
 & $scannerPython -X utf8 .\headroom_retest.py --config $privateConfig --baselines $baselineConfig
