@@ -2,6 +2,8 @@
 
 You'll install the tools, send the included sample Garak results to the MITRE ATLAS Agent, and open its reply.
 
+**Next clean-laptop test is on hold.** The new single-`SEND` analysis-and-Kumu path must first pass the [current-laptop acceptance check](inline-kumu-acceptance.md). Its offline checks are not a live pass. The finish-line instructions will be updated after that check succeeds.
+
 ## 1. Open Windows PowerShell
 
 **Where:** your Windows laptop.
@@ -759,7 +761,7 @@ uv run langflow run --env-file .env
 
 **You should see:** the existing instance's Welcome message. Use its printed port. Editing an environment-file password does not reset an existing database account; use the installed version's account-recovery procedure if needed.
 
-For a real saved Garak run, set `$savedRun` to that run's directory, review what its handoff will disclose, and use steps 17–18. Do not sanitize by editing hashed original evidence. [Kumu](operator-guide.md) is a separate confirmed action, not part of the first submission.
+For a real saved Garak run, set `$savedRun` to that run's directory, review what its handoff will disclose, and use steps 17–18. Do not sanitize by editing hashed original evidence. The new submission also requests a Kumu URL; [current-laptop acceptance](inline-kumu-acceptance.md) is pending before this guide's finish line is updated. The older separate Kumu action remains optional follow-up research.
 
 ## Optional: index and search locally
 
@@ -889,6 +891,7 @@ Open the indexed original summary:
 | Revised prepared-flow installation path | The setup helper preserves upstream tools/instructions/wires and prepares a model component matching the tested code. Offline request checks cover Responses API, medium reasoning, ATLAS tool schemas and omitted temperature. Importing the generated file and following this revised guide on another clean Windows laptop remain **unverified**. |
 | Synthetic saved-run preparation and archive routing | The guide's fixture assembly is checked offline against the existing renderer/loader. MCP archival is exercised with a synthetic protocol server; this does not validate a new Langflow deployment or paid model. |
 | Optional research search | The maintainer exercised real local EmbeddingGemma indexing, unchanged reindexing, model/probe filters, search and evidence opening. This guide's synthetic example is checked with real embedded Chroma and fake embedding vectors; a fresh Windows installation following every new instruction remains **unverified**. |
-| Release scope | This revision adds a local flow-preparation helper and installation instructions. Scanner runtime, profiles, credentials and the fourteen-probe campaign are unchanged. Kumu remains separate, AVID and broader probes remain deferred, and public release/tagging require owner approval. |
+| Analysis and Kumu in one submission | Offline checks cover request/archive preservation, duplicate replies, destination and complete discussed-ID coverage, and failure handling. The current-laptop `AML.T0068` browser acceptance check remains pending. No live pass is claimed. |
+| Release scope | The ATLAS submission now requests analysis and its Kumu URL together. Scanner execution, profiles, credentials and the closed fourteen-probe campaign are unchanged. AVID and broader probes remain deferred, and public release/tagging require owner approval. |
 
 The revised instructions still require the clean-laptop test; a documentation or syntax check is not an installation pass. Keep the guide's expected results distinct from observed validation evidence.

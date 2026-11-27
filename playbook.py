@@ -750,7 +750,7 @@ def present_results(folder, summary, *, interactive=False):
     print(f"ATLAS handoff: {handoff}")
     if not interactive or not sys.stdin.isatty():
         return
-    print("\n[1] Copy ATLAS prompt and return to PowerShell\n[2] Open ATLAS prompt in Notepad and return to PowerShell\n[3] Return to PowerShell\n[4] Send saved handoff to ATLAS over MCP (review and confirmation required)\n[5] Generate Kumu view from saved ATLAS analysis (review and confirmation required)")
+    print("\n[1] Copy ATLAS prompt and return to PowerShell\n[2] Open ATLAS prompt in Notepad and return to PowerShell\n[3] Return to PowerShell\n[4] Send saved handoff to ATLAS for analysis and Kumu URL (review and confirmation required)\n[5] Generate Kumu view from saved ATLAS analysis (review and confirmation required)")
     try:
         choice = input("Selection (Enter to return): ").strip()
         if choice in ("", "3"):
@@ -1218,6 +1218,7 @@ def main():
     p.add_argument("--discovery", type=Path, help="Completed authenticated MCP discovery JSON; prompts if omitted.")
     p.add_argument("--provider", help="Provider observed in the ATLAS flow; prompts if omitted.")
     p.add_argument("--model", help="Model observed in the ATLAS flow; prompts if omitted.")
+    p.add_argument("--kumu-config", type=Path, help="Optional private expected Kumu project/map; otherwise uses the pinned MITRE flow destination.")
     p.add_argument("--timeout-seconds", type=int, default=300, help="Socket timeout and response-processing limit; 30–1800 seconds.")
     p = sub.add_parser("kumu", help="Generate a Kumu view from one saved ATLAS analysis after ID review; no scan.")
     p.add_argument("--run-dir", required=True, type=Path)
@@ -1243,7 +1244,8 @@ def main():
                                      discovery_path=args.discovery, timeout=args.timeout_seconds, config_path=args.kumu_config)
         if args.action == "atlas":
             return atlas_mcp.send_saved_run(args.run_dir, analyze=analyze, discovery_path=args.discovery,
-                                           provider=args.provider, model=args.model, timeout=args.timeout_seconds)
+                                           provider=args.provider, model=args.model, timeout=args.timeout_seconds,
+                                           kumu_config=args.kumu_config)
         if args.action == "handoff":
             folder = args.run_dir.resolve()
             if args.regenerate:

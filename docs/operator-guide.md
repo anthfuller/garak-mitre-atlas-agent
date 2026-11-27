@@ -2,6 +2,8 @@
 
 Run a defined Garak campaign, retain original evidence, check execution quality, and investigate candidate mappings with your MITRE ATLAS Agent in Langflow. The runner generates the handoff and can submit it over authenticated MCP after confirmation. Start with the [Install on Windows and open your first ATLAS reply](install-and-verify.md); the [release record](release-v1.md) is authoritative for current validation. Older patch notes describe the status at their original checkpoints.
 
+**Current change:** one `SEND` now requests analysis and the ATLAS Graph Generator's full Kumu URL together. Offline checks pass; the [current-laptop browser acceptance check](inline-kumu-acceptance.md) is pending. Hold the next clean-laptop test until it passes.
+
 The v1 candidate retains [batch execution and consolidated coverage reports](batch.md). Release 0.5.0 added optional **local Chroma research indexing and search of existing runs**, using explicit Ollama EmbeddingGemma embeddings. Private paths remain outside the source. See [research setup, commands and validation limits](patch-0.5.0.md). One saved-run Windows checkpoint with real local EmbeddingGemma is operator-exercised; broader retrieval-quality validation remains pending.
 
 Release 0.4.2 binds Kumu validation to an independently configured expected project and map. It also adds offline `kumu-validate` for existing graph archives. See [0.4.2 correction](patch-0.4.2.md).
@@ -91,7 +93,7 @@ After saving a scan, the runner prints execution status, evaluated-response and 
 [1] Copy ATLAS prompt and return to PowerShell
 [2] Open ATLAS prompt in Notepad and return to PowerShell
 [3] Return to PowerShell
-[4] Send saved handoff to ATLAS over MCP (review and confirmation required)
+[4] Send saved handoff to ATLAS for analysis and Kumu URL (review and confirmation required)
 [5] Generate Kumu view from saved ATLAS analysis (review and confirmation required)
 ```
 
@@ -111,13 +113,19 @@ Use option 4 at scan completion or in `handoff`, or use the new `atlas` command 
 
 The operator supplies a completed authenticated discovery report and the provider/model observed in the ATLAS flow. Omitted values are requested interactively. These provider/model labels are provenance, not model configuration overrides. The runner displays the endpoint, tool, run, handoff hash, full saved handoff, and cost limitation. Only uppercase `SEND` authorizes submission. The Langflow API key is then requested with hidden input; it is not accepted in CLI arguments, profiles, or the handoff.
 
-Before invoking `atlas_agent_v110`, the client rechecks the server identity/version and exact tool metadata/schema against discovery. It sends the existing UTF-8 handoff as `input_value` with a new UUID `session_id`. It does not regenerate the handoff, run Garak, change model settings, request Kumu, or automatically index findings. Original evidence and root checksums remain unchanged. Each submission gets its own directory under `atlas-submissions`, including a byte-identical handoff copy, request, returned result, unreviewed reply, metadata, exchanges and separate checksums. See [patch notes](patch-0.4.0.md).
+Before invoking `atlas_agent_v110`, the client rechecks the server identity/version and exact tool metadata/schema against discovery. It wraps the existing UTF-8 handoff in an analysis-and-graph request as `input_value`, with a new UUID `session_id`. One `SEND` requests dataset verification and the Graph Generator for every AML ID discussed in the analysis. It does not regenerate the handoff, run Garak, change flow/model settings, or automatically index findings. Original evidence and root checksums remain unchanged. Each submission gets its own directory under `atlas-submissions`, including a byte-identical `handoff.submitted.md`, the full `request_prompt.md`, request, original returned result, unreviewed reply, metadata, exchanges and separate checksums. Existing credential redaction remains in force and is recorded.
+
+The expected destination comes from MITRE's pinned supplied flow: project `99b02113875c5b03b510b4b6968b2566`, map `atlas`. For a different configured Graph Generator destination, pass `atlas --kumu-config PATH` using the [two-field private configuration](patch-0.4.2.md). Expectations are never taken from the returned URL. The runner checks HTTPS, the exact `embed.kumu.io` host, project, map, anchor and focus coverage of every AML ID discussed, including rejected/contextual IDs. It saves the original accepted URL with the readable analysis in `atlas_response.md`. This graph is an index of discussed IDs and one-hop context, not confirmation of mappings. An iframe is unnecessary and is never rendered.
+
+If graph generation or validation fails, the analysis and original response remain archived, the Markdown explains the failure, and the command exits with code 2. It does not retry. An accepted response prints `Kumu status: graph_received_target_and_coverage_checked`. That means local URL checks passed; internal dataset/Graph Generator execution remains agent-reported and browser rendering remains unverified. See [acceptance evidence and limits](inline-kumu-acceptance.md).
 
 The client permits one explicit ATLAS tool invocation per action, disables HTTP redirects/proxies and automatic retries, and never executes server-initiated requests or follows returned resources. These client restrictions do not enforce the ATLAS flow's internal tool permissions or limit its upstream model requests. A timeout, disconnect, or interruption after dispatch is **execution unknown**, not proof that server work stopped. Review the archive and server before deciding whether to submit again. `--timeout-seconds` defaults to 300 (range 30–1800); it configures socket waits and response-processing checks, not a hard end-to-end deadline or provider cancellation.
 
 This first MCP path supports the discovered Langflow project endpoint on HTTP loopback, `x-api-key`, and protocol `2025-03-26`. OAuth, remote endpoints, arbitrary MCP tools, and unattended submission are outside this patch. `atlas --yes` is rejected. The caller's account ID and key permissions are not exposed by the discovery exchange; the client does not claim to verify their least privilege. The agent may use a cloud LLM even when Langflow itself is local. Costs and effective generation settings of that backend are not independently measured by this client.
 
 ### Optional Kumu view from saved analysis
+
+This separate follow-up remains available when intentionally selecting a different subset of IDs from an existing analysis. It is not required for the new same-submission Kumu path.
 
 First create the private expected-target configuration described in [0.4.2](patch-0.4.2.md). Menu action 5 reads the sibling `garak-playbook-private/kumu.private.json`; the CLI also accepts `--kumu-config PATH`.
 

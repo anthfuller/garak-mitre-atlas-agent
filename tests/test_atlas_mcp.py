@@ -164,6 +164,7 @@ class AtlasTests(unittest.TestCase):
 
     def send(self, server, answer="SEND", **kwargs):
         out = io.StringIO()
+        kwargs.setdefault("include_graph", False)  # Transport/legacy archive tests; graph contract has its own tests.
         with patch("sys.stdin.isatty", return_value=True), patch("builtins.input", return_value=answer), \
              patch.object(a.getpass, "getpass", return_value=KEY), contextlib.redirect_stdout(out):
             code = a.send_saved_run(self.run, analyze=p.analyze, discovery_path=self.discovery(server),

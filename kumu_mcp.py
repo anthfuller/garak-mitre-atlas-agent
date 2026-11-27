@@ -107,13 +107,28 @@ def load_submission(folder, run_summary, run_hashes):
             or not isinstance(args.get("input_value"), str)):
         raise m.AtlasError("The saved ATLAS request is inconsistent with its submission record.")
     handoff = (folder / "handoff.submitted.md").read_bytes()
-    if (handoff != args["input_value"].encode("utf-8")
-            or m.digest(handoff) != record.get("source_files_sha256", {}).get("atlas_handoff.md")):
+    if m.digest(handoff) != record.get("source_files_sha256", {}).get("atlas_handoff.md"):
         raise m.AtlasError("The saved ATLAS input does not match its original handoff hash.")
-    status, text, _ = m.describe_result(response)
+    if record.get("request_format"):
+        import atlas_graph as graph
+        if record["request_format"] != graph.REQUEST_FORMAT:
+            raise m.AtlasError("Unknown ATLAS request format.")
+        prompt_hashes = source_hashes(folder, ("request_prompt.md",))
+        prompt = (folder / "request_prompt.md").read_bytes()
+        expected = graph.build_prompt(run_summary["garak_run_id"], handoff.decode("utf-8"), record["expected_kumu_target"])
+        if (prompt_hashes["request_prompt.md"] != index.get("request_prompt.md")
+                or m.digest(prompt) != record.get("request_prompt_sha256")
+                or prompt != args["input_value"].encode("utf-8") or prompt != expected.encode("utf-8")):
+            raise m.AtlasError("Saved analysis/graph request differs from its preserved prompt and handoff.")
+        hashes.update(prompt_hashes)
+        status, text, _, _, _ = graph.extract_analysis(response)
+    else:
+        if handoff != args["input_value"].encode("utf-8"):
+            raise m.AtlasError("The saved ATLAS input does not match its original handoff hash.")
+        status, text, _ = m.describe_result(response)
     if status != "response_received_unreviewed":
         raise m.AtlasError("No usable ATLAS analysis is present in the selected submission.")
-    if source_hashes(folder, ARCHIVE_FILES) != hashes:
+    if source_hashes(folder, tuple(hashes)) != hashes:
         raise m.AtlasError("ATLAS evidence changed while reading.")
     return record, text, hashes
 
@@ -372,7 +387,7 @@ def generate(run_folder, *, analyze, submission=None, discovery_path=None, timeo
 
     def unchanged():
         return (source_hashes(run, m.SOURCE_FILES) == run_hashes
-                and source_hashes(source, ARCHIVE_FILES) == hashes
+                and source_hashes(source, tuple(hashes)) == hashes
                 and m.file_hash(Path(connection["path"])) == connection["sha256"]
                 and m.file_hash(Path(target["path"])) == target["sha256"])
 
@@ -531,7 +546,7 @@ def validate_saved(run_folder, graph_folder, *, analyze, config_path=None):
         unchanged = (source_hashes(run, m.SOURCE_FILES) == run_hashes
                      and source_hashes(graph_folder, names) == hashes
                      and m.file_hash(Path(target["path"])) == target["sha256"]
-                     and (analysis_hashes is None or source_hashes(saved_analysis, ARCHIVE_FILES) == analysis_hashes))
+                     and (analysis_hashes is None or source_hashes(saved_analysis, tuple(analysis_hashes)) == analysis_hashes))
     except (OSError, m.AtlasError):
         unchanged = False
     report["source_files_unchanged"] = unchanged

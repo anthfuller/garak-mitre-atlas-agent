@@ -4,17 +4,21 @@ Investigate Garak detector flags with the MITRE ATLAS Agent in Langflow.
 
 **New laptop? Start with [Install on Windows and open your first ATLAS reply](docs/install-and-verify.md).**
 
+The local guide runs Langflow on `127.0.0.1` over HTTP. Use a unique Langflow password. An InPrivate window keeps the lab login separate from your regular browser session. HTTP traffic remains unencrypted. Before allowing access from another device, configure HTTPS with a trusted certificate matching the server hostname. See the [guide's browser and HTTPS guidance](docs/install-and-verify.md#10-start-langflow-and-sign-in). **HTTPS deployment remains unverified by this walkthrough.**
+
+**Installation test hold:** the analysis-and-Kumu submission is awaiting its [current-laptop acceptance check](docs/inline-kumu-acceptance.md). Hold the next clean-laptop test until that check passes. Public release and tagging remain unapproved.
+
 Review candidate technique mappings and search saved evidence locally with Chroma and EmbeddingGemma.
 
 The Windows runner turns a saved Garak run into a concise `atlas_handoff.md`. You can copy it to your configured MITRE ATLAS Agent in Langflow, or review and confirm submission over authenticated MCP. The runner archives the handoff and the agent's reply beside the run; the reply remains unreviewed analysis. You supply and configure the Langflow agent and its model provider separately. This repository does not bundle the agent, flow, ATLAS dataset or model credentials.
 
-ATLAS supports investigation of candidate techniques and related mitigations/case studies. Its answers require analyst review and authoritative source verification. A separate confirmed Kumu request explores selected candidate mappings; optional Chroma indexing with local EmbeddingGemma makes saved run records searchable while original evidence stays separate.
+ATLAS supports investigation of candidate techniques and related mitigations/case studies. Its answers require analyst review and authoritative source verification. The new MCP request asks for analysis and a full Kumu URL in one reply after one `SEND`; offline checks pass, but current-laptop acceptance is pending. Optional Chroma indexing with local EmbeddingGemma makes saved run records searchable while original evidence stays separate.
 
 ![Workflow from a saved Garak run and reviewed handoff to the MITRE ATLAS Agent in Langflow and an archived reply with candidate mappings for analyst review; optional local search uses EmbeddingGemma via Ollama and a Chroma index.](docs/images/garak-atlas-workflow.png)
 
-**Unpublished v1.0.0 candidate; no public release or tag yet.** The inspected Garak 0.17.0 registry has 191 probe IDs. This runner enables 14; that is permission to test, not proof that all 28 provider/probe pairs work. Live results apply to specific probe/model pairs. See the [compatibility table](docs/compatibility.md) and [v1 release instructions](docs/public-v1.md). The remaining 177 probes are deferred v2 work, not supported by this release candidate.
+**Unpublished v1.0.0 candidate; no public release or tag yet.** See the [v1 release instructions](docs/public-v1.md).
 
-This is an independent community project maintained in a personal capacity. It does not represent Microsoft or imply its endorsement. Use it on systems you own or have permission to test. The software is provided as is under the MIT License.
+I maintain this project in my personal capacity. It does not represent the views of my employer or imply employer endorsement. Use it only on systems you own or are authorized to test. You are responsible for securing your deployment and credentials. The software is provided as is under the [MIT License](LICENSE), which contains the full warranty disclaimer and limitation of liability.
 
 **Interpretation:** detector flags are screening results, ATLAS mappings are candidates, and confirmed findings require analyst review. Cloud scans and the backing model/tools of a Langflow agent can incur charges. Review the destination, settings and handoff before confirmation. Keep credentials and real evidence outside public issues and pull requests. See [third-party notices](THIRD_PARTY.md) for integration attribution.
 
@@ -24,10 +28,14 @@ This is an independent community project maintained in a personal capacity. It d
 - Batches missing enabled probe/model pairs after one explicit review. Existing scored runs are credited, including gaps; failed/unscored runs are held unless explicitly selected for retry. Each run retains its own evidence and handoff. One consolidated report lists gaps and saved transport diagnostics. See [batch operation](docs/batch.md).
 - Preserves original reports, per-run settings, exact counts and coverage gaps. Null/error outputs are not passes.
 - Produces a compact handoff with input excerpts and detector observations. Full model responses remain in original evidence; ATLAS cannot assess omitted responses from this handoff.
-- Supports explicitly confirmed ATLAS MCP submission and separate Kumu requests. Analysis stays unreviewed; mappings stay candidates. Graph scope includes selected IDs plus one-hop research context.
+- Requests ATLAS analysis and a Kumu graph together after one confirmed MCP submission. Checks the returned project, map and coverage of every discussed AML ID; preserves the analysis if the graph fails. Live acceptance is pending. Separate Kumu requests remain available for optional follow-up research.
 - Explicitly indexes one saved run into a dedicated Chroma research collection; reindexing unchanged evidence creates no duplicate. Original evidence stays separate. Automatic post-scan indexing and separate finding/note workflows are not implemented.
 
 This is a model-testing and research workflow. It does not by itself establish enterprise impact, agent tool misuse or RAG authorization enforcement. Broader probe validation and PyRIT scenarios are deferred.
+
+## Probe coverage
+
+Garak 0.17.0 listed **191 probe IDs**. V1 enables **14**. The [compatibility table](docs/compatibility.md) shows which probe/model pairs have live evidence, the tested settings, and remaining gaps. Enabling a probe does not establish compatibility with every model. The remaining **177** are candidates for phased v2 validation; they are not supported by this v1 candidate. The fourteen-probe campaign remains closed.
 
 ## Install on Windows and open your first ATLAS reply
 
@@ -113,7 +121,7 @@ Deploy your own [MITRE ATLAS agent](https://github.com/mitre-atlas/atlas-knowled
 
 Discovery invokes no ATLAS tools. Use the resulting report with `playbook.py atlas`, or select **Send saved handoff to ATLAS over MCP** from the completion/existing-run menu. Review the saved handoff and destination, then type `SEND` to authorize submission. The Langflow key uses hidden input. Full model responses remain in the original Garak evidence; the compact handoff includes selected input excerpts and detector observations, so ATLAS cannot assess omitted responses. A different flow/schema requires review.
 
-Kumu remains a separate action using approved candidate IDs and independently configured project/map binding. The view contains selected IDs plus one-hop research context, not additional confirmed findings. See the [operator guide](docs/operator-guide.md) and [target binding](docs/patch-0.4.2.md).
+The submission now requests the Graph Generator result in the same reply and saves its full URL in `atlas_response.md` only after project, map and discussed-ID coverage checks. It uses the pinned MITRE flow's destination by default; a custom destination requires `atlas --kumu-config PATH`. The existing separate Kumu action is optional follow-up research. See the [current-laptop acceptance check and limits](docs/inline-kumu-acceptance.md) and [operator guide](docs/operator-guide.md).
 
 ## Optional local research search
 

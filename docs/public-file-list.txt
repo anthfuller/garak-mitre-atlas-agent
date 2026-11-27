@@ -3,6 +3,7 @@
 LICENSE
 README.md
 THIRD_PARTY.md
+atlas_graph.py
 atlas_mcp.py
 campaigns.json
 coverage_batch.py
@@ -13,6 +14,7 @@ docs/compatibility.md
 docs/evidence.md
 docs/headroom-diagnostic.md
 docs/images/garak-atlas-workflow.png
+docs/inline-kumu-acceptance.md
 docs/install-and-verify.md
 docs/operator-guide.md
 docs/patch-0.1.1.md
@@ -65,6 +67,7 @@ tests/integration_ollama_failure.py
 tests/integration_openai.py
 tests/integration_quickstart.py
 tests/integration_stub.py
+tests/test_atlas_graph.py
 tests/test_atlas_mcp.py
 tests/test_coverage_batch.py
 tests/test_handoff_access.py

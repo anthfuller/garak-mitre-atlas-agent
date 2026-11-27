@@ -1,8 +1,8 @@
 """Explicit, single-invocation ATLAS handoff over the discovered local MCP endpoint.
 
 Standard library only. No scan, prompt regeneration, model-selected routing,
-server-request execution, resource fetching or automatic retry. The analysis
-action does not request graphs; kumu_mcp reuses this transport explicitly.
+server-request execution, resource fetching or automatic retry. The confirmed
+analysis request includes a graph; kumu_mcp also reuses this transport explicitly.
 Protocol: https://modelcontextprotocol.io/specification/2025-03-26/server/tools
 """
 from __future__ import annotations
@@ -408,13 +408,17 @@ def describe_result(result, *, markdown=False):
     return "response_received_unreviewed", text, notes
 
 
-def send_saved_run(folder, *, analyze, discovery_path=None, provider=None, model=None, timeout=300):
+def send_saved_run(folder, *, analyze, discovery_path=None, provider=None, model=None, timeout=300,
+                   kumu_config=None, include_graph=True):
     """Interactive command/menu action. Returns 0 received, 2 failure, 3 cancelled."""
     if not sys.stdin.isatty():
         raise AtlasError("ATLAS submission requires an interactive terminal and explicit SEND confirmation.")
     if type(timeout) is not int or not 30 <= timeout <= 1800:
         raise AtlasError("ATLAS timeout must be 30–1800 seconds.")
     folder, raw, text, summary, hashes = load_run(folder, analyze)
+    import atlas_graph as graph
+    target = graph.load_target(kumu_config) if include_graph else None
+    prompt = graph.build_prompt(summary["garak_run_id"], text, target) if include_graph else text
     try:
         discovery_path = discovery_path or input("Full path to the completed MCP discovery JSON (Enter cancels): ").strip().strip('"')
         if not discovery_path:
@@ -437,6 +441,11 @@ def send_saved_run(folder, *, analyze, discovery_path=None, provider=None, model
         print("Handoff:", folder / "atlas_handoff.md")
         print("Handoff SHA-256:", hashes["atlas_handoff.md"])
         print("One MCP tool invocation. ATLAS may make multiple model/tool calls; upstream cost/usage is not measured.")
+        if include_graph:
+            print("SEND includes analysis, dataset verification and Graph Generator for every AML ID discussed.")
+            print("Expected Kumu project/map:", target["expected_project_id"], "/", target["expected_map_name"])
+            print("Destination source:", target["provenance"])
+            print("The full returned URL is saved with the analysis; no separate GRAPH action or browser launch.")
         print("A fresh conversation ID will be used. ATLAS flow settings are not changed by this command.")
         print("Socket timeout/response processing limit (seconds):", timeout)
         print("\n----- Existing handoff (untrusted evidence; terminal controls escaped for display) -----")
@@ -449,12 +458,14 @@ def send_saved_run(folder, *, analyze, discovery_path=None, provider=None, model
     except (KeyboardInterrupt, EOFError):
         print("\nCancelled. No MCP request was made.")
         return 3
-    if key in text:
+    if key in prompt:
         raise AtlasError("The handoff contains the supplied credential; sending was blocked.")
     if hashes != {name: file_hash(folder / name) for name in SOURCE_FILES}:
         raise AtlasError("Run evidence changed after review; nothing was sent.")
     if connection["sha256"] != file_hash(Path(connection["path"])):
         raise AtlasError("Discovery evidence changed after review; nothing was sent.")
+    if target is not None and not graph.target_unchanged(target):
+        raise AtlasError("Expected Kumu destination changed after review; nothing was sent.")
     submission_id = str(uuid.uuid4())
     conversation_id = str(uuid.uuid4())
     parent = folder / "atlas-submissions"
@@ -475,16 +486,23 @@ def send_saved_run(folder, *, analyze, discovery_path=None, provider=None, model
               "status": "prepared", "review_status": "unreviewed", "mapping_verification_status": "candidate_pending_review",
               "tool_call_dispatch_attempts": 0, "automatic_retries": 0, "timeout_seconds": timeout,
               "scan_outcome_changed": False, "confirmed_by_operator_at": now()}
+    if include_graph:
+        record.update(request_format=graph.REQUEST_FORMAT, expected_kumu_target=target,
+                      request_prompt_sha256=digest(prompt.encode("utf-8")))
     result = None
     try:
         # All source files remain read-only. Verify archive writes before any remote call.
         (archive / "handoff.submitted.md").write_bytes(raw)
+        if include_graph:
+            (archive / "request_prompt.md").write_bytes(prompt.encode("utf-8"))
         atomic_json(archive / "submission.json", clean(record, client.secrets))
         print("Checking the authenticated endpoint and tool schema...")
         client.initialize_and_check()
         if hashes != {name: file_hash(folder / name) for name in SOURCE_FILES}:
             raise AtlasError("Run evidence changed before dispatch; handoff was not sent.")
-        arguments = {"input_value": text, "session_id": conversation_id}
+        if target is not None and not graph.target_unchanged(target):
+            raise AtlasError("Expected Kumu destination changed before dispatch; nothing was sent.")
+        arguments = {"input_value": prompt, "session_id": conversation_id}
         request = {"jsonrpc": "2.0", "id": client.next_id, "method": "tools/call",
                    "params": {"name": TOOL, "arguments": arguments}}
         atomic_json(archive / "request.json", request)
@@ -495,7 +513,12 @@ def send_saved_run(folder, *, analyze, discovery_path=None, provider=None, model
         safe_result = clean(result, client.secrets)
         atomic_json(archive / "response.json", safe_result)
         record["credential_redaction_applied_to_response"] = safe_result != result
-        record["status"], response_text, record["response_notes"] = describe_result(safe_result, markdown=True)
+        if include_graph:
+            record["status"], response_text, record["response_notes"], record["graph"] = graph.describe_response(
+                safe_result, summary["garak_run_id"], target)
+            response_text += graph.render_graph(record["graph"])
+        else:
+            record["status"], response_text, record["response_notes"] = describe_result(safe_result, markdown=True)
         (archive / "atlas_response.md").write_text(
             "# ATLAS analysis — UNREVIEWED\n\nRun ID: " + summary["garak_run_id"]
             + "\n\nProposed mappings are candidates pending analyst review and official-source verification."
@@ -534,5 +557,12 @@ def send_saved_run(folder, *, analyze, discovery_path=None, provider=None, model
         print(record["uncertainty"])
     if (archive / "atlas_response.md").is_file():
         print("Unreviewed ATLAS reply:", archive / "atlas_response.md")
+    if record.get("graph"):
+        print("Kumu status:", record["graph"]["status"])
+        if record["graph"].get("error"):
+            print("Kumu error:", terminal_text(record["graph"]["error"]))
+        else:
+            print("Kumu URL:", record["graph"]["url"])
     print("Recorded Garak scan outcome is unchanged.")
-    return 0 if record["status"] == "response_received_unreviewed" and record["source_files_unchanged"] else 2
+    graph_ok = not include_graph or record.get("graph", {}).get("status") == "graph_received_target_and_coverage_checked"
+    return 0 if record["status"] == "response_received_unreviewed" and record["source_files_unchanged"] and graph_ok else 2
