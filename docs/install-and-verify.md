@@ -461,10 +461,15 @@ MCP is the connection the Windows runner uses to send the handoff to your flow.
 2. Click **Edit Tools**. Keep **ATLAS Agent v1.1.0** checked and uncheck **New Flow** if it is listed. Click the ATLAS row's text in the **Tool** column—not its checkbox—to display that tool's details on the right. Confirm **Tool name** is **`atlas_agent_v110`**; if it already matches, leave it unchanged. Do not rename `new_flow`. Click **Close**. This changes which flows MCP exposes; it does not delete either flow.
 3. Beside **Auth**, click **Add Auth** or **Edit Auth**. In **Configure MCP Server Authentication**, select **API Key**, then click **Save** at the bottom right. **You should see: Auth: API Key** on the MCP Server page. If the page already shows **Auth: API Key**, keep that setting. **This enables authentication; it does not create an API key. Create the key in the next step.**
 4. **Create your Langflow API key now.** Stay signed in as **`atlas-researcher`**, the account that imported the flow. Click your **profile icon at the top right → Settings → Langflow API Keys → Add New**. Name the key **Garak runner**. If asked for expiry, choose a period that covers your test. Click **Create API Key**. **You should see:** the newly generated key. Copy it into your password manager/private notes; do not post it in chat or GitHub. This is the **Langflow API key** the runner will request in steps 15 and 17, not your OpenAI key or Langflow login password. Use this installation's key; do not reuse a key from the bundled account or another Langflow database.
-5. Return to that same project's **MCP Server** tab. Select **JSON → Windows → Streamable HTTP**.
-6. Find the URL ending in `/api/v1/mcp/project/.../streamable`. Copy **just that URL**, without quotes. Keep its actual localhost port. You will paste it into PowerShell next.
+5. Return to that same project's **MCP Server** tab. Click **JSON**, select **Windows**, and select **Streamable HTTP** under **Transport**. **You should see:** a code box containing `"command": "cmd"` and an `"args"` list. This is the expected screen.
+6. **Find the address inside that code box:** look at the **last quoted line in the `args` list**, directly below `"YOUR_API_KEY"` (or the key shown there). The address starts with `http://localhost:` and ends with `/streamable`. The long project ID between `/project/` and `/streamable` belongs to your project. The address may wrap onto another line on a narrow screen.
+7. Highlight **only that address** with your mouse and copy it, starting at `http` and ending at `streamable`. Leave out the quotation marks, commas, brackets, and `YOUR_API_KEY`. Preserve the displayed port and project ID. The code box's copy button copies the entire JSON, so select the address text itself for this runner.
 
-**You should see:** **Auth: API Key**, the ATLAS tool listed, and the Streamable HTTP URL. The displayed `cmd`, `uvx` and `mcp-proxy` lines are for other clients; you do not run them for this runner. See [Langflow's MCP setup reference](https://docs.langflow.org/1.10.0/mcp-server).
+**What to do with the address:** continue to Step 15 and run its **Windows PowerShell** block first. When PowerShell asks **Paste the project Streamable HTTP URL (no key)**, paste the address and press **Enter**. Do not paste it as a command at a normal `PS ...>` prompt.
+
+**Leave the JSON unchanged.** `YOUR_API_KEY` is a placeholder in Langflow's example configuration; the runner will ask separately for the **Garak runner** key you created above. You do not need to replace that placeholder, generate another key, or run the displayed `cmd`, `uvx`, or `mcp-proxy` commands for this runner.
+
+**You should see:** **Auth: API Key**, only the ATLAS tool enabled, and the address inside the JSON code box. See [Langflow's MCP setup reference](https://docs.langflow.org/1.10.0/mcp-server).
 
 Keep these credentials distinct:
 
@@ -493,7 +498,7 @@ $discoveryDir = Join-Path $labRoot 'garak-playbook-private\mcp-discovery'
 if ($LASTEXITCODE -ne 0) { throw 'Discovery failed. Stop and keep the displayed error.' }
 ```
 
-Paste the URL from step 14. At **Langflow API key (hidden; session only)**, paste your **Langflow API key** and press Enter. No characters are displayed.
+At **Paste the project Streamable HTTP URL (no key)**, paste only the address copied from the last line of Langflow's `args` list in Step 14, then press **Enter**. At **Langflow API key (hidden; session only)**, paste the **Garak runner** key you created in Langflow Settings and press **Enter**. No characters are displayed during key entry. Do not paste `YOUR_API_KEY`, your OpenAI key, or the whole JSON configuration.
 
 **You should see:** `Discovery status: discovery_complete`, `Tool invocations: 0`, and a **Discovery report** path. This check does not ask the model a question.
 
