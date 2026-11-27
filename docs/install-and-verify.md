@@ -79,7 +79,9 @@ winget --version
 
 **You should see:** a version starting with `v`. Return to the installation command for the missing tool above. Accept an installer prompt if Windows displays one.
 
-If the launcher still cannot find 3.11, use the [Python 3.11.9 Windows installer](https://www.python.org/downloads/release/python-3119/): select **Windows installer (64-bit)**, run it, enable the **Python launcher** and **Add python.exe to PATH**, and install. Reopen PowerShell and check again. These are the [Git for Windows](https://git-scm.com/downloads/win) and [Python package](https://github.com/microsoft/winget-pkgs/tree/master/manifests/p/Python/Python/3/11) installation sources.
+**If Windows still does not recognize `py` after reopening PowerShell:** the Python launcher is unavailable, even if `winget` says Python is already installed. Open the [Python 3.11.9 Windows installer page](https://www.python.org/downloads/release/python-3119/), download **Windows installer (64-bit)** and run it. Choose **Modify** for an existing installation, or **Customize installation** for a new one. On **Optional Features**, select **py launcher**, then complete setup. Close and reopen PowerShell and run `py -3.11 --version` again. Continue only when it prints `Python 3.11.x`.
+
+If `py` works but still reports `No suitable Python runtime found`, use the same installer to install Python 3.11, then reopen PowerShell and repeat the check. See the [Python installer and modification instructions](https://docs.python.org/3.11/using/windows.html#the-full-installer). These are the [Git for Windows](https://git-scm.com/downloads/win) and [Python package](https://github.com/microsoft/winget-pkgs/tree/master/manifests/p/Python/Python/3/11) installation sources.
 
 ## 3. Copy this repository to your laptop
 
@@ -152,7 +154,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Python environment creation failed. Stop and k
 if ($LASTEXITCODE -ne 0) { throw 'The new environment Python did not start.' }
 ```
 
-**Continue only if it prints `Python 3.11.x`.** If creation reports `No suitable Python runtime found`, return to **Check Python 3.11** in Step 2. Preserve any partially created folder and use the existing-environment check before continuing.
+**Continue only if it prints `Python 3.11.x`.** If creation reports `No suitable Python runtime found` or Windows does not recognize `py`, return to **Check Python 3.11** in Step 2 and follow the recovery for that message. Preserve any partially created folder and use the existing-environment check before continuing.
 
 ### Install dependencies
 
@@ -351,7 +353,9 @@ Step 9 created a fresh database for your `atlas-researcher` login. MITRE supplie
 
 **Where:** a new, normal **Windows PowerShell** window on the clean laptop. Leave the Ubuntu window running Langflow open.
 
-Paste this entire block. It finds your Ubuntu home folder, checks the pinned MITRE flow, prepares **ATLAS Agent v1.1.0 - OpenAI Responses.json**, copies the three contracts and CSV into **Downloads → ATLAS-Upload**, and opens that folder. The upstream source and any existing Langflow database/canvas are unchanged. Repeating preparation reuses an identical output; a different existing output is preserved and reported as an error.
+Paste this entire block. It finds your Ubuntu home folder, checks the pinned MITRE flow, prepares **ATLAS Agent v1.1.0 - OpenAI Responses.json**, copies the three contracts and CSV into **Downloads → ATLAS-Upload**, and opens that folder. The upstream source and any existing Langflow database/canvas are unchanged.
+
+The overwrite protection applies only to the prepared flow JSON: an identical JSON is reused; a different existing JSON is preserved and preparation stops with an error. After successful preparation, the three contracts and CSV are copied again, replacing existing writable files with the same names in **ATLAS-Upload**.
 
 **Windows PowerShell:**
 
