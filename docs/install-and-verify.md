@@ -281,7 +281,14 @@ EOF
 In Nano:
 
 1. Move to the line `LANGFLOW_SUPERUSER_PASSWORD=` with the arrow keys.
-2. After `=`, enter your chosen password **between single quotes**. Choose a password without a single-quote character for this step. Do not leave the value blank.
+2. Edit the password line using this format (example only):
+
+   ```dotenv
+   LANGFLOW_SUPERUSER_PASSWORD='Example-Only-84!River'
+   ```
+
+   **In Nano, replace `Example-Only-84!River` with your own password. Keep both single quotes. The opening quote goes immediately after `=`. Do not add a comma or use a single quote inside your password.**
+
 3. Save: **Ctrl+O**, then **Enter**.
 4. Exit: **Ctrl+X**.
 
