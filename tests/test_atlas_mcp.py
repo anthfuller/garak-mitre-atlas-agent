@@ -220,6 +220,82 @@ class AtlasTests(unittest.TestCase):
             self.assertIn("notifications/progress", exchanges[-1]["response_body_utf8"])
             self.assertTrue(exchanges[-1]["response_body_complete"])
 
+    def test_duplicate_table_blocks_render_once_without_changing_evidence(self):
+        compact = ("Synthetic analysis; not a finding.\n\n"
+                   "| Item | Assessment |\n|---|---|\n"
+                   "| Attempt | Candidate only |\n| Success | Unverified |\n\n"
+                   "Scope: one synthetic example.")
+        spaced = compact.replace("|\n|", "|\n\n|")
+        for blocks in ((spaced, compact), (compact, spaced)):
+            with self.subTest(first_is_compact=blocks[0] == compact), fake_server() as server:
+                result = {"content": [{"type": "text", "text": text} for text in blocks], "isError": False}
+                original = copy.deepcopy(result)
+                prior = {path: path.read_bytes() for archive in self.archives()
+                         for path in archive.iterdir() if path.is_file()}
+                server.result_builder = lambda request: result
+                code, _ = self.send(server)
+                self.assertEqual(code, 0)
+                archive = self.archives()[-1]
+                markdown = (archive / "atlas_response.md").read_text(encoding="utf-8")
+                self.assertEqual(markdown.count("Synthetic analysis; not a finding."), 1)
+                self.assertTrue(markdown.endswith(compact + "\n"))
+                self.assertEqual(p.read_json(archive / "response.json"), original)
+                self.assertEqual(result, original)
+                self.assertEqual(prior, {path: path.read_bytes() for path in prior})
+                self.assertEqual(len(server.calls), 1)
+                record = p.read_json(archive / "submission.json")
+                self.assertEqual(record["automatic_retries"], 0)
+                self.assertIn("Collapsed 1 duplicate text block(s)", record["response_notes"][0])
+                for name, checksum in p.read_json(archive / "checksums.json").items():
+                    self.assertEqual(p.sha(archive / name), checksum)
+                # Non-Markdown consumers (including Kumu) keep the original text.
+                self.assertEqual(a.describe_result(original)[1], "\n\n".join(blocks))
+
+    def test_distinct_table_blocks_both_remain_in_markdown_and_raw_response(self):
+        first = "| Item | Assessment |\n|---|---|\n| Attempt | Candidate A |"
+        second = first.replace("Candidate A", "Candidate B").replace("|\n|", "|\n\n|")
+        result = {"content": [{"type": "text", "text": text} for text in (first, second)], "isError": False}
+        with fake_server() as server:
+            server.result_builder = lambda request: result
+            code, _ = self.send(server)
+            self.assertEqual(code, 0)
+            archive = self.archives()[0]
+            markdown = (archive / "atlas_response.md").read_text(encoding="utf-8")
+            self.assertTrue(markdown.endswith(first + "\n\n" + second + "\n"))
+            self.assertEqual(p.read_json(archive / "response.json"), result)
+            self.assertEqual(p.read_json(archive / "submission.json")["response_notes"], [])
+
+    def test_meaningful_formatting_differences_are_not_collapsed(self):
+        table = "| Item | Assessment |\n|---|---|\n| Attempt | Candidate only |"
+        examples = [
+            ("First paragraph.\nSecond paragraph.", "First paragraph.\n\nSecond paragraph."),
+            ("Heading\n---", "Heading\n\n---"),
+            ("- First\n- Second", "- First\n\n- Second"),
+            (table, table.replace("Candidate only", "Candidate  only")),
+        ]
+        for opening, closing in (("```text\n", "\n```"), ("~~~\n", "\n~~~"),
+                                 ("<pre>\n", "\n</pre>"), ("    ", "")):
+            first = opening + table + closing
+            examples.append((first, first.replace("|\n|", "|\n\n|")))
+        for first, second in examples:
+            with self.subTest(first=first):
+                result = {"content": [{"type": "text", "text": text} for text in (first, second)]}
+                status, markdown, notes = a.describe_result(result, markdown=True)
+                self.assertEqual(status, "response_received_unreviewed")
+                self.assertEqual(markdown, first + "\n\n" + second)
+                self.assertEqual(notes, [])
+
+    def test_duplicate_rendering_preserves_error_and_nontext_status(self):
+        text = "Flow build blocked: synthetic validation error"
+        result = {"content": [{"type": "text", "text": text}, {"type": "text", "text": text},
+                              {"type": "resource", "resource": {"uri": "https://do-not-fetch.invalid/"}}]}
+        original = copy.deepcopy(result)
+        status, markdown, notes = a.describe_result(result, markdown=True)
+        self.assertEqual(status, "tool_error_returned")
+        self.assertEqual(markdown, text)
+        self.assertEqual(result, original)
+        self.assertEqual(len(notes), 2)
+
     def test_cancel_means_no_network_or_archive(self):
         with fake_server() as server:
             for choice in ("", "send", "NO", "RUN"):

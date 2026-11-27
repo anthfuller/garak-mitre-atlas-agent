@@ -334,14 +334,68 @@ def atomic_json(path, data):
         temp.unlink(missing_ok=True)
 
 
-def describe_result(result):
+def markdown_comparison_text(text):
+    """Ignore only extra blank lines inside simple pipe tables for comparison.
+
+    Keep paragraph boundaries, nonblank whitespace, and code/HTML untouched.
+    This is a deliberately narrow match for Langflow's two table renderings,
+    not general Markdown normalization or a rewrite of the raw response.
+    """
+    lines = text.split("\n")
+    if any(line.strip() and line.startswith((" ", "\t", "```", "~~~", "<")) for line in lines):
+        return text
+    output = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if line.startswith("|") and line.endswith("|"):
+            rows, end, last_row = [], index, index
+            while end < len(lines):
+                candidate = lines[end]
+                if candidate.startswith("|") and candidate.endswith("|"):
+                    rows.append(candidate)
+                    last_row = end
+                elif candidate.strip():
+                    break
+                end += 1
+            if len(rows) >= 2 and re.fullmatch(r"\|(?:[ \t]*:?-{3,}:?[ \t]*\|)+", rows[1]):
+                output.extend(rows)
+                index = last_row + 1
+            else:
+                output.extend(lines[index:end])
+                index = end
+            continue
+        output.append(line)
+        index += 1
+    return "\n".join(output)
+
+
+def markdown_text_blocks(texts):
+    """Render equivalent whole blocks once without mutating the response."""
+    unique, positions = [], {}
+    for text in texts:
+        key = markdown_comparison_text(text)
+        if key not in positions:
+            positions[key] = len(unique)
+            unique.append(text)
+        else:
+            index = positions[key]
+            # Prefer the existing compact table rendering, in first-seen order.
+            if len(text) < len(unique[index]):
+                unique[index] = text
+    return "\n\n".join(unique), len(texts) - len(unique)
+
+
+def describe_result(result, *, markdown=False):
     contents = result.get("content")
     if not isinstance(contents, list):
         return "response_without_analysis_text", "", ["Missing content list."]
     texts = [item["text"] for item in contents if isinstance(item, dict)
              and item.get("type") == "text" and isinstance(item.get("text"), str)]
-    text = "\n\n".join(texts)
+    text, collapsed = markdown_text_blocks(texts) if markdown else ("\n\n".join(texts), 0)
     notes = []
+    if collapsed:
+        notes.append(f"Collapsed {collapsed} duplicate text block(s) in Markdown; all blocks retained in response.json.")
     if len(texts) != len(contents):
         notes.append("Non-text or invalid blocks are retained in response.json, not rendered or fetched.")
     # These prefixes are emitted by Langflow 1.10.2 even when isError is absent.
@@ -441,7 +495,7 @@ def send_saved_run(folder, *, analyze, discovery_path=None, provider=None, model
         safe_result = clean(result, client.secrets)
         atomic_json(archive / "response.json", safe_result)
         record["credential_redaction_applied_to_response"] = safe_result != result
-        record["status"], response_text, record["response_notes"] = describe_result(safe_result)
+        record["status"], response_text, record["response_notes"] = describe_result(safe_result, markdown=True)
         (archive / "atlas_response.md").write_text(
             "# ATLAS analysis — UNREVIEWED\n\nRun ID: " + summary["garak_run_id"]
             + "\n\nProposed mappings are candidates pending analyst review and official-source verification."
