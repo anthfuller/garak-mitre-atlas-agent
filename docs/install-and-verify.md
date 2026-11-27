@@ -318,28 +318,34 @@ Wait for **Welcome to Langflow** and its **Open Langflow** address. Startup can 
 
 **HTTPS and certificates:** before enabling access from other machines, configure HTTPS with a certificate matching the server hostname, issued by a certificate authority (CA) trusted by your browser and connecting clients. Use your organization's CA for an internal deployment, or a public CA for a domain you control. A standalone self-signed server certificate can encrypt traffic, but clients do not automatically trust it; do not bypass certificate warnings. InPrivate does not change certificate trust. Certificate installation and HTTPS setup are separate from this local walkthrough; see [Langflow's HTTPS certificate settings](https://docs.langflow.org/environment-variables).
 
-**You should see:** the Langflow **Projects** page after signing in. An incorrect-password message is a failed checkpoint; do not turn off login or create another database to continue.
+**You should see:** Langflow's **Welcome to Langflow** screen with **Create first flow** if the account has no flows, or its **Projects** page if flows already exist. Both mean sign-in succeeded. Continue to Step 11. An incorrect-password message is a failed checkpoint; do not turn off login or create another database to continue.
 
-## 11. Import the ATLAS Agent flow
+## 11. Import the supplied ATLAS Agent flow
 
-**Where:** your **Windows browser**, on Langflow's Projects page.
+**Where:** your **Windows browser**, on Langflow's **Welcome to Langflow** screen. It may show **Create first flow** and **Already have a flow? Drag and drop to upload.**
 
-1. Click the **+** beside **Projects** and create a project named **ATLAS Agent**. Select it.
-2. Click **Upload a flow**.
-3. In the Windows file picker, enter `\\wsl.localhost\Ubuntu-24.04\home` in the address bar and press Enter.
-4. Open your Linux username folder, then **source → atlas-knowledge-base-agent → flows**.
-5. Select **ATLAS Agent v1.1.0.json** and open it.
-6. Open the imported flow to see its connected component boxes.
+Step 9 created a fresh Langflow database for your own login. MITRE's default startup uses its bundled database, which already contains the ATLAS flow. With this fresh database, import the supplied flow once. The JSON file downloaded in Step 8 supplies the components and their connections; you do not build or wire them yourself.
 
-**You should see:** **ATLAS Agent v1.1.0** on the flow editor. If necessary, Langflow also supports dragging that JSON file from File Explorer onto the Projects page. See the [flow import reference](https://docs.langflow.org/concepts-flows-import).
+If **ATLAS Agent v1.1.0** is already listed in this installation, open it and continue to Step 12 without importing another copy.
+
+1. Open **Windows File Explorer** with **Windows+E**.
+2. Press **Ctrl+L** to select File Explorer's address bar. Paste `\\wsl.localhost\Ubuntu-24.04\home` and press **Enter**.
+3. Open your Ubuntu username folder, then **source → atlas-knowledge-base-agent → flows**. Find **ATLAS Agent v1.1.0.json**.
+4. Place File Explorer beside the Langflow browser window.
+5. Drag **ATLAS Agent v1.1.0.json** from File Explorer onto the Langflow welcome page, where it says **Already have a flow? Drag and drop to upload.** Do not use **Create first flow** to build an empty flow.
+6. Wait for the import to finish. If Langflow displays a flow list, click **ATLAS Agent v1.1.0** to open it.
+
+**You should see:** the **ATLAS Agent v1.1.0** editor with connected components, including **ATLAS Vector Store**, **ATLAS Dataset Sandbox**, **ATLAS Graph Generator**, and **Model Configuration**. Continue to Step 12 to attach the supplied files, then Step 13 to set your model. The fresh import still needs those file selections and your provider credentials.
+
+Langflow may put the imported flow in a default project. Keep that project; Step 14 uses the project containing this flow. If you already have a Projects page instead of the welcome screen, **Upload a flow** can import the same JSON file. See the [flow import reference](https://docs.langflow.org/concepts-flows-import).
 
 ## 12. Attach the ATLAS data and instruction files
 
 **Where:** the **Langflow flow editor in your Windows browser**.
 
-A fresh account needs its own uploaded file selections. Keep the existing wires between components. Use the same Windows file-picker route from step 11 to reach the upstream folder.
+The supplied flow JSON leaves the file-upload selections empty. MITRE's bundled database already had these uploads; your fresh import needs them attached once. Keep the existing wires between components. Use the same Windows file-picker route from step 11 to reach the upstream folder.
 
-For each **Read File** component, follow its wire to the named input on **Prompt Template**. Remove its old selected file using **X**, click **+** beside **Files**, and upload the matching file below. You can zoom in on the canvas to read labels.
+For each **Read File** component, follow its wire to the named input on **Prompt Template**. Click **+** beside **Files** and upload the matching file below. If an old file is selected, remove it using **X** first. You can zoom in on the canvas to read labels.
 
 | Read File connects to | File under `atlas-knowledge-base-agent` |
 | --- | --- |
@@ -382,11 +388,11 @@ Wait for the flow's save indicator. Record your provider name and exact model ID
 
 MCP is the connection the Windows runner uses to send the handoff to your flow.
 
-1. Return to the **ATLAS Agent** project and open its **MCP Server** tab. This is the project tab, not **Settings → Langflow MCP Client**.
+1. Return to the project containing your imported **ATLAS Agent v1.1.0** flow and open its **MCP Server** tab. Use that project's actual name; it need not be named **ATLAS Agent**. This is the project tab, not **Settings → Langflow MCP Client**.
 2. Click **Edit Tools**. Enable the checkbox for the imported ATLAS flow. Click its tool name and set it to **`atlas_agent_v110`**. Close the dialog to save.
 3. Beside **Auth**, choose **Add Auth** or **Edit Auth**, then **API Key**. If **API Key** is already shown, keep it enabled.
 4. Open your profile menu at the top right → **Settings → Langflow API Keys → Add New**. Name the key **Garak runner**. If asked for expiry, choose a period that covers your test. Click **Create API Key** and copy the key into your password manager/private notes.
-5. Return to **ATLAS Agent → MCP Server**. Select **JSON → Windows → Streamable HTTP**.
+5. Return to that same project's **MCP Server** tab. Select **JSON → Windows → Streamable HTTP**.
 6. Find the URL ending in `/api/v1/mcp/project/.../streamable`. Copy **just that URL**, without quotes. Keep its actual localhost port. You will paste it into PowerShell next.
 
 **You should see:** **Auth: API Key**, the ATLAS tool listed, and the Streamable HTTP URL. The displayed `cmd`, `uvx` and `mcp-proxy` lines are for other clients; you do not run them for this runner. See [Langflow's MCP setup reference](https://docs.langflow.org/1.10.0/mcp-server).
