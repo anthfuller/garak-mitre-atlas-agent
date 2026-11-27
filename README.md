@@ -27,7 +27,9 @@ This is a model-testing and research workflow. It does not by itself establish e
 
 ## Windows quick start
 
-For the full path from Windows setup to an archived ATLAS reply and optional local search, follow [Install and verify](docs/install-and-verify.md). It reuses this quick start and identifies the fresh-install steps still awaiting validation.
+**Starting on a Windows laptop with nothing installed? Follow [Install and verify](docs/install-and-verify.md) from step 1.** It includes Git, Python, Ubuntu/WSL, Langflow and the sample handoff, and finishes when you open the saved ATLAS reply. You do not need to follow the scan commands below for that setup test.
+
+The commands below are the separate quick start for configuring and running **real Garak scans** after prerequisites are installed.
 
 Use **normal Windows PowerShell**, Git for Windows and Python 3.11. An external SSD is optional. Default private configuration, evidence and optional research storage use `%LOCALAPPDATA%\GarakPlaybook`, outside the checkout. The approved repository is `anthfuller/garak-mitre-atlas-agent`; the clone URL below requires repository access while private and becomes public only after publication approval.
 
