@@ -1,4 +1,4 @@
-# Install and verify
+# Install on Windows and open your first ATLAS reply
 
 You'll install the tools, send the included sample Garak results to the MITRE ATLAS Agent, and open its reply.
 
@@ -14,7 +14,7 @@ You'll install the tools, send the included sample Garak results to the MITRE AT
 
 This guide uses Windows 11 with an x64 processor and the default `C:` layout. The runner goes in `%USERPROFILE%\source\garak-mitre-atlas-agent`; its environment and sample evidence go in `%LOCALAPPDATA%\GarakPlaybook`. Ubuntu/WSL holds Langflow separately. No external drive is needed.
 
-The sample results are made-up demonstration data included in the repository. **You will not run a Garak scan.** Sending the sample to a cloud-backed ATLAS Agent can incur API charges. You will choose the model and confirm with `SEND` before that happens. Clean-laptop validation is still in progress.
+The sample results are made-up demonstration data included in the repository. **You will not run a Garak scan.** Sending the sample to a cloud-backed ATLAS Agent can incur API charges. Step 13 makes one live Playground lookup using your OpenAI key; Step 17 separately asks for `SEND` before submitting the sample handoff. Each can incur API charges. This revised guide is awaiting the next clean-laptop test.
 
 ## 2. Check Git and Python 3.11; install what is missing
 
@@ -239,12 +239,12 @@ mkdir -p "$HOME/source" && cd "$HOME/source" && \
     cd atlas-knowledge-base-agent && \
     git checkout --detach b2bca6438e99cb72752c27be1728f062b6f943ca && \
     uv sync --locked --python 3.12 && \
-    uv run --locked python -c 'import importlib.metadata; print(importlib.metadata.version("langflow"))'
+    uv run --locked python -c 'from importlib.metadata import version; print("Langflow:", version("langflow")); print("langchain-openai:", version("langchain-openai"))'
 ```
 
 This downloads the upstream agent and its dependencies. It may take several minutes. Python 3.12 here is **inside Ubuntu**; it does not replace Windows Python 3.11.
 
-**You should see:** the final version `1.10.2`. A Git message about **detached HEAD** is expected: this guide selects a specific upstream version. If the folder already exists, do not delete it; use the existing-installation section at the end.
+**You should see:** `Langflow: 1.10.2` and `langchain-openai: 1.3.5`. A Git message about **detached HEAD** is expected: this guide selects a specific upstream version. If the folder already exists, do not delete it; use the existing-installation section at the end.
 
 ## 9. Create your Langflow login
 
@@ -252,7 +252,7 @@ This downloads the upstream agent and its dependencies. It may take several minu
 
 MITRE's package includes a prepared Langflow database, and its supplied `.env` enables automatic login. **This guide deliberately uses a separate, fresh database with password sign-in as `atlas-researcher`.** Langflow supports a custom `LANGFLOW_SUPERUSER` with `LANGFLOW_AUTO_LOGIN=False`; see its [authentication settings](https://docs.langflow.org/1.10.0/api-keys-and-authentication#langflow_superuser-and-langflow_superuser_password).
 
-This does **not** rename the bundled `langflow` account or transfer its flows. Stay signed in as **`atlas-researcher`** when importing the flow and uploading its files in Steps 11–12, then create the Langflow API key under that same account in Step 14. The upstream ATLAS dataset and vector store remain in place. The complete fresh-account ATLAS/MCP workflow is still undergoing clean-laptop validation.
+This does **not** rename the bundled `langflow` account or transfer its flows. Stay signed in as **`atlas-researcher`** when importing the flow and uploading its files in Steps 11–12, then create the Langflow API key under that same account in Step 14. The upstream ATLAS dataset and vector store remain in place. The first clean-laptop walkthrough reached the saved ATLAS reply with this account. The revised instructions still need a fresh test without help from chat.
 
 **WSL — Ubuntu:**
 
@@ -324,21 +324,23 @@ Wait for **Welcome to Langflow** and its **Open Langflow** address. Startup can 
 
 ## 11. Prepare the upload files and import the ATLAS flow
 
-Step 9 created a fresh database for your `atlas-researcher` login. MITRE supplies the connected flow and its data files; the following steps copy those files to one Windows folder for uploading. Keep Langflow running and stay signed in as **`atlas-researcher`**.
+Step 9 created a fresh database for your `atlas-researcher` login. MITRE supplies the connected flow and its data files. The following block prepares a local copy containing the Responses API model edit tested on the first clean laptop, and puts it with the four upload files in Windows Downloads. You do not edit component code in Langflow. Keep Langflow running and stay signed in as **`atlas-researcher`**.
 
-**Already imported ATLAS Agent v1.1.0?** Keep that flow. Prepare the Windows upload folder below, then go directly to Step 12. Keep any correctly attached files.
+**Already imported the prepared flow below?** Keep it and continue to Step 12. If your existing flow already passed the dataset lookup in Step 13, keep that working flow and its attachments; no second import is needed.
 
 ### Put the upload files in Windows Downloads
 
 **Where:** a new, normal **Windows PowerShell** window on the clean laptop. Leave the Ubuntu window running Langflow open.
 
-Paste this entire block. It finds your Ubuntu home folder, checks all five source files, copies them into **Downloads → ATLAS-Upload**, and opens that folder in Windows File Explorer. It does not move or modify the source files, database, or flow.
+Paste this entire block. It finds your Ubuntu home folder, checks the pinned MITRE flow, prepares **ATLAS Agent v1.1.0 - OpenAI Responses.json**, copies the three contracts and CSV into **Downloads → ATLAS-Upload**, and opens that folder. The upstream source and any existing Langflow database/canvas are unchanged. Repeating preparation reuses an identical output; a different existing output is preserved and reported as an error.
 
 **Windows PowerShell:**
 
 ```powershell
 & {
     $ErrorActionPreference = 'Stop'
+    $repo = Join-Path $env:USERPROFILE 'source\garak-mitre-atlas-agent'
+    $scannerPython = Join-Path $env:LOCALAPPDATA 'GarakPlaybook\scanner-env\Scripts\python.exe'
     $linuxHome = ((& wsl.exe -d Ubuntu-24.04 -- printenv HOME) | Out-String).Trim()
     if ($LASTEXITCODE -ne 0 -or $linuxHome -notmatch '^/') {
         throw 'Could not read the Ubuntu home folder. Stop and keep this error.'
@@ -347,12 +349,13 @@ Paste this entire block. It finds your Ubuntu home folder, checks all five sourc
     $atlasSource = '\\wsl.localhost\Ubuntu-24.04' + $linuxHome.Replace('/', '\') + '\source\atlas-knowledge-base-agent'
     $uploadFolder = Join-Path $env:USERPROFILE 'Downloads\ATLAS-Upload'
     $files = @(
-        'flows\ATLAS Agent v1.1.0.json'
         'prompts\tool-contracts\ATLAS Vector Store.md'
         'prompts\tool-contracts\ATLAS Dataset Sandbox.md'
         'prompts\tool-contracts\ATLAS Graph Generator.md'
         'data\atlas-data\v2026-07\atlas-nodes-with-emb-text-v2026-07.csv'
     )
+    $sourceFlow = Join-Path $atlasSource 'flows\ATLAS Agent v1.1.0.json'
+    $preparedFlow = Join-Path $uploadFolder 'ATLAS Agent v1.1.0 - OpenAI Responses.json'
     foreach ($file in $files) {
         $sourceFile = Join-Path $atlasSource $file
         if (-not (Test-Path -LiteralPath $sourceFile -PathType Leaf)) {
@@ -360,6 +363,8 @@ Paste this entire block. It finds your Ubuntu home folder, checks all five sourc
         }
     }
     New-Item -ItemType Directory -Path $uploadFolder -Force | Out-Null
+    & $scannerPython "$repo\tools\prepare_atlas_flow.py" --source $sourceFlow --output $preparedFlow
+    if ($LASTEXITCODE -ne 0) { throw 'Flow preparation failed. Stop and keep the error.' }
     foreach ($file in $files) {
         Copy-Item -LiteralPath (Join-Path $atlasSource $file) -Destination $uploadFolder
     }
@@ -371,25 +376,25 @@ Paste this entire block. It finds your Ubuntu home folder, checks all five sourc
 
 **You should see:** `Upload folder ready:` followed by the Windows folder path, a list of five files, and an open File Explorer window containing:
 
-- `ATLAS Agent v1.1.0.json`
+- `ATLAS Agent v1.1.0 - OpenAI Responses.json`
 - `ATLAS Vector Store.md`
 - `ATLAS Dataset Sandbox.md`
 - `ATLAS Graph Generator.md`
 - `atlas-nodes-with-emb-text-v2026-07.csv`
 
-If the block prints an error, keep that exact message; do not proceed to an upload with missing files. The preparation block has been checked against the pinned upstream file list; its execution on the clean Windows laptop remains to be confirmed.
+If the block prints an error, keep that exact message; do not proceed to an upload with missing files. The helper checks the pinned upstream flow contents before preparing it. Its output and model requests have been checked offline; this combined Windows preparation/import route still needs the next clean-laptop test.
 
 ### Import the flow once
 
 **Where:** your **Windows browser**, signed in to Langflow, with the **ATLAS-Upload** File Explorer window beside it.
 
-1. If **ATLAS Agent v1.1.0** already appears in your project, open it and continue to Step 12.
-2. Otherwise, drag **ATLAS Agent v1.1.0.json** from the Windows **ATLAS-Upload** folder onto Langflow's welcome page or the large blank area of the project's **Flows** page.
+1. If you already imported the prepared file below, open **ATLAS Agent v1.1.0** and continue to Step 12.
+2. Otherwise, drag **ATLAS Agent v1.1.0 - OpenAI Responses.json** from the Windows **ATLAS-Upload** folder onto Langflow's welcome page or the large blank area of the project's **Flows** page.
 3. Wait for **ATLAS Agent v1.1.0** to appear, then open it.
 
 Drag-and-drop import was confirmed during the clean-laptop walkthrough. A **33%** indicator under **Get started** is its optional onboarding checklist, not installation or upload progress.
 
-**You should see:** the connected **ATLAS Agent v1.1.0** flow, including **ATLAS Vector Store**, **ATLAS Dataset Sandbox**, **ATLAS Graph Generator**, three **Read File** boxes, and **Model Configuration**. The supplied JSON creates the components and wires. Keep the project that contains the imported flow, such as **Starter Project**; Step 14 uses that project's MCP server.
+**You should see:** the connected **ATLAS Agent v1.1.0** flow, including **ATLAS Vector Store**, **ATLAS Dataset Sandbox**, **ATLAS Graph Generator**, three **Read File** boxes, and **Model Configuration**. The prepared JSON creates the components and wires, including the tested model edit. Its display name remains **ATLAS Agent v1.1.0**. The four uploaded files must be selected once in Step 12; importing a flow does not attach files from another database. Keep the project that contains the imported flow, such as **Starter Project**; Step 14 uses that project's MCP server.
 
 ## 12. Attach the ATLAS instruction files and dataset
 
@@ -431,25 +436,54 @@ In **ATLAS Vector Store**, keep these supplied values:
 
 **File-attachment checkpoint:** all three Read File boxes show their matching `.md` filenames, the sandbox shows its CSV filename, and the vector-store values match the table. The relative vector path works because Step 10 starts Langflow from the upstream project folder. This is the ATLAS knowledge database; optional Chroma search for your own Garak results comes later. Its embedding component may download model assets on first use.
 
-## 13. Configure the model used by the ATLAS Agent
+## 13. Configure the tested model and verify a dataset lookup
 
-**Where:** the **Langflow flow editor in your Windows browser**.
+**Where:** the **Langflow flow editor in your Windows browser**, signed in as `atlas-researcher`.
 
-The **provider** is the service that runs the language model. The steps below describe direct **OpenAI API** access. You need your own API account, billing/access, and model key; a ChatGPT subscription alone is not that API credential.
+### Use the prepared model component
 
-1. Open the [OpenAI API key page](https://platform.openai.com/api-keys) in another browser tab. Sign in to the API account you intend to use and create or retrieve your own key. Keep it private.
-2. Return to the flow. Find the highlighted **Model Configuration** area and its **vLLM** component. Despite that component name, this field accepts an OpenAI-compatible API.
-3. Fill in the three fields below. Keep its language-model wire connected to **Agent**.
+The file you prepared and imported in Step 11 already contains the model-component edit used on the first clean laptop. It selects the **OpenAI Responses API**, uses **medium reasoning**, and omits **temperature**. It preserves MITRE's ATLAS tools, instructions and connections. **No Python editing or second flow import is needed.** If your current flow already passed the lookup below, keep it and continue to Step 14.
 
-| Field | Enter |
+This path uses **OpenAI / `gpt-6.1-sol`**, the combination exercised in the clean-laptop walkthrough with `langchain-openai 1.3.5`. Availability still depends on your API account. The Playground check below confirms this installation's access and tool use.
+
+1. Open the [OpenAI API key page](https://platform.openai.com/api-keys) in another tab. Sign in to your API account and create or retrieve your own key. API access/billing is separate from a ChatGPT subscription. Keep the key private.
+2. Return to the flow. In the blue **Model Configuration** area, find the white **vLLM** component. Check these fields and enter your key:
+
+| Field | Value |
 | --- | --- |
-| **Model Name** | A tool-calling model ID enabled for your API account. For example, `gpt-4.1-mini` if your account supports it. |
+| **Model Name** | `gpt-6.1-sol` |
 | **vLLM API Base** | `https://api.openai.com/v1` |
-| **API Key** | Your **OpenAI API key**, in the concealed key field. |
+| **API Key** | Your **OpenAI API key**, in the concealed field |
 
-The [model reference](https://developers.openai.com/api/docs/models/gpt-4.1-mini) documents Chat Completions and function calling for that example; **this guide has not validated its availability in your account or a fresh ATLAS run with it**. If you already have a working tool-compatible provider/model, use that provider's matching base URL, model ID and key instead. Do not mix credentials from two providers.
+The name **vLLM** is retained from MITRE's component; this configuration calls OpenAI. Keep **Input** and **System Message** blank. Keep **Model Kwargs** empty. The visible Temperature slider is unused by this prepared component; its `0.1` is not sent. Reasoning remains enabled at `medium`.
 
-Wait for the flow's save indicator. Record your provider name and exact model ID; the runner asks for both later. **You should see:** the intended model/base URL and a concealed key in the saved flow. Do not run a separate Playground test for this walkthrough. Step 17 will make the confirmed submission.
+3. Check the wire from the **pink Language Model output dot** at the bottom-right of vLLM to the **pink Language Model input dot** on the left of **Agent**. The prepared file includes this wire. If it was accidentally disconnected, drag between those two dots. Keep the Agent's other wires in place. **Setup Provider** may still be displayed in Agent; use the wired model rather than changing that picker or global provider settings.
+4. Click an empty part of the canvas and wait for saving to finish. If the old red required-field icon remains even though the three fields and wire are correct, press **Ctrl+R** once after saving. Check that the values, wire and four file attachments are still present. If an error remains, keep its exact text and stop at this checkpoint.
+
+### Test in Playground before MCP
+
+**This is a live OpenAI request and can incur charges.** It sends your question, flow instructions and tool results to OpenAI. It does not run a Garak scan. A successful lookup tests this model/tool path, not general research quality.
+
+1. Click **Playground** at the top right of the flow.
+2. In its message box, paste this prompt and send it once:
+
+   ```text
+   Use the ATLAS Dataset Sandbox tool to look up AML.T0054. Return its technique ID and name from the dataset record. If the lookup fails, report the error instead of answering from memory.
+   ```
+
+3. Wait for the reply. In that response's agent/tool activity, expand **atlas_dataset_sandbox** and inspect its **Input** and **Output**. Langflow displays the tools used and their output in Playground; see [Review agent logic](https://docs.langflow.org/1.10.0/concepts-playground#review-agent-logic).
+
+**Pass requires all three:**
+
+| What to inspect | What you should see |
+| --- | --- |
+| Tool input | A lookup for `AML.T0054`, such as `result = atlas.lookup("AML.T0054", fields=["id", "name"])` |
+| Tool output | `status: success` and a dataset record with `id: AML.T0054`, `name: LLM Jailbreak` |
+| Final answer | `AML.T0054 — LLM Jailbreak`, matching that returned record |
+
+A greeting, an answer without a tool trace, or the model saying it used the dataset is not sufficient. Save the tool input/output and final answer with your test notes. If the model is unavailable, the lookup fails, or no tool result is visible, stop here and keep the error/trace. Do not disable reasoning, switch providers or proceed to MCP to bypass a failed checkpoint.
+
+**After this passes:** record provider **OpenAI** and model **gpt-6.1-sol** for Step 17. Close Playground and continue to Step 14. Leave the Ubuntu window running Langflow.
 
 ## 14. Enable MCP access and create a Langflow API key
 
@@ -619,7 +653,7 @@ Respond to the prompts in order:
 4. To submit, type **`SEND`** and press Enter. Pressing Enter without SEND cancels.
 5. At the hidden key prompt, paste your **Langflow API key** and press Enter.
 
-Wait for the reply. **This is the paid-call boundary if your ATLAS model provider charges for usage.** One MCP submission may trigger multiple model/tool calls; the runner does not measure those charges. Initial data/model loading may also take time. Do not submit a second time while waiting.
+Wait for the reply. **This is a separate live submission after the Playground test in Step 13 and can incur API charges.** One MCP submission may trigger multiple model/tool calls; the runner does not measure those charges. Initial data/model loading may also take time. Do not submit a second time while waiting.
 
 **You should see:**
 
@@ -707,11 +741,11 @@ Set-Location -LiteralPath $repo
 - If the sample already exists, skip its creation in step 16 and open it with `notepad.exe "$savedRun\atlas_handoff.md"`. The runner checks its saved hashes before submission.
 - If a reply was already received, go straight to step 18 with that archive path. Do not repeat SEND just to reopen the reply.
 
-### If you already completed the Garak quick start
+### If you already configured Garak for live scans
 
 Keep your existing checkout, scanner environment and `config.private.json`. Set the Windows paths above to your actual locations, verify `playbook.py --help` as in step 4, then continue at the first unfinished step. Do not rerun `tools/configure.py` over existing private configuration; it refuses to replace it.
 
-The sample-to-ATLAS path does not need `config.private.json`. For later **real scans**, use the [Windows scan quick start](../README.md#windows-quick-start) and your intended target configuration. During initial scan configuration, `--data-root` is the optional way to select different storage; retain that location afterward.
+The sample-to-ATLAS path does not need `config.private.json`. For later **real scans**, reuse these same checkout/environment paths in [Configure Garak for live scans after installation](../README.md#configure-garak-for-live-scans-after-installation) and keep your intended target configuration. During initial scan configuration, `--data-root` is the optional way to select different storage; retain that location afterward.
 
 ### If you already have a working ATLAS Agent
 
@@ -851,9 +885,10 @@ Open the indexed original summary:
 | --- | --- |
 | Windows runner installation and integrations | Full Windows pass at `09e8128`; seven Windows delta checks at `4fedd3f`. See the [release record](release-v1.md). This documentation revision does not claim a new full Windows pass. Record the actual clean-laptop commit and result separately. |
 | Existing Langflow/ATLAS deployment | Startup, authenticated discovery, confirmed MCP submission and reply archival were exercised in the maintainer's existing Windows/WSL lab. |
-| Fresh WSL/uv/Langflow, new account and flow import | Instructions checked against upstream revision `b2bca6438e99cb72752c27be1728f062b6f943ca` and official documentation. A clean-machine execution of this exact route remains **unverified**. Current upstream docs may describe a newer UI than the pinned flow/runtime. |
+| First clean-laptop core walkthrough | Authenticated `atlas-researcher` login, flow import/file attachments, a live `atlas_dataset_sandbox` lookup returning `AML.T0054 — LLM Jailbreak`, MCP discovery/submission and opening the archived reply were observed. Chat assistance was required; this is **not** a guide-only installation pass. |
+| Revised prepared-flow installation path | The setup helper preserves upstream tools/instructions/wires and prepares a model component matching the tested code. Offline request checks cover Responses API, medium reasoning, ATLAS tool schemas and omitted temperature. Importing the generated file and following this revised guide on another clean Windows laptop remain **unverified**. |
 | Synthetic saved-run preparation and archive routing | The guide's fixture assembly is checked offline against the existing renderer/loader. MCP archival is exercised with a synthetic protocol server; this does not validate a new Langflow deployment or paid model. |
 | Optional research search | The maintainer exercised real local EmbeddingGemma indexing, unchanged reindexing, model/probe filters, search and evidence opening. This guide's synthetic example is checked with real embedded Chroma and fake embedding vectors; a fresh Windows installation following every new instruction remains **unverified**. |
-| Release scope | Runtime, profiles, credentials and the fourteen-probe campaign are unchanged. Kumu remains separate, AVID and broader probes remain deferred, and public release/tagging require owner approval. |
+| Release scope | This revision adds a local flow-preparation helper and installation instructions. Scanner runtime, profiles, credentials and the fourteen-probe campaign are unchanged. Kumu remains separate, AVID and broader probes remain deferred, and public release/tagging require owner approval. |
 
 The revised instructions still require the clean-laptop test; a documentation or syntax check is not an installation pass. Keep the guide's expected results distinct from observed validation evidence.

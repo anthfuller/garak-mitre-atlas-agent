@@ -40,4 +40,4 @@ Reviewed generic configuration examples, placeholder/loopback endpoints, synthet
 5. Return the exact candidate SHA, short diff summary and public-file/history check result. Stop for owner publication and tag approval.
 6. Only after approval, make the reviewed repository public and tag the approved commit `v1.0.0`. Release notes must state the fourteen-probe scope, model-specific results, Ollama DAN limitation, validation boundaries and deferred features. Do not include excluded material in release attachments.
 
-[Windows quick start](../README.md#windows-quick-start) · [Release validation](release-v1.md) · [Maintainer Windows checks](clean-windows.md) · [Worked example](worked-example.md) · [Third-party notices](../THIRD_PARTY.md)
+[Install on Windows and open your first ATLAS reply](install-and-verify.md) · [Release validation](release-v1.md) · [Maintainer Windows checks](clean-windows.md) · [Worked example](worked-example.md) · [Third-party notices](../THIRD_PARTY.md)

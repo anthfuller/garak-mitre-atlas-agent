@@ -1,6 +1,6 @@
 # Operator guide: Garak evidence and the MITRE ATLAS Agent
 
-Run a defined Garak campaign, retain original evidence, check execution quality, and investigate candidate mappings with your MITRE ATLAS Agent in Langflow. The runner generates the handoff and can submit it over authenticated MCP after confirmation. Start with the [Windows quick start](../README.md#windows-quick-start); the [release record](release-v1.md) is authoritative for current validation. Older patch notes describe the status at their original checkpoints.
+Run a defined Garak campaign, retain original evidence, check execution quality, and investigate candidate mappings with your MITRE ATLAS Agent in Langflow. The runner generates the handoff and can submit it over authenticated MCP after confirmation. Start with the [Install on Windows and open your first ATLAS reply](install-and-verify.md); the [release record](release-v1.md) is authoritative for current validation. Older patch notes describe the status at their original checkpoints.
 
 The v1 candidate retains [batch execution and consolidated coverage reports](batch.md). Release 0.5.0 added optional **local Chroma research indexing and search of existing runs**, using explicit Ollama EmbeddingGemma embeddings. Private paths remain outside the source. See [research setup, commands and validation limits](patch-0.5.0.md). One saved-run Windows checkpoint with real local EmbeddingGemma is operator-exercised; broader retrieval-quality validation remains pending.
 

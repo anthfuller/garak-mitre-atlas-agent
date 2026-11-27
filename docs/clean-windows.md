@@ -1,6 +1,6 @@
 # Maintainer Windows validation
 
-For ordinary installation, use the [Windows quick start](../README.md#windows-quick-start). The procedures here reproduce maintainer checks; they are not extra steps every researcher must run.
+For ordinary installation, use the [Install on Windows and open your first ATLAS reply](install-and-verify.md). The procedures here reproduce maintainer checks; they are not extra steps every researcher must run.
 
 ## Earned validation
 

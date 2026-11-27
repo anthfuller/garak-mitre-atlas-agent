@@ -25,39 +25,59 @@ This is an independent community project maintained in a personal capacity. It d
 
 This is a model-testing and research workflow. It does not by itself establish enterprise impact, agent tool misuse or RAG authorization enforcement. Broader probe validation and PyRIT scenarios are deferred.
 
-## Windows quick start
+## Install on Windows and open your first ATLAS reply
 
-**Starting on a Windows laptop with nothing installed? Follow [Install and verify](docs/install-and-verify.md) from step 1.** It includes Git, Python, Ubuntu/WSL, Langflow and the sample handoff, and finishes when you open the saved ATLAS reply. You do not need to follow the scan commands below for that setup test.
+**New laptop? Start with [Install on Windows and open your first ATLAS reply](docs/install-and-verify.md).** Follow it from Step 1 through **Open the saved ATLAS reply**. It installs Git, Python, Ubuntu/WSL and Langflow, prepares the ATLAS flow with the tested OpenAI Responses model component, verifies a dataset lookup in Playground, and sends the included synthetic Garak handoff over MCP. You do not run a Garak scan during installation.
 
-The commands below are the separate quick start for configuring and running **real Garak scans** after prerequisites are installed.
+## Configure Garak for live scans after installation
 
-Use **normal Windows PowerShell**, Git for Windows and Python 3.11. An external SSD is optional. Default private configuration, evidence and optional research storage use `%LOCALAPPDATA%\GarakPlaybook`, outside the checkout. The approved repository is `anthfuller/garak-mitre-atlas-agent`; the clone URL below requires repository access while private and becomes public only after publication approval.
+Use this path **after the installation guide** when you want to scan a real model. It reuses your existing checkout and Windows scanner environment. The ATLAS model from Step 13 and a Garak scan target are separate settings; success with the ATLAS model does not establish Garak compatibility with that model.
+
+### Reopen the existing runner
+
+**Where:** normal **Windows PowerShell**. Restore these paths after opening a new window:
 
 ```powershell
-$sourceRoot = Join-Path $env:USERPROFILE 'source'
-$repo = Join-Path $sourceRoot 'garak-mitre-atlas-agent'
-if (Test-Path -LiteralPath $repo) { throw 'Checkout already exists; preserve it and choose a new source location.' }
-New-Item -ItemType Directory -Path $sourceRoot -Force | Out-Null
-git clone https://github.com/anthfuller/garak-mitre-atlas-agent.git $repo
-if ($LASTEXITCODE -ne 0) { throw 'Clone failed; check repository access.' }
-Set-Location -LiteralPath $repo
+$repo = Join-Path $env:USERPROFILE 'source\garak-mitre-atlas-agent'
 $labRoot = Join-Path $env:LOCALAPPDATA 'GarakPlaybook'
-New-Item -ItemType Directory -Path $labRoot -Force | Out-Null
-if (Test-Path "$labRoot\scanner-env") { throw 'Preserve the existing environment.' }
-py -3.11 -m venv "$labRoot\scanner-env"
-if ($LASTEXITCODE -ne 0) { throw 'Environment creation failed.' }
-$scannerPython = "$labRoot\scanner-env\Scripts\python.exe"
-& $scannerPython -m pip install -r "$repo\requirements-scanner.txt"
-if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
-$openaiModel = Read-Host 'OpenAI reasoning model ID you intend to use'
-if ([string]::IsNullOrWhiteSpace($openaiModel)) { throw 'A model ID is required; no API call made.' }
-& $scannerPython "$repo\tools\configure.py" --garak-python $scannerPython --openai-model $openaiModel
-if ($LASTEXITCODE -ne 0) { throw 'Configuration creation failed.' }
-$config = "$labRoot\garak-playbook-private\config.private.json"
+$scannerPython = Join-Path $labRoot 'scanner-env\Scripts\python.exe'
+if (-not (Test-Path -LiteralPath "$repo\playbook.py")) { throw 'Runner missing. Complete the installation guide first.' }
+if (-not (Test-Path -LiteralPath $scannerPython)) { throw 'Scanner environment missing. Complete Step 4 of the installation guide.' }
+Set-Location -LiteralPath $repo
+& $scannerPython --version
+& $scannerPython "$repo\playbook.py" --help
+```
+
+**You should see:** `Python 3.11.x` and runner help. If you chose different paths during installation, use those same paths here. Keep the existing checkout and environment; no clone or dependency installation is needed.
+
+### Create or reuse your private scan configuration
+
+**Where:** the same normal **Windows PowerShell** window.
+
+The sample-to-ATLAS installation did not need scan configuration. This block creates it only if missing. If a configuration already exists, it keeps that file and lists its configured targets.
+
+```powershell
+$config = Join-Path $labRoot 'garak-playbook-private\config.private.json'
+if (-not (Test-Path -LiteralPath $config)) {
+    $openaiModel = Read-Host 'OpenAI reasoning model ID you intend to scan with Garak'
+    if ([string]::IsNullOrWhiteSpace($openaiModel)) { throw 'A model ID is required; no API call made.' }
+    & $scannerPython "$repo\tools\configure.py" --data-root $labRoot --garak-python $scannerPython --openai-model $openaiModel
+    if ($LASTEXITCODE -ne 0) { throw 'Configuration creation failed. Keep the error.' }
+}
+(Get-Content -LiteralPath $config -Raw | ConvertFrom-Json).targets | Format-List
+```
+
+**You should see:** your configured targets and model names. The new configuration includes `openai-reasoning` and an optional `ollama-local` target. Listing Ollama does not install it. Existing configuration is reused without changing its model IDs, settings or evidence paths.
+
+### Review a plan before a live scan
+
+For the configured OpenAI target, run:
+
+```powershell
 & $scannerPython "$repo\playbook.py" plan --config $config --target openai-reasoning --campaign base64-32
 ```
 
-The plan makes no model requests and does not verify model access. Garak dependencies may be substantial. Directly tested package versions are pinned; transitive dependencies are resolved by pip, not fully locked across platforms. Use the new environment above.
+**You should see:** a plan with the target/model, probe and completion budget. Planning makes no model requests and does not verify access. If your existing configuration has no `openai-reasoning` target, use its intended target name or follow the [operator guide](docs/operator-guide.md#start-in-windows-powershell); do not replace the configuration to get past an error. Check the [compatibility table](docs/compatibility.md) before selecting a scan model. The closed fourteen-probe validation campaign is not an installation step.
 
 For OpenAI, start the menu and choose the OpenAI target. Review the selected probe, effective completion budget and estimated cost before `RUN`. Only then enter the API key at the hidden prompt. No Ollama service or Langflow instance is required for OpenAI scanning.
 
@@ -75,7 +95,7 @@ The batch skips existing scored pairs, including gaps. It does not automatically
 
 Ollama remains optional. Install it and a chosen local model separately using its [official instructions](https://docs.ollama.com/quickstart); this runner downloads no models. Select `ollama-local` when intentionally testing it. DAN on the recorded `llama3.2:3b` setup failed and its investigation is closed for v1. Existing local evidence remains retained.
 
-To use another storage location, supply `tools/configure.py --data-root 'D:\YourLab'` during initial setup. Existing configs are never overwritten. Add `--openai-model MODEL_ID` at initial setup to choose your reasoning model. The historical default cloud model is not a guarantee of public availability. OpenAI requires hidden key entry and a paid compatibility request after confirmation; broader probe compatibility remains separate. Verify pricing for your account/model. No credit balance becomes an automatic runner spending cap.
+Keep the storage location chosen during installation and any existing private configuration. For a new setup using another location, set `$labRoot` to that location before the configuration block. The historical default cloud model is not a guarantee of public availability. OpenAI requires hidden key entry and a paid compatibility request after confirmation; broader probe compatibility remains separate. Verify pricing for your account/model. No credit balance becomes an automatic runner spending cap.
 
 ## Connect your Langflow ATLAS Agent
 
@@ -97,7 +117,7 @@ For Chroma, create a separate environment using `requirements-research.txt`, ins
 
 ## Validation and release
 
-[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. Tracked source and reachable Git history are reviewed for publication. Windows full validation passed at `09e8128`, and the seven targeted Windows delta checks passed at `4fedd3f`. The final documentation-only changes are checked by diff and links; no new scan is required. No public GitHub release or tag has been authorized. Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
+[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. Tracked source and reachable Git history are reviewed for publication. Windows full validation passed at `09e8128`, and the seven targeted Windows delta checks passed at `4fedd3f`. The installation guide records the clean-laptop checkpoint and remaining documentation test. Setup-file preparation is checked offline; no new scan is required. No public GitHub release or tag has been authorized. Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
 
 ## Optional encoding headroom diagnostic
 

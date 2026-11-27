@@ -75,6 +75,7 @@ tests/test_mcp_discovery.py
 tests/test_ollama_worker.py
 tests/test_openai.py
 tests/test_playbook.py
+tests/test_prepare_atlas_flow.py
 tests/test_probe_browser.py
 tests/test_release_profile.py
 tests/test_research_index.py
@@ -83,4 +84,5 @@ tools/Validate-CleanWindows.ps1
 tools/Validate-ReleaseDelta.ps1
 tools/configure.py
 tools/inspect_atlas_mcp.py
+tools/prepare_atlas_flow.py
 tools/run_tests.py
