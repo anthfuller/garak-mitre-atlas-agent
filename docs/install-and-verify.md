@@ -308,9 +308,15 @@ uv run --locked langflow run --host 127.0.0.1 --port 7860 --env-file "$HOME/.con
 
 Wait for **Welcome to Langflow** and its **Open Langflow** address. Startup can take several minutes. **Leave this Ubuntu window running. Do not start another copy.**
 
-**Where next:** your **Windows browser**.
+**Where next:** **Microsoft Edge on Windows**, in a new **InPrivate** window.
 
-Open the exact address printed by Langflow, normally `http://localhost:7860`. If it prints a different port, use that port throughout this guide. Sign in with **`atlas-researcher`** and the password from step 9.
+1. Open Microsoft Edge. Select **Settings and more (...) → New InPrivate window**, or press **Ctrl+Shift+N**. Confirm that the new window shows **InPrivate**.
+2. In that window, open the exact address printed by Langflow, normally `http://localhost:7860`. If it prints a different port, use that port throughout this guide.
+3. Sign in with **`atlas-researcher`** and the password from step 9.
+
+**InPrivate is for session privacy, not transport security.** It separates this login from your ordinary browser session. It does **not** encrypt HTTP: the password and session traffic to this HTTP endpoint are unencrypted. This guide binds Langflow to `127.0.0.1` for use from the same laptop. Keep this HTTP setup local; do not expose it to other machines. See Microsoft's [HTTP and HTTPS explanation](https://support.microsoft.com/en-us/edge/secure-your-web-browsing-with-https-first-mode-in-microsoft-edge).
+
+**HTTPS and certificates:** before enabling access from other machines, configure HTTPS with a certificate matching the server hostname, issued by a certificate authority (CA) trusted by your browser and connecting clients. Use your organization's CA for an internal deployment, or a public CA for a domain you control. A standalone self-signed server certificate can encrypt traffic, but clients do not automatically trust it; do not bypass certificate warnings. InPrivate does not change certificate trust. Certificate installation and HTTPS setup are separate from this local walkthrough; see [Langflow's HTTPS certificate settings](https://docs.langflow.org/environment-variables).
 
 **You should see:** the Langflow **Projects** page after signing in. An incorrect-password message is a failed checkpoint; do not turn off login or create another database to continue.
 
