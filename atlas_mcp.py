@@ -520,7 +520,7 @@ def send_saved_run(folder, *, analyze, discovery_path=None, provider=None, model
         else:
             record["status"], response_text, record["response_notes"] = describe_result(safe_result, markdown=True)
         (archive / "atlas_response.md").write_text(
-            "# ATLAS analysis — UNREVIEWED\n\nRun ID: " + summary["garak_run_id"]
+            "# ATLAS analysis (UNREVIEWED)\n\nRun ID: " + summary["garak_run_id"]
             + "\n\nProposed mappings are candidates pending analyst review and official-source verification."
             + "\n\n" + response_text + "\n", encoding="utf-8", newline="")
     except (Exception, KeyboardInterrupt) as error:

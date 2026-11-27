@@ -1,4 +1,4 @@
-# External components and publication status
+# External components and attribution
 
 The project orchestrates separately installed software. It does not bundle model weights, Garak payload datasets, Chroma binaries, Langflow flows or the ATLAS dataset.
 

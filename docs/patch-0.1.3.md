@@ -1,5 +1,7 @@
 # Version 0.1.3: readable prompt and immediate return
 
+**Historical version 0.1.3 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
+
 This update replaces the previous looping completion menu and file-association opener. It requires the existing installation; no package upgrade, scan or settings change is needed.
 
 ## Changed behavior
@@ -46,7 +48,7 @@ The last command regenerates only the derived prompt using the saved native repo
 - Notepad launch tests are **mocked on Linux**. They assert the explicit executable and file argument, detached process flags, DEVNULL for stdin/stdout/stderr, closed extra handles, `shell=False`, and no `wait()` or `communicate()` call. Clipboard tests also use a mocked Windows boundary.
 - Both real-Garak/synthetic-endpoint integrations passed; they verify scanner invocation, settings, output parsing/artifacts and unattended completion. They use no real model.
 - All five uploaded real-run inputs, responses and comparison targets were checked character-for-character in the new fenced text format. IDs and detector scores are preserved once; the run summary remains **32 evaluated responses and zero flags**. The full native report remains on the operator computer and is reconciled there during regeneration.
-- Actual Windows validation remains open: confirm that option 1 copies the readable prompt and returns the PowerShell prompt; invoke `handoff` again and confirm option 2 opens Notepad, leaves no editor output in the terminal and returns without waiting for editor closure. These checks require no new scan. The builder has not performed them on the operator desktop.
+- At the 0.1.3 checkpoint, Windows desktop validation was incomplete: confirm that option 1 copies the readable prompt and returns the PowerShell prompt; invoke `handoff` again and confirm option 2 opens Notepad, leaves no editor output in the terminal and returns without waiting for editor closure. These checks require no new scan. These checks were not performed on Windows for this patch.
 
 ## Patch contents
 

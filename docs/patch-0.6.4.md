@@ -1,5 +1,7 @@
 # 0.6.4: Bounded recovery from Windows session-file replacement errors
 
+**Historical version 0.6.4 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
+
 Historical implementation note. Update: the complete Windows validator passed at commit `09e8128` on November 26, 2026. See [release validation](release-v1.md) for scope and later changes.
 
 The supplied Windows synthetic integration log records `WinError 5: Access is

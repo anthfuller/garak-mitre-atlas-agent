@@ -1,60 +1,50 @@
 # Analysis and Kumu URL in one submission
 
-**Status: the current-laptop saved-file and browser checks passed for AML.T0068 on November 27, 2026, using runtime commit `82ba06f63c582b933f7493c77a60656ccf2e51b3`.** The additional submission-record invocation-count check requested by the Reviewer remains open, as detailed below. Public release and tagging still require owner approval. No existing flow import, model edit, file reattachment, new Garak scan or separate graph action was needed for the observed result.
+On November 27, 2026, an assisted Windows test used runtime commit `82ba06f63c582b933f7493c77a60656ccf2e51b3` to submit a synthetic Garak handoff. The operator typed `SEND` once. The saved reply proposed `AML.T0068` (LLM Prompt Obfuscation) and included a Kumu link. Opening the link displayed a graph focused on that technique.
 
 ## Observed result
 
-| Check | Evidence supplied by the operator | Result |
+| Check | Evidence | Result |
 | --- | --- | --- |
-| One confirmed submission | Console output shows `SEND`, followed by `response_received_unreviewed` and `graph_received_target_and_coverage_checked`. | Passed for the observed submission. |
-| Analysis and URL saved together | Uploaded `atlas_response2.md` contains the complete analysis, candidate AML.T0068, its official ATLAS link, and the full Kumu URL under **View Kumu graph**. Only AML.T0068 is discussed. | Passed. |
-| Matching browser view | Supplied `Kumu_link.png` displays the same URL and **AML.T0068 — LLM Prompt Obfuscation** as the focused technique. | Passed for this browser view. |
-| Interpretation preserved | The reply calls the mapping tentative, explains that the synthetic excerpt does not demonstrate an encoded attack, and keeps detector observations separate from behavior and unverified conclusions. | Candidate status retained; no attack success or model resistance established. |
+| Operator confirmation | Console output shows one `SEND`, followed by `response_received_unreviewed` and `graph_received_target_and_coverage_checked`. | One confirmation was observed. |
+| Analysis and URL saved together | The archived reply contains the analysis, candidate `AML.T0068`, its official ATLAS link and the full Kumu URL. Only `AML.T0068` is discussed. | Saved-file check passed. |
+| Matching browser view | The browser screenshot shows the same URL and the `AML.T0068` technique description beside the graph. | Browser check passed for this example. |
+| Interpretation | The reply labels the mapping tentative and explains that the synthetic excerpt does not demonstrate an encoded attack. | No attack success or model resistance was established. |
 
-The URL is `https://embed.kumu.io/99b02113875c5b03b510b4b6968b2566#atlas/aml-t0068?focus=1`. It matches the expected project, map and sole discussed ID in the uploaded reply. The original response's **Browser rendering remains unverified** line records the runner's automatic-check boundary; the later screenshot supplies the manual browser check. The original archive is not rewritten.
+The saved URL is `https://embed.kumu.io/99b02113875c5b03b510b4b6968b2566#atlas/aml-t0068?focus=1`. It matches the expected project, map and sole discussed ID. The archive's **Browser rendering remains unverified** line describes the runner's automatic-check boundary; the subsequent screenshot provides the manual browser result. The archive remains unchanged.
 
-Evidence fingerprints (original uploads retained privately):
+Evidence fingerprints (original evidence retained privately):
 
-- `atlas_response2.md` SHA-256: `9766b5a2a1dde452d8dfa19904bfc2f36bb070eb2b3752f1e6e96c14ba4d3c96`.
-- `Kumu_link.png` SHA-256: `4dff2951affd6146e8786576e6d0567dce4ab44c5ab44ed3923e9e702bc2ac64`.
+- Saved analysis SHA-256: `9766b5a2a1dde452d8dfa19904bfc2f36bb070eb2b3752f1e6e96c14ba4d3c96`.
+- Browser screenshot SHA-256: `4dff2951affd6146e8786576e6d0567dce4ab44c5ab44ed3923e9e702bc2ac64`.
 
-This pass covers the saved-file and browser finish line for one synthetic case. Internal Dataset Sandbox/Graph Generator execution remains agent-reported for this submission; no internal tool trace or complete raw archive was supplied for this review. Broader research quality and a guide-only fresh installation remain unverified.
+## How the workflow operates
 
-**Submission-record check requested by the Reviewer remains open:** the supplied console transcript shows one `SEND`, but `submission.json` from archive `[archive identifier removed]` has not been supplied. The older uploaded record belongs to a different submission and cannot establish this invocation count. To close this additional record-level check, verify that the matching record reports `tool_call_dispatch_attempts: 1`, `recorded_tool_call_attempts: 1` and `automatic_retries: 0`. No new model call is needed. The observed saved-file and browser results above remain passed.
+After `SEND`, the runner wraps the unchanged saved handoff in an analysis-and-graph request. ATLAS is asked to retain candidate labels, verify discussed AML IDs with its Dataset Sandbox, and use its Graph Generator. The same reply is requested to contain the analysis and full original graph URL. The runner does not construct or repair that URL.
 
-## What changed
+The runner checks the independently configured project/map and every discussed AML ID, including rejected or contextual IDs. Defaults come from [MITRE's pinned flow](https://github.com/mitre-atlas/atlas-knowledge-base-agent/blob/b2bca6438e99cb72752c27be1728f062b6f943ca/flows/ATLAS%20Agent%20v1.1.0.json): project `99b02113875c5b03b510b4b6968b2566`, map `atlas`. A custom deployment can pass `atlas --kumu-config PATH` with its expected destination.
 
-The runner sends the existing saved handoff inside an analysis-and-graph request after one explicit `SEND`. ATLAS is asked to retain candidate labels, verify all discussed AML IDs through its Dataset Sandbox, and use its Graph Generator for those IDs. The same reply must contain the analysis and the full original graph URL. The runner does not create or repair that URL.
+Each submission retains the original handoff, full request, returned response with credential redaction, readable analysis, checksums and validation record. Equivalent duplicate analysis blocks display once; distinct content remains visible. A graph failure preserves the analysis and reports the reason. Historical archives are not rewritten.
 
-The runner checks the configured project/map and every discussed AML ID, including rejected/contextual IDs. Defaults are independently pinned to [MITRE's supplied flow](https://github.com/mitre-atlas/atlas-knowledge-base-agent/blob/b2bca6438e99cb72752c27be1728f062b6f943ca/flows/ATLAS%20Agent%20v1.1.0.json): project `99b02113875c5b03b510b4b6968b2566`, map `atlas`. Custom deployments can use the existing two-field private configuration through `atlas --kumu-config PATH`.
+The client is designed to dispatch one MCP flow call per confirmed action without automatic retries. The agent may make multiple model/tool calls within that invocation. This design is tested offline; it is not a measured dispatch count for the observed submission.
 
-Each submission preserves the original handoff, full request prompt, raw returned response (with existing credential redaction), readable analysis, checksums and validation record. Historical archives are unchanged. Equivalent duplicate analysis blocks display once; distinct content remains visible. A graph failure retains the analysis and reports the reason without retrying.
+## Reproduce the saved-file and browser check
 
-## Current-laptop acceptance
+Follow [Steps 14–18 of the install guide](install-and-verify.md#14-enable-mcp-access-and-create-a-langflow-api-key) using the included sample and a working Langflow flow. Keep the Ubuntu terminal running. The procedure needs no new Garak scan or separate graph action; submitting to ATLAS can incur model charges.
 
-Use the saved run whose earlier analysis discussed **AML.T0068**, the existing discovery report, and the existing working Langflow flow. Keep its Ubuntu terminal running. Update the checkout to this revision, then run in normal Windows PowerShell, using the paths already established by the guide:
+1. Confirm the displayed handoff with `SEND` once and wait for the result.
+2. Check for `ATLAS status: response_received_unreviewed` and `Kumu status: graph_received_target_and_coverage_checked`.
+3. Open the printed `atlas_response.md` path. Read the candidate analysis and copy its Kumu URL into the browser.
+4. Compare the discussed technique ID with the focused graph view. The observed example proposed `AML.T0068`; a different answer needs its own evidence review.
 
-```powershell
-& $scannerPython "$repo\playbook.py" atlas --run-dir $savedRun --discovery $discovery `
-    --provider OpenAI --model gpt-6.1-sol
-```
-
-Review the handoff and expected Kumu destination, confirm `SEND` once, and enter the Langflow key at the hidden prompt. This makes one MCP flow invocation; the agent may make several paid model/tool calls. It does not run Garak.
-
-Acceptance requires all of the following:
-
-1. The runner prints `ATLAS status: response_received_unreviewed` and `Kumu status: graph_received_target_and_coverage_checked`.
-2. Open the **newly printed** `atlas_response.md` path in Notepad. It contains the candidate analysis and the full Kumu URL together.
-3. Copy that URL into the browser. Confirm **AML.T0068** is visible in the focused Kumu view. Keep the new archive and screenshot/result for review.
-
-If any step fails, preserve the archive and displayed error. Do not submit again automatically or use a separate graph action to claim this acceptance passed. The README and [Step 18 of the install guide](install-and-verify.md#18-open-the-saved-atlas-reply) now describe this observed finish line.
+If a step fails, retain the archive and error. Do not resubmit automatically or use a separate graph action to claim this check passed. An existing saved reply can be reopened without another model call.
 
 ## Evidence and limits
 
-Offline result for runtime commit `82ba06f`: **157 targeted tests passed** (50 ATLAS/Kumu transport and archive tests; 107 graph, research-index, handoff, scan-profile and runner tests). The research tests use real embedded Chroma with synthetic vectors. Separately, the pinned Graph Generator's unchanged methods produced accepted URLs for one and three IDs with lightweight schema stubs, without running Langflow. None of these offline checks made a paid call or opened Kumu; the separately observed laptop result is recorded above.
+The console shows one operator confirmation. The matching submission record and internal Langflow tool trace were unavailable for independent review, so the dispatch and retry counts and the internal tool calls remain unverified for this submission. Claims that the Dataset Sandbox or Graph Generator ran internally are agent-reported.
 
-- Synthetic local MCP checks exercise one confirmation/one invocation, original evidence and prior-archive preservation, raw reply retention, request integrity, readable-analysis extraction, and existing saved-record consumer compatibility.
-- URL checks reject the wrong project, map, host, scheme, anchor, focus, omitted/extra/reordered AML IDs, invalid graph status, conflicting replies, and changed private destination configuration. Copyable URLs are sufficient; no iframe is required or executed.
-- Equivalent replies with different blank lines display once; different analyses remain visible. An unsuccessful graph does not discard a successful analysis.
-- These are offline checks. They do not prove the model obeyed the prompt, the agent called either tool, the dataset contains an ID, or Kumu renders it. Internal tool execution is agent-reported unless separately inspected in Langflow. A browser acceptance pass establishes only the observed case, not broader research quality or confirmed mappings.
-- Garak scan settings, the closed fourteen-probe campaign, Kumu's flow configuration, Chroma/EmbeddingGemma and the user's existing Langflow model/files are unchanged.
+The earlier Playground check has separate tool evidence: `atlas_dataset_sandbox` returned a successful dataset record with ID `AML.T0054` and name `LLM Jailbreak`, and the Playground reply matched it. This does not establish the internal calls made by the later MCP submission.
+
+For runtime `82ba06f`, **157 targeted offline tests passed**: 50 ATLAS/Kumu transport/archive tests and 107 graph, research-index, handoff, scan-profile and runner tests. Research tests use real embedded Chroma with synthetic vectors. Two additional checks used the pinned Graph Generator's methods with schema stubs to produce accepted URLs for one and three IDs, without running Langflow.
+
+These offline checks cover URL target and ID coverage, archive preservation, duplicate and distinct replies, graph failures, and saved-record consumer compatibility. They made no paid calls and did not open Kumu. The browser evidence above establishes only the observed synthetic example. Broader research quality, confirmed mappings and an independent guide-only installation remain unverified.

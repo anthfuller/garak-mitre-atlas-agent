@@ -1,6 +1,8 @@
 # 0.6.3: Capture local Ollama failures and stop error retries
 
-Status: source implementation and offline validation; live Windows validation pending.
+**Historical version 0.6.3 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
+
+At the 0.6.3 build checkpoint, source implementation and offline tests were complete; native Windows validation followed in later records.
 
 The failed DAN run returned repeated HTTP 500 errors. Garak 0.17.0's Ollama
 adapter retried until the runner's 1,800-second wall-time limit. The supplied
@@ -33,7 +35,7 @@ GPU execution and cancellation of already accepted server work are not proven.
 
 ## Validation
 
-See the patch's `validation` directory for the exact test receipt and logs.
+The exact test receipt and logs were retained privately outside the source tree.
 The native integration uses real Garak 0.17.0 and the Ollama SDK against a
 synthetic HTTP server. It fails request 23 after 22 successes, verifies one
 error request with no retry, preserves exact body bytes, and records an
@@ -44,15 +46,8 @@ These are Linux synthetic tests. They are not live-model or native Windows
 validation. No cloud calls, scans against a real model, or configuration
 changes on the operator's machine occurred while building the patch.
 
-## Application and next local check
+## Historical application
 
-Apply over the inspected 0.6.2 installation using the supplied PowerShell
-launcher. Its installer checks source hashes, backs up files, records an update
-receipt, and rolls back replacements on failure. Unknown local modifications
-stop installation. Existing evidence, private configuration and databases are
-outside the replacement list.
+The original 0.6.3 launcher checked source hashes, backed up files, recorded an update receipt and rolled back failed replacements. Unknown local modifications stopped installation. Existing evidence, private configuration and databases were outside the replacement list.
 
-The launcher selects only `ollama-local / probes.dan.DanInTheWild` and permits
-the prior failed pair to be retried. It requires RUN. No OpenAI, ATLAS, Kumu or
-Chroma calls are made. Retain the terminal error and new evidence path if the
-server still fails; its HTTP body is now available for diagnosis.
+Its diagnostic selected only the previously failed Ollama DAN pair and required `RUN`. The later attempt captured the HTTP error body and stopped without a retry; it did not establish a successful probe result. That investigation is closed for v1. Use the [compatibility table](compatibility.md) for the retained failure and evidence boundary; these notes are not an instruction to rerun the campaign.

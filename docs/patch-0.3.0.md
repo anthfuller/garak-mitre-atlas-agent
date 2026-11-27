@@ -1,4 +1,6 @@
-# 0.3.0 — available probes and OpenAI
+# 0.3.0: available probes and OpenAI
+
+**Historical version 0.3.0 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
 
 This cumulative update hides unavailable probes before search/pagination, retains review Back state, and adds OpenAI as target option 2 with multiple probe choices. No scan starts by selecting a target or probe.
 
@@ -14,9 +16,9 @@ At a configured request cap the operator can raise it, remove it, or stop. The o
 
 Cost estimation uses the longest offline sampled input's UTF-8 JSON bytes plus 64 planning units per request and the full completion limit. This is conservative planning, not a tokenizer or a billing guarantee. With no request cap it uses planned requests plus one compatibility call. The review shows the assumptions, rates and verification date. Unverified pricing or unavailable input estimation displays **Estimate unavailable** without blocking RUN. Running estimates use reported usage and include compatibility and retry responses when present.
 
-Published pricing source: https://developers.openai.com/api/docs/models/gpt-5.6-sol — checked November 22, 2026: $4/M uncached input, $0.40/M cached input, $20/M output. Promotional rates expire November 30, 2026. These estimates assume standard short-context text service; actual billing may differ. The model page documents a 128000 output-token maximum. The active API model and account access remain unverified until the operator's live check.
+Published pricing source: https://developers.openai.com/api/docs/models/gpt-5.6-sol (checked November 22, 2026): $4/M uncached input, $0.40/M cached input, $20/M output. Promotional rates expire November 30, 2026. These estimates assume standard short-context text service; actual billing may differ. The model page documents a 128000 output-token maximum. The active API model and account access remain unverified until the operator's live check.
 
-Token semantics: https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create — max_completion_tokens includes reasoning tokens. Garak 0.17.0 suppresses max_tokens for its reasoning generator. This patch explicitly suppresses other sampling parameters, forwards the chosen max_completion_tokens and checks the outgoing parameter set. Sampling seed 42 affects probe selection; it is not sent as an OpenAI generation seed.
+Token semantics: https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create. The `max_completion_tokens` allowance includes reasoning tokens. Garak 0.17.0 suppresses max_tokens for its reasoning generator. This patch explicitly suppresses other sampling parameters, forwards the chosen max_completion_tokens and checks the outgoing parameter set. Sampling seed 42 affects probe selection; it is not sent as an OpenAI generation seed.
 
 ## Credential and evidence handling
 

@@ -2,17 +2,23 @@
 
 Use **Windows PowerShell** in the cloned source directory. Ollama's Windows service must be running for local live scans. Langflow and its Ubuntu WSL terminal are not involved. Commands invoke the scanner environment's Python directly; activation and administrator elevation are not required.
 
-After the README setup:
+After the README setup, stay in the same Windows PowerShell window. Choose one block for the intended targets. Each displays a plan; type uppercase `RUN` only when ready.
+
+**Local target only:**
 
 ```powershell
-# Local target only; review the exact pending pairs before RUN.
+# Review the exact pending pairs before RUN.
 & $scannerPython "$repo\playbook.py" batch --config $config --target ollama-local
+```
 
-# OpenAI target only; review model, settings and cost before RUN.
+**OpenAI target only:**
+
+```powershell
+# Review model, settings and cost before RUN.
 & $scannerPython "$repo\playbook.py" batch --config $config --target openai-reasoning
 ```
 
-These are separate commands. To deliberately review both in one batch, repeat the target argument:
+To deliberately review both in one batch, use this block instead:
 
 ```powershell
 & $scannerPython "$repo\playbook.py" batch --config $config `
@@ -20,6 +26,8 @@ These are separate commands. To deliberately review both in one batch, repeat th
 ```
 
 The runner also offers its historical default OpenAI profile when absent from private configuration. Set the intended model explicitly during configuration; do not assume public access. Omitting all target arguments selects every offered target, so use the explicit commands above when limiting providers.
+
+When the batch finishes, open the printed **Consolidated report** and inspect its per-pair results. Completion is not a security verdict.
 
 ## What happens
 

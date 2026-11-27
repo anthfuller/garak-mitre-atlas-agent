@@ -2,7 +2,7 @@
 
 You'll install the tools, send the included sample Garak results to the MITRE ATLAS Agent, and open its reply.
 
-**Finish line:** open the saved analysis in Notepad, copy its full Kumu URL into your browser, and check the displayed technique. One `SEND` returns both analysis and graph link. The [current-laptop AML.T0068 check passed](inline-kumu-acceptance.md); completing this revised guide alone on another clean laptop remains unverified.
+**Finish line:** open the saved analysis in Notepad, copy its full Kumu URL into your browser, and check the displayed technique. One `SEND` requests both analysis and a graph link; the analysis remains available if the graph fails. The [observed AML.T0068 example](inline-kumu-acceptance.md) reached this finish line. The Windows walkthrough was assisted; an independent guide-only installation remains unverified.
 
 ## 1. Open Windows PowerShell
 
@@ -16,7 +16,7 @@ You'll install the tools, send the included sample Garak results to the MITRE AT
 
 This guide uses Windows 11 with an x64 processor and the default `C:` layout. The runner goes in `%USERPROFILE%\source\garak-mitre-atlas-agent`; its environment and sample evidence go in `%LOCALAPPDATA%\GarakPlaybook`. Ubuntu/WSL holds Langflow separately. No external drive is needed.
 
-The sample results are made-up demonstration data included in the repository. **You will not run a Garak scan.** Sending the sample to a cloud-backed ATLAS Agent can incur API charges. Step 13 makes one live Playground lookup using your OpenAI key; Step 17 separately asks for `SEND` before submitting the sample handoff. Each can incur API charges. This revised guide is awaiting the next clean-laptop test.
+The sample results are made-up demonstration data included in the repository. **You will not run a Garak scan.** Sending the sample to a cloud-backed ATLAS Agent can incur API charges. Step 13 makes one live Playground lookup using your OpenAI key; Step 17 separately asks for `SEND` before submitting the sample handoff. Each can incur API charges.
 
 ## 2. Check Git and Python 3.11; install what is missing
 
@@ -34,7 +34,7 @@ git --version
 
 If Windows does not recognize `git`, install it:
 
-**Windows PowerShell — only if Git is missing:**
+**Windows PowerShell: only if Git is missing:**
 
 ```powershell
 winget install --id Git.Git --exact --source winget
@@ -53,7 +53,7 @@ py -3.11 --version
 - **You see `Python 3.11.x`:** Python is ready. Continue to Step 3. If you already cloned the repo, use the **Step 4 recovery** below; do not clone again.
 - **You see `No suitable Python runtime found`, or Windows doesn't recognize `py`:** **Stay here. Install Python 3.11 with the command below.** Do not continue to cloning or environment creation yet.
 
-**Windows PowerShell — install Python 3.11:**
+**Windows PowerShell: install Python 3.11:**
 
 ```powershell
 winget install --id Python.Python.3.11 --exact --source winget --architecture x64
@@ -61,7 +61,7 @@ winget install --id Python.Python.3.11 --exact --source winget --architecture x6
 
 When it finishes, **close PowerShell**, reopen **Start → Windows PowerShell** normally, and check again:
 
-**Windows PowerShell — after reopening:**
+**Windows PowerShell: after reopening:**
 
 ```powershell
 py -3.11 --version
@@ -93,7 +93,7 @@ $repo = Join-Path $sourceRoot 'garak-mitre-atlas-agent'
 if (Test-Path -LiteralPath $repo) { throw 'This checkout already exists. Use the existing-installation section at the end; do not overwrite it.' }
 New-Item -ItemType Directory -Path $sourceRoot -Force | Out-Null
 git clone https://github.com/anthfuller/garak-mitre-atlas-agent.git $repo
-if ($LASTEXITCODE -ne 0) { throw 'Clone failed. Stop and check the message and access guidance below before continuing.' }
+if ($LASTEXITCODE -ne 0) { throw 'Clone failed. Stop and read the Git error printed above before continuing.' }
 Set-Location -LiteralPath $repo
 git rev-parse HEAD
 ```
@@ -106,52 +106,72 @@ Clone the repository with the HTTPS command above. A public HTTPS clone requires
 
 **Where:** normal Windows PowerShell. Python must have printed `Python 3.11.x` in Step 2.
 
-**Already cloned the repo and reopened PowerShell?** Restore the repository variable and folder with these two lines. Keep your existing clone.
+**Restore paths first**, including after reopening PowerShell. Keep the checkout you already created.
 
 **Windows PowerShell:**
 
 ```powershell
 $repo = Join-Path $env:USERPROFILE 'source\garak-mitre-atlas-agent'
+$labRoot = Join-Path $env:LOCALAPPDATA 'GarakPlaybook'
+$scannerPython = Join-Path $labRoot 'scanner-env\Scripts\python.exe'
 Set-Location -LiteralPath $repo
 ```
 
-**You should see:** the prompt ends in `\source\garak-mitre-atlas-agent>`.
+### Check an existing scanner environment
 
-**Create the scanner environment — Windows PowerShell:**
+If `$labRoot\scanner-env` already exists, run this read-only block. If that folder does not exist, skip to **Create the scanner environment** below.
 
-```powershell
-$labRoot = Join-Path $env:LOCALAPPDATA 'GarakPlaybook'
-$scannerPython = Join-Path $labRoot 'scanner-env\Scripts\python.exe'
-New-Item -ItemType Directory -Path $labRoot -Force | Out-Null
-if (Test-Path -LiteralPath "$labRoot\scanner-env") { throw 'Scanner environment already exists. Preserve it and use the existing-installation section.' }
-py -3.11 -m venv "$labRoot\scanner-env"
-if ($LASTEXITCODE -ne 0) { throw 'Python environment creation failed.' }
-```
-
-Before installing dependencies, check the Python executable inside that new environment:
-
-**Windows PowerShell — verify the environment:**
+**Windows PowerShell:**
 
 ```powershell
+if (-not (Test-Path -LiteralPath $scannerPython)) { throw 'The existing scanner folder has no Python executable. Preserve it and keep this error; do not install dependencies into another Python.' }
 & $scannerPython --version
+& $scannerPython -c "import importlib.metadata; print('Garak:', importlib.metadata.version('garak'))"
+& $scannerPython "$repo\playbook.py" --help
 ```
 
-- **You see `Python 3.11.x`:** the environment is ready. Paste the dependency-install block below.
-- **You see any error or a different version:** **Stop here. Do not paste the dependency-install commands.** If creation reported `No suitable Python runtime found`, return to **Check Python 3.11** in Step 2. Preserve any existing environment; do not delete it to get past an error.
+Resume at the first missing step:
 
-**Install dependencies — Windows PowerShell, only after the environment check passes:**
+- **Python 3.11.x, Garak 0.17.0 and runner help all appear:** Step 4 is complete. Skip environment creation and dependency installation; continue at Step 5, or the first later step you have not completed.
+- **Python 3.11.x appears, but Garak is missing after an interrupted install:** run only **Install dependencies** below, then repeat the existing-environment check.
+- **The Python executable is missing, its version is different, or an installed Garak version differs from 0.17.0:** stop and preserve the folder and error. Do not delete or replace an existing environment to bypass the check.
+- **Python and Garak match, but runner help fails:** check the displayed error and confirm `$repo` contains `playbook.py`. Restore the correct checkout path; do not recreate the environment. If the error remains, stop with that error.
+
+### Create the scanner environment
+
+Use this block only when the scanner environment folder does not exist.
+
+**Windows PowerShell:**
+
+```powershell
+New-Item -ItemType Directory -Path $labRoot -Force | Out-Null
+if (Test-Path -LiteralPath "$labRoot\scanner-env") { throw 'Scanner environment already exists. Run the existing-environment check above instead.' }
+py -3.11 -m venv "$labRoot\scanner-env"
+if ($LASTEXITCODE -ne 0) { throw 'Python environment creation failed. Stop and keep the error.' }
+& $scannerPython --version
+if ($LASTEXITCODE -ne 0) { throw 'The new environment Python did not start.' }
+```
+
+**Continue only if it prints `Python 3.11.x`.** If creation reports `No suitable Python runtime found`, return to **Check Python 3.11** in Step 2. Preserve any partially created folder and use the existing-environment check before continuing.
+
+### Install dependencies
+
+Use this after the new environment check passes, or to resume an interrupted dependency install in the existing Python 3.11 environment.
+
+**Windows PowerShell:**
 
 ```powershell
 & $scannerPython -m pip install -r "$repo\requirements-scanner.txt"
 if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed. Stop and keep the error.' }
-& $scannerPython -c "import importlib.metadata; print(importlib.metadata.version('garak'))"
+& $scannerPython -c "import importlib.metadata; print('Garak:', importlib.metadata.version('garak'))"
+if ($LASTEXITCODE -ne 0) { throw 'Garak did not load. Stop and keep the error.' }
 & $scannerPython "$repo\playbook.py" --help
-if ($LASTEXITCODE -ne 0) { throw 'The runner did not load.' }
+if ($LASTEXITCODE -ne 0) { throw 'The runner did not load. Stop and keep the error.' }
 ```
 
 The download/install may take several minutes. Wait for the prompt to return.
 
-**You should see:** Garak version `0.17.0`, then help containing `atlas`, `research-index`, and `research-search`. This installs the scanner but does not scan a model. The included sample does not need a scan-target configuration or an OpenAI scan key. Do not start the menu or a batch for this check.
+**You should see:** `Garak: 0.17.0`, then help containing `atlas`, `research-index`, and `research-search`. This installs the scanner but does not scan a model. The included sample does not need a scan-target configuration or an OpenAI scan key. Do not start the menu or a batch for this check.
 
 ## 5. Install Ubuntu through WSL; restart if requested
 
@@ -159,7 +179,7 @@ The download/install may take several minutes. Wait for the prompt to return.
 
 Right-click **Start → Windows PowerShell → Run as administrator**, or search for Windows PowerShell in Start and choose **Run as administrator**. Accept the Windows permission prompt. Keep the ordinary runner window separate.
 
-**Windows PowerShell — administrator:**
+**Windows PowerShell (administrator):**
 
 ```powershell
 wsl --install -d Ubuntu-24.04
@@ -181,7 +201,7 @@ The [Microsoft WSL installation guide](https://learn.microsoft.com/en-us/windows
 
 Ubuntu will finish its first-time setup. Choose a Linux username and password when prompted. Password entry shows no characters; type it and press Enter anyway. Keep this password: Ubuntu will ask for it when you use `sudo`. It is separate from your Windows password and the Langflow password you will create later.
 
-**WSL — Ubuntu:**
+**Ubuntu terminal (WSL):**
 
 ```bash
 whoami
@@ -192,7 +212,7 @@ pwd
 
 Now open **Start → Windows PowerShell** normally in a separate window. Set the runner paths in this new window:
 
-**Windows PowerShell — normal:**
+**Windows PowerShell:**
 
 ```powershell
 $repo = Join-Path $env:USERPROFILE 'source\garak-mitre-atlas-agent'
@@ -206,9 +226,9 @@ Set-Location -LiteralPath $repo
 
 ## 7. Install the Ubuntu tools
 
-**Where:** **WSL — Ubuntu**, not PowerShell.
+**Where:** **Ubuntu terminal (WSL)**, not PowerShell.
 
-**WSL — Ubuntu:**
+**Ubuntu terminal (WSL):**
 
 ```bash
 sudo apt-get update && sudo apt-get install -y git curl ca-certificates nano
@@ -216,7 +236,7 @@ sudo apt-get update && sudo apt-get install -y git curl ca-certificates nano
 
 Enter your **Ubuntu password** if asked. Wait until installation finishes.
 
-**WSL — Ubuntu:**
+**Ubuntu terminal (WSL):**
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh -o /tmp/atlas-uv-install.sh && sh /tmp/atlas-uv-install.sh
@@ -228,9 +248,9 @@ uv --version
 
 ## 8. Download the MITRE ATLAS Agent and install Langflow
 
-**Where:** the same **WSL — Ubuntu** window.
+**Where:** the same **Ubuntu terminal (WSL)** window.
 
-**WSL — Ubuntu:**
+**Ubuntu terminal (WSL):**
 
 ```bash
 export UV_CACHE_DIR="$HOME/.cache/atlas-uv"
@@ -248,13 +268,13 @@ This downloads the upstream agent and its dependencies. It may take several minu
 
 ## 9. Create your Langflow login
 
-**Where:** **WSL — Ubuntu**, in the new ATLAS Agent folder.
+**Where:** **Ubuntu terminal (WSL)**, in the new ATLAS Agent folder.
 
 MITRE's package includes a prepared Langflow database, and its supplied `.env` enables automatic login. **This guide deliberately uses a separate, fresh database with password sign-in as `atlas-researcher`.** Langflow supports a custom `LANGFLOW_SUPERUSER` with `LANGFLOW_AUTO_LOGIN=False`; see its [authentication settings](https://docs.langflow.org/1.10.0/api-keys-and-authentication#langflow_superuser-and-langflow_superuser_password).
 
-This does **not** rename the bundled `langflow` account or transfer its flows. Stay signed in as **`atlas-researcher`** when importing the flow and uploading its files in Steps 11–12, then create the Langflow API key under that same account in Step 14. The upstream ATLAS dataset and vector store remain in place. The first clean-laptop walkthrough reached the saved ATLAS reply with this account. The revised instructions still need a fresh test without help from chat.
+This does **not** rename the bundled `langflow` account or transfer its flows. Stay signed in as **`atlas-researcher`** when importing the flow and uploading its files in Steps 11–12, then create the Langflow API key under that same account in Step 14. The upstream ATLAS dataset and vector store remain in place. The first clean-laptop walkthrough reached the saved ATLAS reply with this account. An independent guide-only installation remains unverified.
 
-**WSL — Ubuntu:**
+**Ubuntu terminal (WSL):**
 
 ```bash
 mkdir -p "$HOME/.config/garak-atlas" "$HOME/.local/share/garak-atlas"
@@ -291,16 +311,15 @@ In Nano:
 
    **In Nano, replace `Example-Only-84!River` with your own password. Keep both single quotes. The opening quote goes immediately after `=`. Do not add a comma or use a single quote inside your password.**
 
-3. Save: **Ctrl+O**, then **Enter**.
-4. Exit: **Ctrl+X**.
+3. Press **Ctrl+O**, press **Enter** to confirm the filename, then press **Ctrl+X**.
 
 **You should see:** the Ubuntu prompt again. Your Langflow username will be **`atlas-researcher`**, with the password you just saved. Keep it privately. Editing this file later does **not** reset a password already stored in Langflow's database.
 
 ## 10. Start Langflow and sign in
 
-**Where:** **WSL — Ubuntu**.
+**Where:** **Ubuntu terminal (WSL)**.
 
-**WSL — Ubuntu:**
+**Ubuntu terminal (WSL):**
 
 ```bash
 cd "$HOME/source/atlas-knowledge-base-agent"
@@ -308,7 +327,7 @@ export UV_CACHE_DIR="$HOME/.cache/atlas-uv"
 uv run --locked langflow run --host 127.0.0.1 --port 7860 --env-file "$HOME/.config/garak-atlas/langflow.env"
 ```
 
-Wait for **Welcome to Langflow** and its **Open Langflow** address. Startup can take several minutes. **Leave this Ubuntu window running. Do not start another copy.**
+Startup can take several minutes. Once Langflow prints its local address, leave this terminal open and switch to Edge. The shell prompt returns when the server stops. Keep one Langflow instance running.
 
 **Where next:** **Microsoft Edge on Windows**, in a new **InPrivate** window.
 
@@ -382,7 +401,7 @@ Paste this entire block. It finds your Ubuntu home folder, checks the pinned MIT
 - `ATLAS Graph Generator.md`
 - `atlas-nodes-with-emb-text-v2026-07.csv`
 
-If the block prints an error, keep that exact message; do not proceed to an upload with missing files. The helper checks the pinned upstream flow contents before preparing it. Its output and model requests have been checked offline; this combined Windows preparation/import route still needs the next clean-laptop test.
+If the block prints an error, keep that exact message; do not proceed to an upload with missing files. The helper checks the pinned upstream flow contents before preparing it. Its output and model requests have been checked offline; an independent guide-only test of this combined Windows preparation/import route remains unverified.
 
 ### Import the flow once
 
@@ -479,7 +498,7 @@ The name **vLLM** is retained from MITRE's component; this configuration calls O
 | --- | --- |
 | Tool input | A lookup for `AML.T0054`, such as `result = atlas.lookup("AML.T0054", fields=["id", "name"])` |
 | Tool output | `status: success` and a dataset record with `id: AML.T0054`, `name: LLM Jailbreak` |
-| Final answer | `AML.T0054 — LLM Jailbreak`, matching that returned record |
+| Final answer | Technique ID `AML.T0054` and name `LLM Jailbreak`, matching the returned record regardless of punctuation |
 
 A greeting, an answer without a tool trace, or the model saying it used the dataset is not sufficient. Save the tool input/output and final answer with your test notes. If the model is unavailable, the lookup fails, or no tool result is visible, stop here and keep the error/trace. Do not disable reasoning, switch providers or proceed to MCP to bypass a failed checkpoint.
 
@@ -491,8 +510,8 @@ A greeting, an answer without a tool trace, or the model saying it used the data
 
 MCP is the connection the Windows runner uses to send the handoff to your flow.
 
-1. Return to the project containing your imported **ATLAS Agent v1.1.0** flow and open its **MCP Server** tab. Use that project's actual name; it need not be named **ATLAS Agent**. This is the project tab, not **Settings → Langflow MCP Client**.
-2. Click **Edit Tools**. Keep **ATLAS Agent v1.1.0** checked and uncheck **New Flow** if it is listed. Click the ATLAS row's text in the **Tool** column—not its checkbox—to display that tool's details on the right. Confirm **Tool name** is **`atlas_agent_v110`**; if it already matches, leave it unchanged. Do not rename `new_flow`. Click **Close**. This changes which flows MCP exposes; it does not delete either flow.
+1. Click **Starter Project** in the flow's top breadcrumb, then open **MCP Server**. If you imported the flow into another project, use that project's name in the breadcrumb. This is the project tab, not **Settings → Langflow MCP Client**.
+2. Click **Edit Tools**. Keep **ATLAS Agent v1.1.0** checked and uncheck **New Flow** if it is listed. Click the tool name in the **Tool** column to open its details. Confirm **Tool name** is **`atlas_agent_v110`**; if it already matches, leave it unchanged. Do not rename `new_flow`. Click **Close**. This changes which flows MCP exposes; it does not delete either flow.
 3. Beside **Auth**, click **Add Auth** or **Edit Auth**. In **Configure MCP Server Authentication**, select **API Key**, then click **Save** at the bottom right. **You should see: Auth: API Key** on the MCP Server page. If the page already shows **Auth: API Key**, keep that setting. **This enables authentication; it does not create an API key. Create the key in the next step.**
 4. **Create your Langflow API key now.** Stay signed in as **`atlas-researcher`**, the account that imported the flow. Click your **profile icon at the top right → Settings → Langflow API Keys → Add New**. Name the key **Garak runner**. If asked for expiry, choose a period that covers your test. Click **Create API Key**. **You should see:** the newly generated key. Copy it into your password manager/private notes; do not post it in chat or GitHub. This is the **Langflow API key** the runner will request in steps 15 and 17, not your OpenAI key or Langflow login password. Use this installation's key; do not reuse a key from the bundled account or another Langflow database.
 5. Return to that same project's **MCP Server** tab. Click **JSON**, select **Windows**, and select **Streamable HTTP** under **Transport**. **You should see:** a code box containing `"command": "cmd"` and an `"args"` list. This is the expected screen.
@@ -527,6 +546,7 @@ $labRoot = Join-Path $env:LOCALAPPDATA 'GarakPlaybook'
 $scannerPython = Join-Path $labRoot 'scanner-env\Scripts\python.exe'
 Set-Location -LiteralPath $repo
 $endpoint = Read-Host 'Paste the project Streamable HTTP URL (no key)'
+if ([string]::IsNullOrWhiteSpace($endpoint)) { throw 'URL was blank. Rerun the first Step 15 block and paste the project URL at its prompt.' }
 $discoveryDir = Join-Path $labRoot 'garak-playbook-private\mcp-discovery'
 & $scannerPython "$repo\tools\inspect_atlas_mcp.py" `
     --url $endpoint --output-dir $discoveryDir --api-key-prompt
@@ -542,7 +562,8 @@ Now paste the **full Discovery report path** printed above when this next block 
 **Windows PowerShell:**
 
 ```powershell
-$discovery = Read-Host 'Paste the full Discovery report path printed above'
+$discovery = (Read-Host 'Paste the full Discovery report path printed above').Trim().Trim('"')
+if ([string]::IsNullOrWhiteSpace($discovery) -or -not (Test-Path -LiteralPath $discovery -PathType Leaf)) { throw 'Report path is blank or the file was not found. Rerun this second Step 15 block with the successful Discovery report path.' }
 @'
 import atlas_mcp, sys
 connection = atlas_mcp.load_discovery(sys.argv[1])
@@ -554,11 +575,25 @@ if ($LASTEXITCODE -ne 0) { throw 'The discovered ATLAS tool does not match this 
 
 **You should see:** `Validated tool: atlas_agent_v110` and your endpoint. The check also validates the server identity and input schema. If it fails, do not proceed to `SEND`: HTTP 401/403 points to authentication; a tool/schema error points to the exposed flow or Langflow version. Keep the report for diagnosis.
 
+### If the Discovery report path was blank or mistyped
+
+Wait for the `PS ...>` prompt. Find the **Discovery report:** line printed after `Discovery status: discovery_complete`, then copy the full path ending in `.json`. **Rerun Step 15's second block**, starting with `$discovery = ...`, and paste that path when prompted. This reads the existing successful report; it does not repeat discovery or submit a handoff.
+
+If the output has scrolled away, open File Explorer, paste `%LOCALAPPDATA%\GarakPlaybook\garak-playbook-private\mcp-discovery` into its address bar, and find the report from the successful attempt. Copy its path and validate it with the same second block. Keep failed reports too; a report whose status is not `discovery_complete` cannot be used. If the successful report was deleted, rerun the first block to create a new discovery report, then validate its printed path.
+
+### If the URL was blank or mistyped
+
+If the prompt was left blank, the command reports a missing `--url` value, or you see `Supply the exact loopback HTTP endpoint with a port and no credentials, query, or fragment`, the problem is the address. Wait for the `PS ...>` prompt, copy the project URL again from Step 14, and **rerun the first block in Step 15**, starting with `$repo = Join-Path ...`. Paste only the URL at its prompt, without quotes or the surrounding JSON. This block replaces the old `$endpoint`; the short key-retry command below does not.
+
+For HTTP 404, check that you copied this installation's actual project URL and port, then rerun that same first block. For a refused connection such as `WinError 10061`, confirm Langflow is running in the Ubuntu terminal and use its printed port. Restore it using [Reopen after shutting down or restarting](#reopen-after-shutting-down-or-restarting), then rerun the first Step 15 block. These errors are not fixed by changing the API key.
+
+After successful discovery, use its new report path in **Step 15's second block**. Continue only after `Validated tool: atlas_agent_v110`.
+
 ### If you mistype the key during Step 15
 
 **Where:** the same normal **Windows PowerShell** window.
 
-If discovery reports HTTP 401/403, or `Enter the actual API key without quotes, whitespace, or control characters`, wait until the `PS ...>` prompt returns. Keep the failed discovery report. Copy your **Langflow “Garak runner” API key** again, then run only this command:
+If discovery reports HTTP 401/403, or `Enter the actual API key without quotes, whitespace, or control characters`, wait until the `PS ...>` prompt returns. Keep the failed discovery report. If `$endpoint` is correct, copy your **Langflow “Garak runner” API key** again, then run only this key-retry block:
 
 **Windows PowerShell:**
 
@@ -645,10 +680,10 @@ flowchart TD
 & $scannerPython "$repo\playbook.py" atlas --run-dir $savedRun --discovery $discovery
 ```
 
-Respond to the prompts in order:
+Respond to the prompts in order. **Pressing Enter without a value at either the provider or model prompt cancels before submission.**
 
-1. **ATLAS model provider shown in Langflow:** enter the provider from step 13, such as `OpenAI`.
-2. **ATLAS model name shown in Langflow:** enter exactly the **Model Name** from step 13.
+1. **ATLAS model provider shown in Langflow:** for the Step 13 setup, enter `OpenAI`.
+2. **ATLAS model name shown in Langflow:** for the Step 13 setup, enter `gpt-6.1-sol`. If you use another tested flow, enter the provider and model actually saved in it. These identify the ATLAS Agent, not the Garak scan target.
 3. Review the displayed endpoint, `atlas_agent_v110`, Run ID `synthetic-example`, and handoff text. Also check **Expected Kumu project/map**: the supplied flow uses project `99b02113875c5b03b510b4b6968b2566` and map `atlas`. These provider/model labels record your selection; they do not change the flow.
 4. To submit, type **`SEND`** and press Enter. Pressing Enter without SEND cancels.
 5. At the hidden key prompt, paste your **Langflow API key** and press Enter.
@@ -696,9 +731,14 @@ Copy the **folder path after `ATLAS archive:`** from step 17, without the label.
 **Windows PowerShell:**
 
 ```powershell
-$atlasSubmission = Read-Host 'Paste the ATLAS archive folder path from step 17'
-notepad.exe "$atlasSubmission\atlas_response.md"
+$atlasSubmission = (Read-Host 'Paste the ATLAS archive folder path from step 17').Trim().Trim('"')
+if ([string]::IsNullOrWhiteSpace($atlasSubmission)) { throw 'Archive path was blank. Rerun this Step 18 block with the ATLAS archive folder path.' }
+$atlasReply = Join-Path $atlasSubmission 'atlas_response.md'
+if (-not (Test-Path -LiteralPath $atlasReply -PathType Leaf)) { throw 'atlas_response.md was not found in that folder. Check the archive path and rerun this Step 18 block. Do not repeat SEND.' }
+notepad.exe $atlasReply
 ```
+
+**If the path was blank or mistyped:** copy the folder path from the successful Step 17 **ATLAS archive:** line and rerun only this Step 18 block. If needed, find that submission under `%LOCALAPPDATA%\GarakPlaybook\examples\synthetic-atlas-run\atlas-submissions` in File Explorer and confirm it contains `atlas_response.md`. Use the submission that reported `response_received_unreviewed`. If the correct archive has no reply file, preserve it and inspect the error; do not repeat `SEND` merely to fix a path or reopen a reply.
 
 **You should see:** Notepad displaying the saved ATLAS analysis and a **View Kumu graph** section with the full URL.
 
@@ -709,9 +749,9 @@ notepad.exe "$atlasSubmission\atlas_response.md"
 
 [![Kumu displays the AML.T0068 technique description beside a graph centered on LLM Prompt Obfuscation.](images/kumu-atlas-aml-t0068.png)](images/kumu-atlas-aml-t0068.png)
 
-Expected view for the sample handoff. Kumu opens with AML.T0068 — LLM Prompt Obfuscation selected. The surrounding nodes show related ATLAS records for investigation.
+Expected view for the sample handoff. Kumu opens with AML.T0068 (LLM Prompt Obfuscation) selected. The surrounding nodes show related ATLAS records for investigation.
 
-3. Compare the displayed technique ID with the reply's **Coverage checked** line. In the observed synthetic example, the graph opened to **AML.T0068 — LLM Prompt Obfuscation**. If the analysis discusses several IDs, check those IDs in the view too; context nodes are not additional findings.
+3. Compare the displayed technique ID with the reply's **Coverage checked** line and match its technique name to the analysis, regardless of punctuation. In the observed synthetic example, the graph opened to **AML.T0068 (LLM Prompt Obfuscation)**. If the analysis discusses several IDs, check those IDs in the view too; context nodes are not additional findings.
 
 **This is the core setup finish line:** the analysis and full URL are together in the saved reply, the runner's graph checks passed, and the matching technique is visible in Kumu. No new Garak scan or separate graph menu action is needed. A tentative mapping with insufficient evidence to confirm an attack is valid; do not turn it into a confirmed finding to complete the check. If the URL is missing, Kumu cannot open, or the IDs do not match, keep the reply and displayed error for review.
 
@@ -729,7 +769,7 @@ Record your commit ID from step 3, both final statuses, the reply path and the b
 
 **Where:** normal Windows PowerShell. Run `wsl -d Ubuntu-24.04` to open the existing Ubuntu installation, then run the block below at its Linux prompt. If Langflow is already running in another Ubuntu window, keep that instance; do not start another. Normal restarts do not require `wsl --install`, another database, or another flow import.
 
-**WSL — Ubuntu, for the installation created by this guide:**
+**Ubuntu terminal (WSL), for the installation created by this guide:**
 
 ```bash
 cd "$HOME/source/atlas-knowledge-base-agent"
@@ -768,7 +808,7 @@ The sample-to-ATLAS path does not need `config.private.json`. For later **real s
 
 Keep its database, account, model provider, flow and private environment file. Use its established startup command in its existing WSL directory, then continue at step 14. For an installation using a local `.env` file, that command is:
 
-**WSL — Ubuntu, from the existing upstream ATLAS directory:**
+**Ubuntu terminal (WSL), from the existing upstream ATLAS directory:**
 
 ```bash
 uv run langflow run --env-file .env
@@ -776,7 +816,7 @@ uv run langflow run --env-file .env
 
 **You should see:** the existing instance's Welcome message. Use its printed port. Editing an environment-file password does not reset an existing database account; use the installed version's account-recovery procedure if needed.
 
-For a real saved Garak run, set `$savedRun` to that run's directory, review what its handoff will disclose, and use steps 17–18. Do not sanitize by editing hashed original evidence. One `SEND` requests analysis and the Kumu URL together; [current-laptop acceptance](inline-kumu-acceptance.md) passed for the observed AML.T0068 case. The older separate Kumu action remains optional follow-up research.
+For a real saved Garak run, set `$savedRun` to that run's directory, review what its handoff will disclose, and use steps 17–18. Do not sanitize by editing hashed original evidence. One `SEND` requests analysis and the Kumu URL together; [observed Kumu result](inline-kumu-acceptance.md) passed for the observed AML.T0068 case. The older separate Kumu action remains optional follow-up research.
 
 ## Optional: index and search locally
 
@@ -788,7 +828,7 @@ Start only after step 18. This uses the **same saved example and ATLAS archive**
 
 Reuse a working Windows Ollama installation. Otherwise download the Windows installer from [Ollama](https://ollama.com/download/windows), open the downloaded installer, and complete installation. Open **Start → Ollama**, then reopen **Start → Windows PowerShell** normally so the `ollama` command is available. The Windows app normally serves loopback port 11434. Do not start a second `ollama serve` if it is already running. [EmbeddingGemma requires Ollama 0.11.10 or later](https://ollama.com/library/embeddinggemma).
 
-**Windows PowerShell — normal terminal, not Ollama's `>>>` chat:**
+**Windows PowerShell: normal terminal, not Ollama's `>>>` chat:**
 
 ```powershell
 ollama --version
@@ -797,14 +837,14 @@ ollama list
 
 If `embeddinggemma:latest` is absent, download it once. Skip this download when reusing an already indexed model: pulling `latest` can change its digest.
 
-**Windows PowerShell — only when the model is absent:**
+**Windows PowerShell: only when the model is absent:**
 
 ```powershell
 ollama pull embeddinggemma:latest
 if ($LASTEXITCODE -ne 0) { throw 'Embedding model download failed.' }
 ```
 
-**Windows PowerShell — verify the model and one local embedding:**
+**Windows PowerShell: verify the model and one local embedding:**
 
 ```powershell
 ollama show embeddinggemma:latest
@@ -839,7 +879,7 @@ Set-Location -LiteralPath $repo
 
 If you already have a valid `research.private.json`, reuse it and its configured interpreter/store; skip environment/config creation. Do not rerun the main `configure.py`. For a new research setup:
 
-**Windows PowerShell — normal terminal:**
+**Windows PowerShell:**
 
 ```powershell
 $researchEnv = Join-Path $labRoot 'research-env'
@@ -869,7 +909,7 @@ $researchSettings | ConvertTo-Json | Set-Content -LiteralPath $researchConfig -E
 
 If reusing research configuration, set `$researchConfig` to its actual full path before continuing. Keep `$savedRun` and `$atlasSubmission` from steps 16–18. Index once, then repeat the **same** command to verify no duplicate:
 
-**Windows PowerShell — normal terminal:**
+**Windows PowerShell:**
 
 ```powershell
 $indexArgs = @('research-index', '--research-config', $researchConfig,
@@ -887,7 +927,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Search failed.' }
 
 Open the indexed original summary:
 
-**Windows PowerShell — normal terminal:**
+**Windows PowerShell:**
 
 ```powershell
 & $scannerPython "$repo\playbook.py" research-open --research-config $researchConfig `
@@ -902,11 +942,11 @@ Open the indexed original summary:
 | --- | --- |
 | Windows runner installation and integrations | Full Windows pass at `09e8128`; seven Windows delta checks at `4fedd3f`. See the [release record](release-v1.md). This documentation revision does not claim a new full Windows pass. Record the actual clean-laptop commit and result separately. |
 | Existing Langflow/ATLAS deployment | Startup, authenticated discovery, confirmed MCP submission and reply archival were exercised in the maintainer's existing Windows/WSL lab. |
-| Assisted Windows walkthrough | **Passed.** Authenticated `atlas-researcher` login, flow import/file attachments, a live `atlas_dataset_sandbox` lookup returning `AML.T0054 — LLM Jailbreak`, MCP discovery/submission and opening the archived reply were observed. The later inline Kumu check below completes the observed finish line. Chat assistance and a manual model-component edit were used. An **independent guide-only install remains unverified**. |
+| Assisted Windows walkthrough | **Passed.** Authenticated `atlas-researcher` login, flow import/file attachments, a live `atlas_dataset_sandbox` lookup returning `AML.T0054` (`LLM Jailbreak`), MCP discovery/submission and opening the archived reply were observed. The later inline Kumu check below completes the observed finish line. Chat assistance and a manual model-component edit were used. An **independent guide-only install remains unverified**. |
 | Revised prepared-flow installation path | The setup helper preserves upstream tools/instructions/wires and prepares a model component matching the tested code. Offline request checks cover Responses API, medium reasoning, ATLAS tool schemas and omitted temperature. Importing the generated file and following this revised guide on another clean Windows laptop remain **unverified**. |
 | Synthetic saved-run preparation and archive routing | The guide's fixture assembly is checked offline against the existing renderer/loader. MCP archival is exercised with a synthetic protocol server; this does not validate a new Langflow deployment or paid model. |
 | Optional research search | The maintainer exercised real local EmbeddingGemma indexing, unchanged reindexing, model/probe filters, search and evidence opening. This guide's synthetic example is checked with real embedded Chroma and fake embedding vectors; a fresh Windows installation following every new instruction remains **unverified**. |
-| Analysis and Kumu in one submission | Passed for the current-laptop AML.T0068 case at `82ba06f` on November 27, 2026. Operator console output reports successful analysis and graph URL checks; the uploaded saved reply contains candidate analysis and the same URL; the browser screenshot shows AML.T0068 — LLM Prompt Obfuscation. Internal tool execution remains agent-reported for this submission, and broader research quality remains unverified. See [acceptance evidence](inline-kumu-acceptance.md). |
+| Analysis and Kumu in one submission | Passed for the assisted Windows AML.T0068 example at `82ba06f` on November 27, 2026. Operator console output reports successful analysis and graph URL checks; the uploaded saved reply contains candidate analysis and the same URL; the browser screenshot shows AML.T0068 (LLM Prompt Obfuscation). Internal tool execution remains agent-reported for this submission, and broader research quality remains unverified. See [acceptance evidence](inline-kumu-acceptance.md). |
 | Release scope | The ATLAS submission now requests analysis and its Kumu URL together. Scanner execution, profiles, credentials and the closed fourteen-probe campaign are unchanged. AVID and broader probes remain deferred. |
 
 An independent guide-only install remains unverified; document and syntax checks do not establish that pass. The assisted walkthrough is the installation evidence available for this guide. Keep expected results distinct from observed validation evidence.

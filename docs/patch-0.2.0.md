@@ -1,6 +1,8 @@
-# 0.2.0 — installed probe browser
+# 0.2.0: installed probe browser
 
-Historical release notes. Version 0.2.1 adds Back at review; see [the correction](patch-0.2.1.md) for current behavior and the cumulative update.
+**Historical version 0.2.0 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
+
+Historical release notes. Version 0.2.1 adds Back at review; see [the correction](patch-0.2.1.md) for the subsequent navigation correction and the cumulative update.
 
 The existing runner now lists the full probe registry from the configured Garak 0.17.0 installation. It shows twenty entries per page, with case-insensitive name/family search, descriptions, runner support status, and short reasons for unavailable probes. Default-inactive probes remain visible and can be explicitly selected when supported. Probe discovery and execution support are separate: the catalog is not restricted to the compatibility list.
 

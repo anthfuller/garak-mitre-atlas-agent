@@ -1,5 +1,7 @@
 # Version 0.1.1 corrections
 
+**Historical version 0.1.1 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
+
 The independent review identified two real defects in 0.1.0. Both were reproduced before changing the implementation.
 
 1. An exception after subprocess launch, such as failure to write the running manifest, could return without stopping Garak. Scanner cleanup and console-reader completion now occur through `finally` before final artifact writing. Transient and persistent manifest-write regression tests use real inert child processes and verify termination before return or propagation of a write error. Termination failure is surfaced rather than silently ignored.

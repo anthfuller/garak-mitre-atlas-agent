@@ -1,4 +1,6 @@
-# 0.2.1 — return from probe review
+# 0.2.1: return from probe review
+
+**Historical version 0.2.1 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
 
 The supported-probe review screen now offers:
 

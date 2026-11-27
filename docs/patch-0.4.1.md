@@ -1,6 +1,8 @@
-# 0.4.1 — optional Kumu graph from saved ATLAS analysis
+# 0.4.1: optional Kumu graph from saved ATLAS analysis
 
-Apply over 0.4.0. This patch adds `kumu_mcp.py`, a `kumu` command and completion/handoff menu action **5**. It uses the existing authenticated MCP transport and fixed `atlas_agent_v110` tool. No package, model, scan profile, Langflow configuration, original handoff or ATLAS analysis is changed.
+**Historical version 0.4.1 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
+
+Version 0.4.1 extended 0.4.0 with `kumu_mcp.py`, a `kumu` command and completion/handoff menu action **5**. It uses the existing authenticated MCP transport and fixed `atlas_agent_v110` tool. No package, model, scan profile, Langflow configuration, original handoff or ATLAS analysis is changed.
 
 ## Operator workflow
 
@@ -54,7 +56,7 @@ Equivalent JSON text blocks are accepted once for the derived graph result. Both
 
 - **Prior Windows exercise:** v0.4.0 authenticated discovery, one explicit analysis submission, a saved reply aligned with the correct run/attempt IDs, and matching archived request/handoff hashes. This does not establish Windows Kumu generation.
 - **Offline, synthetic:** 19 new tests cover ordered ID selection/exclusions, single/multiple focus, duplicate responses, missing second focus, wrong run/anchor, unsafe or conflicting output, cancellation, failed authentication/schema, redirects, lost responses/no retries, archive failures, source preservation, repeated explicit calls, JSON/SSE, explicit browser opening, CLI/menu routing and unattended behavior. All 144 offline tests passed (125 existing + 19 new) in 20.302 seconds. These tests use synthetic local HTTP/MCP servers and mocked browser opening; no real model was called.
-- **Supplied-export inspection:** the previously saved analysis contains exactly two unique IDs, `AML.T0054` and `AML.T0051.000`. This is an extraction check from the uploaded response, not a new ATLAS invocation or independent mapping validation.
+- **Saved analysis inspection:** the previously saved analysis contains exactly two unique IDs, `AML.T0054` and `AML.T0051.000`. This is an extraction check from the uploaded response, not a new ATLAS invocation or independent mapping validation.
 - **Pending:** first confirmed Windows Kumu call, returned tool-shaped result, archived link and operator visual confirmation that both focus nodes appear. Native Garak evidence for that real run was not present in the build environment; offline native-run fixtures are synthetic.
 
 ## Authoritative implementation inspected

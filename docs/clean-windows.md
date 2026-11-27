@@ -2,13 +2,13 @@
 
 For ordinary installation, use the [Install on Windows and open your first ATLAS reply](install-and-verify.md). The procedures here reproduce maintainer checks; they are not extra steps every researcher must run.
 
-## Earned validation
+## Recorded validation
 
 - The full Windows validator passed at `09e812807924e9c55c9d96a507fe0beac637f752` on November 26, 2026. It reused recorded environments from the earlier fresh installations with unchanged requirements and package inventories.
 - The seven targeted Windows delta checks passed at `4fedd3f008088a408825a39ec284c5b3bbcdaf7e` the same day. The exact candidate and bundle hash matched the delivered source; the prior Windows receipt hash also matched. No model call, paid request or dependency installation was recorded.
 - Later reply-formatting, prepared-flow and inline Kumu code changes have their own offline evidence in the [release record](release-v1.md); they are not documentation-only changes after `4fedd3f`.
 - The assisted Windows walkthrough passed, including the observed saved reply and AML.T0068 Kumu view. An independent guide-only install remains unverified. Chat assistance and a manual model-component edit were used; the generated-flow import has not received an independent installation pass.
-- Final documentation preparation after `373ba13` preserves code, tests, requirements and profiles byte-for-byte. It receives diff/link and final tree/history checks. No Windows rerun or live scan is required for those documentation edits.
+- Later editorial corrections include four Python display strings and documentation. Their offline checks are separate from the Windows receipts; scan behavior, dependencies and profiles remain unchanged.
 
 Receipts/logs remain private. These checkpoints are not relabeled as a full Windows run for every later commit. Desktop clipboard/editor/browser actions remain mocked in the automated suite; actual model compatibility and native UI behavior need their own evidence. See the [release record](release-v1.md).
 
@@ -50,7 +50,7 @@ If an earlier validation directory has successful test and scanner installation 
 
 ## Reproduce the targeted delta check
 
-This check is already earned for `4fedd3f`. It is provided for reproducing that checkpoint or checking a later relevant change, not as a release-preparation rerun requirement.
+This check passed for `4fedd3f`. Use it to reproduce that checkpoint or check a later relevant change.
 
 Using a local snapshot created above and the original passed `09e8128` receipt, run in **normal Windows PowerShell**:
 

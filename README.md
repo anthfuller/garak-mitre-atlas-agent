@@ -1,6 +1,6 @@
 # Garak Evidence for the MITRE ATLAS Agent
 
-Investigate Garak detector flags with the MITRE ATLAS Agent in Langflow.
+Turn saved Garak evidence into an ATLAS investigation with candidate technique mappings and a Kumu graph link.
 
 **New laptop? Start with [Install on Windows and open your first ATLAS reply](docs/install-and-verify.md).**
 
@@ -8,13 +8,11 @@ Start at Step 1 and follow the guide until you open the Kumu graph from your sav
 
 The local guide runs Langflow on `127.0.0.1` over HTTP. Use a unique Langflow password. An InPrivate window keeps the lab login separate from your regular browser session. HTTP traffic remains unencrypted. Before allowing access from another device, configure HTTPS with a trusted certificate matching the server hostname. See the [guide's browser and HTTPS guidance](docs/install-and-verify.md#10-start-langflow-and-sign-in). **HTTPS deployment remains unverified by this walkthrough.**
 
-**The assisted Windows walkthrough passed. An independent guide-only install remains unverified.** On the current laptop, one observed `SEND` returned candidate analysis and a full Kumu URL together in the saved reply; the browser displayed **AML.T0068 - LLM Prompt Obfuscation**. See [evidence and limits](docs/inline-kumu-acceptance.md).
+**The assisted Windows walkthrough passed; an independent guide-only installation remains unverified.** The observed synthetic example returned candidate `AML.T0068` (LLM Prompt Obfuscation), and its saved Kumu link opened to that technique. See [evidence and limits](docs/inline-kumu-acceptance.md).
 
-Review candidate technique mappings and search saved evidence locally with Chroma and EmbeddingGemma.
+The Windows runner creates a concise `atlas_handoff.md` from a saved Garak run. After you review it and confirm `SEND`, the runner submits it to your configured MITRE ATLAS Agent in Langflow over authenticated MCP. It archives the handoff and reply beside the run. The request asks for analysis and a full Kumu URL together; if graph generation or validation fails, the analysis and error remain available. You supply the agent and its model credentials separately. This repository does not bundle the upstream flow or ATLAS dataset.
 
-The Windows runner turns a saved Garak run into a concise `atlas_handoff.md`. You can copy it to your configured MITRE ATLAS Agent in Langflow, or review and confirm submission over authenticated MCP. The runner archives the handoff and the agent's reply beside the run; the reply remains unreviewed analysis. You supply and configure the Langflow agent and its model provider separately. This repository does not bundle the agent, flow, ATLAS dataset or model credentials.
-
-ATLAS supports investigation of candidate techniques and related mitigations/case studies. Its answers require analyst review and authoritative source verification. One `SEND` requests analysis and a full Kumu URL in the same reply. Open the archived `atlas_response.md`, then copy its URL into your browser to view the discussed IDs. This path passed the current-laptop AML.T0068 check; broader research quality remains unverified. Optional Chroma indexing with local EmbeddingGemma makes saved run records searchable while original evidence stays separate.
+Optional local search uses Chroma and EmbeddingGemma to find saved run records while preserving their original evidence. Analyst review is required before treating a mapping as a finding.
 
 ![Workflow from a saved Garak run and reviewed handoff to the MITRE ATLAS Agent in Langflow and an archived reply with candidate mappings for analyst review; optional local search uses EmbeddingGemma via Ollama and a Chroma index.](docs/images/garak-atlas-workflow.png)
 
@@ -47,7 +45,7 @@ Garak 0.17.0 listed **191 probe IDs**. V1 enables **14**. The [compatibility tab
 
 ## Install on Windows and open your first ATLAS reply
 
-Follow the installation guide from Step 1 through **Open the saved ATLAS reply**: read the analysis in `atlas_response.md`, then copy its full Kumu URL into your browser and check the displayed technique. It installs Git, Python, Ubuntu/WSL and Langflow, prepares the ATLAS flow with the tested OpenAI Responses model component, verifies a dataset lookup in Playground, and sends the included synthetic Garak handoff over MCP. One `SEND` produces the analysis and graph link together. You do not run a Garak scan or use a separate graph menu action during installation.
+Follow the installation guide from Step 1 through **Open the saved ATLAS reply**: read the analysis in `atlas_response.md`, then copy its full Kumu URL into your browser and check the displayed technique. The guide walks you through installing Git, Python, Ubuntu/WSL and Langflow, preparing the ATLAS flow with the tested OpenAI Responses model component, verifying a dataset lookup in Playground, and sending the included synthetic Garak handoff over MCP. One `SEND` requests the analysis and graph link together. You do not run a Garak scan or use a separate graph menu action during installation.
 
 ## Configure Garak for live scans after installation
 
@@ -127,9 +125,9 @@ Keep the storage location chosen during installation and any existing private co
 
 For a working Langflow ATLAS Agent, follow [Steps 14–18: enable MCP, verify discovery, and open the saved reply](docs/install-and-verify.md#14-enable-mcp-access-and-create-a-langflow-api-key). They show where to copy your actual project URL, where to paste it in PowerShell, which key to enter, and the expected `Validated tool: atlas_agent_v110` result. If the installation walkthrough already completed these steps, reuse that setup.
 
-Discovery invokes no ATLAS tools. Use the resulting report with `playbook.py atlas`, or select **Send saved handoff to ATLAS over MCP** from the completion/existing-run menu. Review the saved handoff and destination, then type `SEND` to authorize submission. The Langflow key uses hidden input. Full model responses remain in the original Garak evidence; the compact handoff includes selected input excerpts and detector observations, so ATLAS cannot assess omitted responses. A different flow/schema requires review.
+Discovery invokes no ATLAS tools. Use the resulting report with `playbook.py atlas`, or select **Send saved handoff to ATLAS for analysis and Kumu URL** from the completion/existing-run menu. Review the saved handoff and destination, then type `SEND` to authorize submission. The Langflow key uses hidden input. Full model responses remain in the original Garak evidence; the compact handoff includes selected input excerpts and detector observations, so ATLAS cannot assess omitted responses. A different flow/schema requires review.
 
-The submission now requests the Graph Generator result in the same reply and saves its full URL in `atlas_response.md` only after project, map and discussed-ID coverage checks. It uses the pinned MITRE flow's destination by default; a custom destination requires `atlas --kumu-config PATH`. The existing separate Kumu action is optional follow-up research. See the [current-laptop acceptance check and limits](docs/inline-kumu-acceptance.md) and [operator guide](docs/operator-guide.md).
+The submission requests the Graph Generator result in the same reply and saves its full URL in `atlas_response.md` only after project, map and discussed-ID coverage checks. It uses the pinned MITRE flow's destination by default; a custom destination requires `atlas --kumu-config PATH`. The existing separate Kumu action is optional follow-up research. See the [observed Kumu result and limits](docs/inline-kumu-acceptance.md) and [operator guide](docs/operator-guide.md).
 
 ## Optional local research search
 
@@ -137,7 +135,7 @@ Follow [Optional: index and search locally](docs/install-and-verify.md#optional-
 
 ## Validation and release
 
-[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Windows full validation passed at `09e8128`, and seven targeted Windows delta checks passed at `4fedd3f`. Later reply-formatting, prepared-flow and inline Kumu code changes have separate offline checks and the observed assisted Windows walkthrough; they are listed in the [release record](docs/release-v1.md). An independent guide-only install remains unverified.
+[Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Windows full validation passed at `09e8128`, and seven targeted Windows delta checks passed at `4fedd3f`. Later reply-formatting, prepared-flow and inline Kumu code changes have separate offline checks and the observed assisted Windows walkthrough; they are listed in the [release record](docs/release-v1.md).
 
 Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. Tracked files and reachable Git history are reviewed against the [public allowlist](docs/public-file-list.txt). Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
 

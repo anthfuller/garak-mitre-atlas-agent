@@ -348,7 +348,7 @@ def write_report(folder, document):
             s = display_summary(run)
             if s.get("execution_status") == "completed" and not run["integrity_warnings"]:
                 continue
-            text += [f"- {row['target_profile']} / {row['probe_id']}: **{s.get('execution_status')}** — {run['evidence_folder']}",
+            text += [f"- {row['target_profile']} / {row['probe_id']}: **{s.get('execution_status')}**; evidence: {run['evidence_folder']}",
                      "  - " + " | ".join(s.get("coverage_gaps", []) + run["integrity_warnings"]),
                      "  - Saved transport diagnostics: " + json.dumps(run["diagnostics"], ensure_ascii=False)]
     if document["history_read_errors"]:

@@ -1,6 +1,8 @@
-# 0.4.0 — explicit ATLAS over MCP
+# 0.4.0: explicit ATLAS over MCP
 
-Apply over the existing 0.3.2 installation. This patch adds `atlas_mcp.py`, the `atlas` command, and optional completion-menu action 4. Actions 1–3 and unattended scan/handoff behavior remain unchanged. No packages are installed or upgraded, and private configuration is not rewritten.
+**Historical version 0.4.0 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
+
+Version 0.4.0 extended the 0.3.2 installation with `atlas_mcp.py`, the `atlas` command, and optional completion-menu action 4. Actions 1–3 and unattended scan/handoff behavior remain unchanged. No packages are installed or upgraded, and private configuration is not rewritten.
 
 ## Behavior and evidence
 

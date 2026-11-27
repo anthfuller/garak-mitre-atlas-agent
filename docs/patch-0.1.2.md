@@ -1,6 +1,8 @@
 # Version 0.1.2: ATLAS prompt and completion access
 
-This patch addresses the two reviewer requests together. It updates the existing 0.1.1 source tree; no installation or dependency upgrade is required.
+**Historical version 0.1.2 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
+
+This version updated the ATLAS prompt format and completion access in the 0.1.1 source tree without a dependency upgrade.
 
 ## Behavior
 
@@ -54,7 +56,7 @@ After regeneration choose **1**, paste into the ATLAS Agent, and choose **3** wh
 
 - 61 offline standard-library tests passed: the existing 37 plus 24 focused handoff tests. These cover selection, exact text/roles/scores, omitted metadata, known/unknown settings, menu loops, no unattended desktop actions, errors, timeouts, preserving outcomes, historical handoff retention, unchanged native records, summary discrepancies and rollback after a checksum-write failure.
 - Both real-Garak/synthetic-endpoint integrations passed with 32 requests each. They verify invocation, settings, parsing, artifacts and the unattended completion output. No real model is used by these integrations.
-- For the operator's supplied run, the new renderer was compared against all five uploaded prompt/response examples, IDs, detector scores and triggers. Every selected value matched exactly, and the prompt records the supplied **32 evaluated responses / zero detector flags**. The builder has not inspected the other 27 native responses. Local regeneration reads the full retained native report and reconciles it with the saved summary.
+- For the operator's supplied run, the new renderer was compared against all five uploaded prompt/response examples, IDs, detector scores and triggers. Every selected value matched exactly, and the prompt records the supplied **32 evaluated responses / zero detector flags**. The other 27 native responses were not available for independent inspection. Local regeneration reads the full retained native report and reconciles it with the saved summary.
 - Windows clipboard round-trip and associated-application opening are not yet exercised on the operator's desktop; their adapters are mocked in offline tests. The existing-run command above allows that check without another model scan.
 - Original limitations remain, including missing per-response token counts/stop reasons, uncertain truncation and untested Windows process-tree cancellation. No model vulnerability, broad resistance or mitigation effectiveness is claimed.
 

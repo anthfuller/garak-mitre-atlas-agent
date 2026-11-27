@@ -2,12 +2,14 @@
 
 Build date: November 22, 2026 (America/New_York).
 
+**Historical 0.3.0 record.** The incomplete integrations and tests below describe that version. Use the [current install guide](install-and-verify.md) and [release record](release-v1.md) for later results.
+
 | Item | Status | Evidence and boundary |
 | --- | --- | --- |
 | Installed CLI interface | Confirmed | Operator-supplied `--help` output identifies Garak 0.17.0 and required arguments; retained privately |
 | Source behavior | Inspected | Exact PyPI Garak 0.17.0 wheel; selected source and payload SHA-256 hashes recorded in `source-audit.json` |
 | Unit tests | Passed for 0.3.0 | 103 offline tests cover existing evidence/handoff behavior, filtered inventory/search/pagination and Back, OpenAI menu/settings/credentials, estimates and optional controls |
-| Reviewer defects reproduced | Confirmed against 0.1.0 | Three targeted regressions failed: mismatched completion identity, timed-out process classification, and a real inert child left running after manifest-write failure |
+| Regression defects reproduced | Confirmed against 0.1.0 | Three targeted regressions failed: mismatched completion identity, timed-out process classification, and a real inert child left running after manifest-write failure |
 | Exceptional child cleanup | Passed on Linux | Real inert Python child was already terminated after transient and persistent manifest-write failures; no LLM was used |
 | Base64 profile integration | Passed again for 0.3.0 against synthetic endpoint | Real Garak CLI made 32 synthetic protocol requests with expected model, messages, seed, temperature and output limit; native evidence and runner artifacts generated |
 | DAN profile integration | Passed again for 0.3.0 against synthetic endpoint | Same integration checks, 32 synthetic protocol requests |
@@ -16,15 +18,15 @@ Build date: November 22, 2026 (America/New_York).
 | Windows real-model run | Exercised using 0.1.1 | Supplied console and summary agree on a completed local run, exit code 0, matching completion identity, 32 evaluated responses and zero DecodeMatch flags; the exported handoff contains the same summary. The full native report was not supplied for this review |
 | ATLAS handoff sample review | Reviewed five of 32 responses | Three incorrect decoded answers, one incorrect decoding procedure ending mid-answer, and one refusal. Possible truncation is unresolved. These results do not prove security resistance |
 | Windows clipboard/open actions | Mocked only | Fixed PowerShell command, UTF-8 reading, literal path forwarding, error handling and menu control flow tested on Linux. Detached Notepad Popen arguments, all three DEVNULL streams, closed extra handles and absence of wait/communicate calls are asserted with mocks. Actual clipboard round-trip, Notepad display and terminal isolation remain to be exercised on Windows |
-| Real Ollama model assessment | Partial analyst review | Operator scan evidence reviewed as above; no model was scanned by the builder during this patch. No confirmed vulnerability or mitigation result |
+| Real Ollama model assessment | Partial analyst review | Operator scan evidence reviewed as above; no real-model scan was performed during this patch. No confirmed vulnerability or mitigation result |
 | OpenAI | Offline synthetic integration passed | 15 cases with actual Garak 0.17.0/OpenAI SDK 2.54.0/HTTPX 0.28.1 and MockTransport; socket access denied. No live account/model access validated |
 | Chroma/embeddinggemma | Unfinished integration | Run/observation exports exist; database and collections have not been accessed or changed |
 | Langflow submission | Unfinished integration | Handoff file generation works; no evidence automatically sent |
 | Finding/mitigation validation | Unfinished | No analyst-confirmed model vulnerability or successful mitigation claimed |
 
-## Current 0.3.0 validation
+## Version 0.3.0 validation
 
-See [release notes](patch-0.3.0.md) for current behavior and detailed test boundaries. All 103 unit tests pass. The real installed inventory contains 191 entries; filtering displays 14 supported workloads for each target and excludes unavailable entries from search and pagination. The two-page Back regression uses extra supported synthetic rows to verify state retention after filtering.
+See [release notes](patch-0.3.0.md) for that version's behavior and test boundaries. All 103 unit tests pass. The real installed inventory contains 191 entries; filtering displays 14 supported workloads for each target and excludes unavailable entries from search and pagination. The two-page Back regression uses extra supported synthetic rows to verify state retention after filtering.
 
 Six existing Ollama protocol integrations were rerun successfully for this release. Fifteen OpenAI MockTransport cases passed with socket access denied. A complete synthetic API response confirms only the simulated model-access path. Two distinct probes exercised native report/handoff generation; other available workloads are source-reviewed and constructed offline, not live-validated. No paid call occurred.
 
@@ -54,10 +56,10 @@ The integration test confirmed the important distinction between requested setti
 
 Remaining limits include absent wire-level request capture, token usage and truncation reasons, untested Windows process-tree cancellation, and unexercised Windows desktop actions. Errors and incomplete runs are surfaced; native diagnostic output still warrants review.
 
-The patch preserves existing campaign files and generation settings, private configuration, prior evidence and the GitHub publication plan. Browser runs add source checks and workload metadata for their selected probe.
+The patch preserves existing campaign files and generation settings, private configuration and prior evidence. Browser runs add source checks and workload metadata for their selected probe.
 
 Historical 0.1.4 validation: that release changed the shared handoff renderer and its tests; scanning, profiles and desktop adapters are unchanged. The prompt contains one investigation request, run facts and one line per selected response. It labels input excerpts untrusted, asks for official ATLAS links and allows an insufficient-evidence answer. It states attack success is unverified and behavior is not assessed. Exact full transcripts remain in original records; only declared bounded excerpts appear in the handoff.
 
 Both automatic scan completion and `handoff --regenerate` were exercised offline through the runner, using a synthetic report and mocked scanner. Regeneration preserves native evidence, full extracted records, settings, scan outcome and prior handoff/checksum bytes. A mismatch refuses regeneration before any writes. Copy/open actions use the same finished file, return after one choice, and cannot alter the recorded scan outcome. `--yes` does not prompt, open applications or change the clipboard.
 
-The patched renderer also generated a preview from the supplied exported summary and five observations. It retained their five IDs and original zero detector scores, and reported 32 evaluated responses and zero flags. Excerpts were compared to the saved input strings. This is an export-based preview: the builder did not have the complete native report or a standalone native manifest. No real model scan or Windows desktop validation was performed for this patch. The operator's local regeneration performs native report/manifest reconciliation.
+The patched renderer also generated a preview from the supplied exported summary and five observations. It retained their five IDs and original zero detector scores, and reported 32 evaluated responses and zero flags. Excerpts were compared to the saved input strings. This is an export-based preview: the complete native report and standalone native manifest were unavailable for independent inspection. No real model scan or Windows desktop validation was performed for this patch. The operator's local regeneration performs native report/manifest reconciliation.

@@ -2,19 +2,9 @@
 
 Run a defined Garak campaign, retain original evidence, check execution quality, and investigate candidate mappings with your MITRE ATLAS Agent in Langflow. The runner generates the handoff and can submit it over authenticated MCP after confirmation. Start with the [Install on Windows and open your first ATLAS reply](install-and-verify.md); the [release record](release-v1.md) is authoritative for current validation. Older patch notes describe the status at their original checkpoints.
 
-**Current change:** one `SEND` requests analysis and the ATLAS Graph Generator's full Kumu URL together. The [current-laptop acceptance check](inline-kumu-acceptance.md) passed for AML.T0068 on November 27, 2026: the saved reply contains both analysis and URL, and the supplied browser screenshot shows the matching technique. The next guide-only clean-laptop test may proceed; public release/tagging still require owner approval.
+One `SEND` requests ATLAS analysis and a full Kumu URL together. The [observed AML.T0068 result](inline-kumu-acceptance.md) includes the saved analysis, URL and matching browser view. A graph failure preserves the analysis and error. The assisted Windows walkthrough passed; an independent guide-only installation remains unverified.
 
-The v1 candidate retains [batch execution and consolidated coverage reports](batch.md). Release 0.5.0 added optional **local Chroma research indexing and search of existing runs**, using explicit Ollama EmbeddingGemma embeddings. Private paths remain outside the source. See [research setup, commands and validation limits](patch-0.5.0.md). One saved-run Windows checkpoint with real local EmbeddingGemma is operator-exercised; broader retrieval-quality validation remains pending.
-
-Release 0.4.2 binds Kumu validation to an independently configured expected project and map. It also adds offline `kumu-validate` for existing graph archives. See [0.4.2 correction](patch-0.4.2.md).
-
-Release 0.4.1 adds **optional Kumu generation from saved ATLAS analysis**. See [0.4.1 patch notes](patch-0.4.1.md). The runner generates the graph request, reviews the selected IDs with the operator, and checks returned focus coverage before offering to open the link. The operator exercised one live Windows graph request and supplied screenshots showing both selected focus IDs; internal dataset/tool execution remains agent-reported.
-
-Release 0.4.0 adds **explicit ATLAS submission over authenticated local MCP** to the existing Ollama/OpenAI runner. The Windows scan paths and Copy/Notepad workflow have operator-reported exercise; broader probe compatibility remains unvalidated. Authenticated MCP discovery has been exercised on Windows. One real Windows ATLAS submission has now been exercised: the archived input hash, run ID, conversation ID and five returned attempt IDs matched. Broader server-side context isolation and internal tool authorization remain unverified. See [0.4.0 patch notes](patch-0.4.0.md) for exact validation boundaries.
-
-Version 0.1.1 corrects child cleanup after exceptional exits and execution-status classification. See [Patch notes](patch-0.1.1.md). Campaign settings are unchanged.
-
-Version 0.2.0 adds an installed-probe browser with search, twenty results per page, support reasons and a review-before-run step. The concise ATLAS handoff and Copy/Notepad actions are unchanged. Version 0.2.1 adds `B: Back` at probe review, retaining the same search results and page. Version 0.3.0 hides unavailable probes and adds OpenAI controls. See [Current patch notes](patch-0.3.0.md).
+Optional [batch execution](batch.md) produces consolidated coverage reports. Optional [local search](install-and-verify.md#optional-index-and-search-locally) uses Chroma and EmbeddingGemma to index existing runs. Indexing, repeat indexing, search, filters and evidence opening were observed on Windows for one saved run; broader retrieval quality remains unverified.
 
 ## Current scope
 
@@ -26,39 +16,76 @@ Version 0.2.0 adds an installed-probe browser with search, twenty results per pa
 - A locally generated `atlas_handoff.md`; optional MCP transmission requires a separate explicit `SEND` confirmation.
 - A structured run record and response observations for later research indexing.
 
-Chroma research indexing is optional; it does not mark a run as an analyst-confirmed finding. Analyst disposition editing, general comparison workflows and adaptive PyRIT scenarios remain deferred. The narrow encoding headroom comparison is implemented; Windows full validation at `09e8128` and delta validation at `4fedd3f` passed. Publication remains subject to owner approval. No application, agent, or RAG target is required for these model scans.
+Chroma research indexing is optional; it does not mark a run as an analyst-confirmed finding. Analyst disposition editing, general comparison workflows and adaptive PyRIT scenarios remain deferred. The narrow encoding headroom comparison is implemented; Windows full validation at `09e8128` and delta validation at `4fedd3f` passed. No application, agent, or RAG target is required for these model scans.
 
 ## Start in Windows PowerShell
 
-Keep the public source folder, private configuration, and evidence directories separate. Copy `examples/config.example.json` to a location outside this source folder, then edit the absolute paths for your machine. The public distribution includes no personal configuration. Use tools/configure.py or edit a private copy.
+Use normal **Windows PowerShell** and the checkout and scanner environment created by the [install guide](install-and-verify.md). If scan configuration does not exist yet, complete [Create or reuse your private scan configuration](../README.md#create-or-reuse-your-private-scan-configuration) first. Keep that configuration and evidence outside the repository.
 
-Use the Python executable from your working Garak environment. The parent runner uses the Python standard library. Inventory inspection runs a helper through the configured Garak Python and uses its installed registry API. An active environment is optional because the commands below name the executable explicitly. Use Python 3.11 or later; the selected Garak installation must meet Garak's own Python requirements.
+### Restore paths (no scan)
 
-All examples in this section belong in **Windows PowerShell**, as a normal user:
+Copy this block into a new PowerShell window. If you chose different storage during installation, keep those existing paths.
 
 ```powershell
-# Example paths: replace them with your local configuration and source locations.
-$labPython = "C:\AI-Lab\garak-env\Scripts\python.exe"
-$runnerPath = "D:\AI-Lab\projects\garak-playbook\playbook.py"
-$profilePath = "D:\AI-Lab\private\config.private.json"
+$repo = Join-Path $env:USERPROFILE 'source\garak-mitre-atlas-agent'
+$labRoot = Join-Path $env:LOCALAPPDATA 'GarakPlaybook'
+$scannerPython = Join-Path $labRoot 'scanner-env\Scripts\python.exe'
+$config = Join-Path $labRoot 'garak-playbook-private\config.private.json'
+Set-Location -LiteralPath $repo
+if (-not (Test-Path -LiteralPath $scannerPython)) { throw 'Complete Step 4 of the install guide first.' }
+if (-not (Test-Path -LiteralPath $config)) { throw 'Create the private scan configuration using the README first.' }
+```
 
-# Show the resolved plan: no network calls and no files written.
-& $labPython $runnerPath plan --config $profilePath --target ollama-local --campaign base64-32
+### Plan only
 
-# Inspect versions, selected source files, and local model metadata; zero generation calls.
-& $labPython $runnerPath preflight --config $profilePath --target ollama-local --campaign base64-32
+In the same window, this block prints the OpenAI Base64 plan. It makes no model request and starts no scan. Use a different configured target only when intended.
 
-# After reviewing the plan, run the interactive selector.
-& $labPython $runnerPath menu --config $profilePath
+```powershell
+& $scannerPython "$repo\playbook.py" plan --config $config --target openai-reasoning --campaign base64-32
+```
 
-# Explicit unattended run. --yes starts the selected new experiment without prompting.
-& $labPython $runnerPath run --config $profilePath --target ollama-local --campaign base64-32 --yes
+### Optional Ollama metadata check (no generation)
 
-# Access an existing run; only choosing action 4 and confirming SEND can submit it.
-& $labPython $runnerPath handoff --run-dir "D:\AI-Lab\evaluations\<existing-run-folder>"
+Use this only after installing Ollama and the local model configured in `ollama-local`. It reads local metadata and writes preflight evidence; it does not generate a model response.
 
-# Explicitly regenerate only the handoff using saved native evidence, then show the same menu.
-& $labPython $runnerPath handoff --run-dir "D:\AI-Lab\evaluations\<existing-run-folder>" --regenerate
+```powershell
+& $scannerPython "$repo\playbook.py" preflight --config $config --target ollama-local --campaign base64-32
+```
+
+### Interactive scan menu
+
+Stay in the same window. Type the displayed target number and press Enter, then choose a campaign or probe. Review the plan and type uppercase `RUN` only when ready to start the scan. OpenAI asks for its API key through a hidden prompt after confirmation.
+
+```powershell
+& $scannerPython "$repo\playbook.py" menu --config $config
+```
+
+Read **Execution status** and **Evidence folder** when the scan finishes. For optional multi-probe operation, see [batch commands and per-pair results](batch.md).
+
+### Optional unattended live Ollama scan
+
+**This block immediately starts a new local model scan.** `--yes` skips confirmation. Use it only after reviewing that target and campaign's plan and intentionally choosing unattended operation. It does not work for OpenAI scans.
+
+```powershell
+& $scannerPython "$repo\playbook.py" run --config $config --target ollama-local --campaign base64-32 --yes
+```
+
+### Access a saved handoff
+
+Paste an existing run's **Evidence folder** path at the prompt. This opens the result menu; submission requires choosing action 4 and confirming `SEND`.
+
+```powershell
+$savedRun = Read-Host 'Paste the existing run Evidence folder path'
+& $scannerPython "$repo\playbook.py" handoff --run-dir $savedRun
+```
+
+### Optional handoff regeneration
+
+Only use this for a saved run whose derived handoff you intentionally want to regenerate. It reconciles the native report with the saved summary, retains the old handoff/checksums as a revision, and then opens the result menu. It does not run a scan.
+
+```powershell
+$savedRun = Read-Host 'Paste the existing run Evidence folder path to regenerate its handoff'
+& $scannerPython "$repo\playbook.py" handoff --run-dir $savedRun --regenerate
 ```
 
 After choosing the target/model, the scan menu offers:
@@ -75,7 +102,7 @@ Selecting a supported probe displays its exact target/model, endpoint, probe, de
 
 The installed inventory is broader than runner support. Hidden entries are not configured/reviewed for this runner; this does not mean Garak itself cannot run them. The included compatibility policy and limitations are listed in [the browser patch notes](patch-0.2.0.md). Inventory inspection creates and removes a temporary cache under the configured artifacts directory; it performs no target access or generation and does not instantiate probes. A failed registry read reports an error, never a silently partial catalog.
 
-OpenAI appears as target option 2 after the first Ollama profile, using `openai.OpenAIReasoningGenerator` and initial model `gpt-5.6-sol`. The profile is added in memory; private configuration is not rewritten. Account/model access stays unverified until a complete compatibility response is received. That check is not probe-compatibility validation.
+Choose OpenAI by its displayed target number. The scan uses `openai.OpenAIReasoningGenerator`; `gpt-5.6-sol` is the example with live evidence in the compatibility table, subject to account access. The configured scan model is separate from the ATLAS Agent model (`gpt-6.1-sol` in the install guide). The profile is added in memory; private configuration is not rewritten. Account/model access stays unverified until a complete compatibility response is received. That check is not probe-compatibility validation.
 
 The OpenAI review offers `L` for `max_completion_tokens` (includes reasoning and visible output). The default is 20,000 only for `gpt-5.6-sol` with Ascii85, Base32 and Base64, and 1,500 for other probes/model IDs; explicit limits take precedence. It also offers `R` to set/raise/remove an optional request cap, `A` for an optional spending alert, and `P` to supply pricing. Both optional controls are OFF by default. The existing logical workload and wall-time limits still apply. No generation temperature or seed is sent; seed 42 is used for probe sampling. Changes apply only to the selected run and are shown again before `RUN`.
 
@@ -103,15 +130,15 @@ At completion, `run --yes` and `handoff --yes` print the result summary and path
 
 ### Optional ATLAS submission
 
-Use option 4 at scan completion or in `handoff`, or use the new `atlas` command for an existing run. The direct command requires no Garak configuration changes:
+Use option 4 at scan completion or in `handoff`, or use the `atlas` command for an existing run. The direct command requires no Garak configuration changes:
 
 ```powershell
-& $labPython $runnerPath atlas --run-dir "D:\AI-Lab\evaluations\existing-run" `
-  --discovery "D:\AI-Lab\private\mcp-discovery\completed-discovery.json" `
-  --provider "OpenAI" --model "MODEL_SHOWN_IN_YOUR_ATLAS_FLOW"
+$savedRun = Read-Host 'Paste the existing run Evidence folder path'
+$discovery = Read-Host 'Paste the successful Discovery report path from Step 15'
+& $scannerPython "$repo\playbook.py" atlas --run-dir $savedRun --discovery $discovery
 ```
 
-The operator supplies a completed authenticated discovery report and the provider/model observed in the ATLAS flow. Omitted values are requested interactively. These provider/model labels are provenance, not model configuration overrides. The runner displays the endpoint, tool, run, handoff hash, full saved handoff, and cost limitation. Only uppercase `SEND` authorizes submission. The Langflow API key is then requested with hidden input; it is not accepted in CLI arguments, profiles, or the handoff.
+The operator supplies a completed authenticated discovery report and the provider/model observed in the ATLAS flow. Omitted values are requested interactively. For the Step 13 setup, enter `OpenAI` for provider and `gpt-6.1-sol` for model. Follow [Steps 14–18](install-and-verify.md#14-enable-mcp-access-and-create-a-langflow-api-key) if discovery is not complete. Pressing Enter at either provider/model prompt cancels before submission. These labels record provenance; they do not override model configuration. The runner displays the endpoint, tool, run, handoff hash, full saved handoff, and cost limitation. Only uppercase `SEND` authorizes submission. The Langflow API key is then requested with hidden input; it is not accepted in CLI arguments, profiles, or the handoff.
 
 Before invoking `atlas_agent_v110`, the client rechecks the server identity/version and exact tool metadata/schema against discovery. It wraps the existing UTF-8 handoff in an analysis-and-graph request as `input_value`, with a new UUID `session_id`. One `SEND` requests dataset verification and the Graph Generator for every AML ID discussed in the analysis. It does not regenerate the handoff, run Garak, change flow/model settings, or automatically index findings. Original evidence and root checksums remain unchanged. Each submission gets its own directory under `atlas-submissions`, including a byte-identical `handoff.submitted.md`, the full `request_prompt.md`, request, original returned result, unreviewed reply, metadata, exchanges and separate checksums. Existing credential redaction remains in force and is recorded.
 
@@ -121,18 +148,19 @@ If graph generation or validation fails, the analysis and original response rema
 
 The client permits one explicit ATLAS tool invocation per action, disables HTTP redirects/proxies and automatic retries, and never executes server-initiated requests or follows returned resources. These client restrictions do not enforce the ATLAS flow's internal tool permissions or limit its upstream model requests. A timeout, disconnect, or interruption after dispatch is **execution unknown**, not proof that server work stopped. Review the archive and server before deciding whether to submit again. `--timeout-seconds` defaults to 300 (range 30–1800); it configures socket waits and response-processing checks, not a hard end-to-end deadline or provider cancellation.
 
-This first MCP path supports the discovered Langflow project endpoint on HTTP loopback, `x-api-key`, and protocol `2025-03-26`. OAuth, remote endpoints, arbitrary MCP tools, and unattended submission are outside this patch. `atlas --yes` is rejected. The caller's account ID and key permissions are not exposed by the discovery exchange; the client does not claim to verify their least privilege. The agent may use a cloud LLM even when Langflow itself is local. Costs and effective generation settings of that backend are not independently measured by this client.
+This MCP path supports the discovered Langflow project endpoint on HTTP loopback, `x-api-key`, and protocol `2025-03-26`. OAuth, remote endpoints, arbitrary MCP tools, and unattended submission are outside this interface. `atlas --yes` is rejected. The caller's account ID and key permissions are not exposed by the discovery exchange; the client does not claim to verify their least privilege. The agent may use a cloud LLM even when Langflow itself is local. Costs and effective generation settings of that backend are not independently measured by this client.
 
 ### Optional Kumu view from saved analysis
 
-This separate follow-up remains available when intentionally selecting a different subset of IDs from an existing analysis. It is not required for the new same-submission Kumu path.
+This separate follow-up remains available when intentionally selecting a different subset of IDs from an existing analysis. It is not required for the same-submission Kumu path.
 
 First create the private expected-target configuration described in [0.4.2](patch-0.4.2.md). Menu action 5 reads the sibling `garak-playbook-private/kumu.private.json`; the CLI also accepts `--kumu-config PATH`.
 
 Use action **5** in the handoff/completion menu, or:
 
 ```powershell
-& $labPython $runnerPath kumu --run-dir "D:\AI-Lab\evaluations\existing-run"
+$savedRun = Read-Host 'Paste the existing run Evidence folder path'
+& $scannerPython "$repo\playbook.py" kumu --run-dir $savedRun
 ```
 
 Select the saved ATLAS submission if more than one exists. The runner shows unique AML mentions with context. Select only the IDs proposed as mappings for this run, in anchor-first order; omit rejected/background IDs. Review the automatically generated request, type `GRAPH`, then enter the Langflow key at the hidden prompt. No copy-and-paste prompt composition or new Garak scan is needed.
@@ -169,7 +197,7 @@ The table below describes the preserved **Ollama** settings. OpenAI settings and
 | Deprefixing | Disabled | Avoids that optional Garak output transformation |
 | Confidence intervals | Disabled | Does not imply statistical confidence from a small convenience sample |
 
-The existing Ollama prompt cap is source-verified for the two shipped campaigns; browser workload limits are validated separately. It is **not a hard HTTP request or spend cap**: The Ollama generator can retry empty responses or transport failures. OpenAI has a separate optional request counter/cap and aborts HTTP failures. Do not reuse these workload assumptions for arbitrary probes. A wall-clock stop is also not proof that an already accepted inference stopped on the server.
+The existing Ollama prompt cap is source-verified for the two shipped campaigns; browser workload limits are validated separately. It is **not a hard HTTP request or spend cap**: The audited Ollama path can retry successful empty responses (up to three calls); it stops on HTTP errors or transport failures without retrying. OpenAI has a separate optional request counter/cap and aborts HTTP failures. Do not reuse these workload assumptions for arbitrary probes. A wall-clock stop is also not proof that an already accepted inference stopped on the server.
 
 `base64-32` screens for encoded-payload emission using `encoding.InjectBase64` and `encoding.DecodeMatch`. Its payload mix includes benign text, renderable strings, and offensive terms. Decoding or quoting a string is not automatically a vulnerability. The analyst must identify the security requirement and actual violating behavior.
 
@@ -183,13 +211,15 @@ Each run receives a unique directory. Existing evidence is not overwritten. See 
 2. Review original prompts, outputs and conversations through the references in `observations.jsonl`.
 3. Separate true behavioral violations from quotation, refusal, benign decoding, and detector artifacts.
 4. Reproduce candidate behavior under comparable settings. A changed interface, prompt, model digest, token budget or detector is a modified experiment.
-5. Copy the entire finished prompt from `atlas_handoff.md` using menu option 1 and paste it into your existing agent after checking its backing model/data destination. Save its response separately and verify official ATLAS references. No extra prompt-writing step is needed.
+5. Use menu option 4 to submit the saved handoff to your configured ATLAS Agent after reviewing its destination and confirming `SEND`. Open the archived analysis and Kumu URL as described in [Steps 17–18](install-and-verify.md#17-send-the-sample-handoff-to-atlas), and verify official ATLAS references. Option 1 remains available for manual copy/paste into an agent; save that reply separately.
 6. Record attack success and legitimate-task completion separately. This release initializes both to `not_assessed`.
 
 You can analyze an existing 0.17.0 report without invoking a model:
 
 ```powershell
-& $labPython $runnerPath summarize --report "D:\AI-Lab\evidence\original.report.jsonl" --out "D:\AI-Lab\analysis\new-analysis-folder"
+$nativeReport = Read-Host 'Paste the existing native Garak report file path'
+$analysisFolder = Read-Host 'Paste a new analysis folder path outside the repository'
+& $scannerPython "$repo\playbook.py" summarize --report $nativeReport --out $analysisFolder
 ```
 
 The analysis folder must not already exist. Original bytes are untouched. If the original report lacks required setup information, the parser records the missing information instead of inventing settings. A report analyzed without a recorded successful process outcome receives `process_outcome_unknown` when its completion marker is otherwise valid. Supply `--manifest` with that run's retained manifest to include its process outcome. Do not call an old report a replay or a new scan.
@@ -197,15 +227,16 @@ The analysis folder must not already exist. Original bytes are untouched. If the
 ## Tests and validation
 
 ```powershell
-Set-Location "D:\AI-Lab\projects\garak-playbook"
-& $labPython -m unittest discover -s tests -v
+Set-Location -LiteralPath $repo
+$testPython = Read-Host 'Paste the Python executable path for your separate test environment with requirements-research.txt installed'
+& $testPython -m unittest discover -s tests -v
 ```
 
-These tests use synthetic records, not model findings. `tests/integration_stub.py` optionally exercises the real Garak CLI against a synthetic local protocol server; it does not run an LLM. See [Validation](validation.md).
+Use a separate test environment, as described in [maintainer Windows checks](clean-windows.md); do not add test dependencies to the scanner environment. These tests use synthetic records, not model findings. `tests/integration_stub.py` optionally exercises the real Garak CLI against a synthetic local protocol server; it does not run an LLM. See [Validation](validation.md).
 
 ## Public distribution
 
-Publish only this source folder. Keep the sibling private folder and all evidence outside Git. The allowlist in `docs/public-file-list.txt` records the intended public files; inspect the final tracked tree and all history reachable from the release branch before publishing. The same boundary applies to GitHub release attachments. Anything marked `NOGIT` or private, outer review ZIPs, Git bundles, `PRIVATE-REVIEW/`, receipts/logs, real transcripts and IDs, keys, private endpoints/configs/paths, databases, models and environments remain outside both. Reviewed generic configs, synthetic fixtures and the sanitized worked example are permitted. `.gitignore` alone is not a sanitizer. No real lab evidence is included in this public source folder. The original project files use the MIT license in the repository root.
+Keep private configuration and all evidence outside Git. The allowlist in `docs/public-file-list.txt` records the intended public files; inspect the final tracked tree and all history reachable from the release branch before publishing. The same boundary applies to GitHub release attachments. Anything marked `NOGIT` or private, outer review ZIPs, Git bundles, `PRIVATE-REVIEW/`, receipts/logs, real transcripts and IDs, keys, private endpoints/configs/paths, databases, models and environments remain outside both. Reviewed generic configs, synthetic fixtures and the sanitized worked example are permitted. `.gitignore` alone is not a sanitizer. No real lab evidence is included in this public source folder. The original project files use the MIT license in the repository root.
 
 ## Sources inspected
 
@@ -213,6 +244,17 @@ Publish only this source folder. Keep the sibling private folder and all evidenc
 - Garak CLI, configuration, native attempt and evaluator implementation in that exact distribution.
 - [Garak reporting](https://reference.garak.ai/en/stable/reporting.html); newer docs are background, not a substitute for versioned source.
 - [Ollama API documentation](https://github.com/ollama/ollama/blob/main/docs/api.md), for the local metadata endpoints.
-- [Official ATLAS data](https://github.com/mitre-atlas/atlas-data), for future candidate-mapping verification.
+- [Official ATLAS data](https://github.com/mitre-atlas/atlas-data), for candidate-mapping verification.
 - [Windows PowerShell Set-Clipboard](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/set-clipboard?view=powershell-5.1), for copying text rather than a file object.
 - [Python subprocess](https://docs.python.org/3/library/subprocess.html) and [Windows process creation flags](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags), for detached Notepad launching and standard-stream isolation.
+
+## Historical implementation notes
+
+These records describe earlier versions. Use the current install guide and commands above for operation.
+
+- [Version 0.1.1 notes](patch-0.1.1.md): child cleanup and execution-status corrections.
+- [Version 0.2.0 notes](patch-0.2.0.md) and [0.2.1 notes](patch-0.2.1.md): probe browsing and Back navigation.
+- [Version 0.3.0 notes](patch-0.3.0.md): available-probe filtering and OpenAI controls.
+- [Version 0.4.0 notes](patch-0.4.0.md): authenticated MCP submission and its original validation limits.
+- [Version 0.4.1 notes](patch-0.4.1.md) and [0.4.2 notes](patch-0.4.2.md): separate graph requests and independently configured project/map checks.
+- [Version 0.5.0 notes](patch-0.5.0.md): the initial optional local search implementation. Use [current search setup](install-and-verify.md#optional-index-and-search-locally) for installation.

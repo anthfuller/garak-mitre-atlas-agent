@@ -1108,7 +1108,7 @@ def browse_probes(cfg, target_name):
         for index, row in enumerate(rows, 1):
             supported, reason = probe_catalog.assess(row, target, inventory, rules)
             state = "AVAILABLE TO TEST" if target["provider"] == "openai" and supported else "SUPPORTED" if supported else "UNAVAILABLE"
-            print(f"[{index}] {row['name']} — {state}")
+            print(f"[{index}] {row['name']} ({state})")
             print("    " + probe_catalog.terminal_text(row["metadata"].get("description") or "No description recorded."))
             print("    " + probe_catalog.terminal_text(reason))
         print("Number: select | N: next | P: previous | S: search name/family | A: show all | B/Enter: main menu")
@@ -1284,7 +1284,7 @@ def main():
                 print(f"Preflight evidence: {folder}")
                 raise
             checksums(folder)
-            print(f"PREFLIGHT PASSED — zero generation requests.\nEvidence: {folder}\n" + ("Model digest: " + result["model_digest"] if "model_digest" in result else "OpenAI model access and probe compatibility remain unverified."))
+            print(f"PREFLIGHT PASSED: zero generation requests.\nEvidence: {folder}\n" + ("Model digest: " + result["model_digest"] if "model_digest" in result else "OpenAI model access and probe compatibility remain unverified."))
             return 0
         return execute(cfg, args.target, args.campaign, args.yes)
     except (PlaybookError, atlas_mcp.AtlasError, OSError, ValueError, subprocess.SubprocessError) as exc:

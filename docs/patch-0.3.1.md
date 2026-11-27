@@ -1,10 +1,12 @@
-# 0.3.1 — run-scoped Kumu graph instructions
+# 0.3.1: run-scoped Kumu graph instructions
+
+**Historical version 0.3.1 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
 
 This targeted patch applies over an existing Garak Playbook 0.3.0 installation.
 It changes the shared ATLAS handoff renderer and version label, and supplies
 matching tests. It does not install dependencies or alter scan settings.
 
-Every newly generated `atlas_handoff.md` now contains the reviewer's graph
+Every newly generated `atlas_handoff.md` now contains the graph
 instruction block immediately after the investigation paragraph and before
 the run facts. Both scan completion and `handoff --regenerate` use this renderer.
 The agent is asked to verify run-associated AML IDs, include candidate mappings,
@@ -52,7 +54,7 @@ either action returns to PowerShell. Add `--yes` for no prompt or desktop action
 
 ## Offline validation
 
-105 standard-library tests passed in the builder's Linux workspace. These
+105 standard-library tests passed on Linux. These
 include the real renderer through simulated scan completion and the existing-run
 CLI, exact inclusion of the graph block, distinct run IDs, unchanged selected
 evidence and counts, prior-revision preservation, and no second scanner launch.

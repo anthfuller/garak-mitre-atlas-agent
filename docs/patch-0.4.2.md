@@ -1,6 +1,8 @@
-# 0.4.2 — bind Kumu validation to independent private configuration
+# 0.4.2: bind Kumu validation to independent private configuration
 
-Apply over 0.4.1. A review reproduced a gap: 0.4.1 accepted another Kumu project or map when the focus selectors matched. This patch requires an independently configured project and map before accepting a URL. No expected value is learned, written or updated from an agent response.
+**Historical version 0.4.2 notes.** Procedures and validation below describe that version. Use the [current Windows install guide](install-and-verify.md) and [release record](release-v1.md) for current setup and later results. Do not apply old patch ZIPs to a current checkout.
+
+Version 0.4.2 corrected a reproduced gap in 0.4.1: 0.4.1 accepted another Kumu project or map when the focus selectors matched. This patch requires an independently configured project and map before accepting a URL. No expected value is learned, written or updated from an agent response.
 
 ## Private configuration
 

@@ -8,7 +8,7 @@
 | `garak-config.json` | The exact generated run configuration supplied to Garak |
 | `installation.json` | Python/package versions and audited installed-file hashes; no environment dump |
 | `ollama-model.json` | Selected model digest, Ollama version, model system/template and declared parameters |
-| `scan.report.jsonl` | Unmodified native evidence including setup, attempt lifecycle, logical conversations, evaluations and completion marker |
+| `scan.report.jsonl` | Native evidence as written by Garak: setup, attempt lifecycle, logical conversations, evaluations and completion marker |
 | `scan.hitlog.jsonl` | Native flagged outputs when Garak produces a hit log; absence alone does not establish success or failure |
 | `scan.report.html` | Native report if Garak succeeds in generating it |
 | `console.log` | This scanner subprocess's stdout/stderr |
@@ -16,7 +16,11 @@
 | `summary.json` and `summary.md` | Independently counted observations and execution-quality gaps |
 | `observations.jsonl` | One record per response slot, preserving full logical prompt/output/conversation data and native line/attempt references |
 | `atlas_handoff.md` | One ready-to-paste ATLAS mapping request, run facts, and up to five one-line evidence records with IDs, scores/dispositions, response availability, unassessed behavior, and bounded untrusted input excerpts. First five flagged responses, otherwise first five observations; selection and limits are explicit |
-| `research_records.jsonl` | One structured run-catalog record for later Chroma integration |
+| `research_records.jsonl` | Structured run-catalog export; optional research commands build a checked searchable record from the saved run |
+| `openai-session.json` | OpenAI model-access check, requested/returned model, request count, limits and scan status; compatibility and probe execution remain distinct |
+| `openai-transport.jsonl` | OpenAI request/response records, stage and sequence, HTTP status, request ID, client elapsed time, reported usage and finish reasons where returned; credential handling is described below |
+| `openai-cost.json` | Derived usage/cost estimates, rate provenance, missing-usage tracking and optional spending-alert choices |
+| `ollama-session.json` and `ollama-transport.jsonl` | Ollama session status and supplemental HTTP records for runs using the runner's audited transport; these supplement the native report |
 | `checksums.json` | SHA-256 values of retained files; no signature or immutable-storage claim |
 | `handoff-revisions/<unique-revision>/` | Created only by explicit handoff regeneration: previous handoff/checksum bytes and a revision record linking input/output hashes |
 
@@ -37,33 +41,47 @@ Workload validation distinguishes an upper limit from an expected count. New bro
 
 Lifecycle snapshots are deduplicated by attempt UUID. Each detector has separate counters. A response flagged by several detectors counts once in the unique flagged-response count. All flags start as `unreviewed`; `attack_success` and `legitimate_task_completion` start as `not_assessed`.
 
-Native JSONL is the original evidence, not the generated narrative. The runner captures full native logical prompt and output records, but **does not capture HTTP wire requests, provider-side hidden instructions, all effective runtime defaults, transport retry bodies, model timing/token usage or stop reasons**. The requested settings and inspected source make the experiment traceable; they are not independent proof of every server-side generation setting. Additional transport capture, if needed later, must be an explicit change with its experimental effect documented.
+The native Garak JSONL is the primary scan evidence. It preserves logical prompts, outputs and detector evaluations, but it is not a complete HTTP or provider-usage record. The provider-specific files listed above supplement it. For OpenAI, response rows in `openai-transport.jsonl` contain `body.usage` and `body.choices[*].finish_reason` when the provider returns them, plus `elapsed_seconds` measured by the client. `openai-cost.json` contains derived estimates; `openai-session.json` describes access and execution status. These files do not reveal hidden provider instructions, every server-side default, or actual GPU execution time. Missing usage is reported as missing, not zero. Historical runs without these supplemental records cannot acquire that evidence retroactively.
 
 The handoff omits full configuration/manifest JSON, installation paths, commands, proxy/preflight details, duplicated conversations, empty transport metadata and instructions for the operator. They remain in their original records. Full evidence text, roles, and detector comparison targets remain in the native report and extracted observations. The handoff includes only a bounded input excerpt: the first nonempty line of the last user turn (plain-string input for legacy records), limited to 120 characters and marked `[cut]` when that first line is longer. Quoted excerpts escape control characters. This does not sanitize secrets that may occur inside an excerpt. Response availability is recorded, but behavior is explicitly not assessed; the renderer does not manufacture analyst conclusions from model output.
 
-`handoff --run-dir <folder>` reads the saved summary and offers one copy/open/return selection. Copy or open exits after one confirmation; Enter, 3, EOF or Ctrl+C exits without a desktop action. Open launches Notepad explicitly, with isolated standard streams and no wait for the editor to close. Copy reads only the finished prompt file; terminal status and menu text are never included. `--yes` disables prompts and desktop actions. Copy/open errors do not alter evidence or the scan outcome.
+`handoff --run-dir <folder>` opens the same result menu used after an interactive scan:
+
+| Action | Effect |
+| --- | --- |
+| 1 | Copy the saved ATLAS prompt and return to PowerShell |
+| 2 | Open the saved ATLAS prompt in Notepad and return to PowerShell |
+| 3 or Enter | Return to PowerShell |
+| 4 | Review and confirm `SEND` to request ATLAS analysis and a Kumu URL |
+| 5 | Review selected IDs and confirm `GRAPH` for an optional separate Kumu view from saved analysis |
+
+Copy reads only the finished prompt file. Notepad opens with isolated standard streams and no wait for editor closure. `handoff --yes` disables prompts and desktop actions; it sends nothing to ATLAS. EOF or Ctrl+C returns to the shell. Copy/open errors do not alter evidence or the scan outcome. Follow the [operator guide](operator-guide.md#start-in-windows-powershell) for separate copyable commands.
 
 Adding `--regenerate` re-reads the native report and retained manifest and requires their analysis to match the saved summary. It preserves the previous derived handoff and checksum bytes in a unique revision directory before replacing the handoff and updating the checksum index. The native report, manifest, summary, observations, other scan records and settings are not rewritten. This is a derived-artifact revision, not a new scan, replay, or changed experiment.
 
-## Research catalog design
+## Optional local indexing and search
 
-This release exports data but does not open, change or create any Chroma collection. The planned optional integration will use the existing separate Chroma environment and explicitly generated Ollama `embeddinggemma` vectors.
+Optional search is implemented. `research-index` reads and reconciles a saved run, checks evidence hashes, and writes a current record to the dedicated embedded Chroma collection `garak_research_runs_v1`. Ollama generates local `embeddinggemma:latest` vectors explicitly. No Chroma server or cloud embedding fallback is required. Original evidence stays in place; indexing does not create an analyst-confirmed finding.
 
-| Record type | Planned contents | Review state |
-| --- | --- | --- |
-| Model test run | Model/provider/digest, campaign/configuration identity, versions, counts, completion status, evidence references | Automatic run record |
-| Observation | Prompt/response evidence, detector result and source references | Initially unreviewed |
-| Finding revision | Confirmed or rejected interpretation, limitations, reproduction evidence, source citations, mapping status, prior revision ID | Analyst approved |
-| Research note | Hypothesis, experiment, publication reference, research date and conclusions | Explicit note/source status |
-| Test corpus item | Test input, origin, allowed use and revision | Stored separately from findings |
+`research-search` accepts a plain-English query and optional exact model/probe filters. `research-open` opens a hash-checked original text record. An unchanged repeat index keeps one record and skips another embedding request; a changed research record retains the previous JSON revision. The stored run model is separate from the embedding model and pinned embedding digest.
 
-Organize by record type and filter by model metadata; do not create a database per tested model by default. Store `target_model` separately from `embedding_model` and its digest. Re-embedding is a separate indexed-version change. Preserve original evidence, approved revisions and exact structured counts independently of similarity search. Collection separation and metadata filtering are organizational features, not demonstrated authorization controls.
+Follow [Optional: index and search locally](install-and-verify.md#optional-index-and-search-locally) for setup and commands. Its sample finish line is a search result for `synthetic-example` and opening that run's hash-checked summary. Real local EmbeddingGemma indexing, repeated indexing, filtering, search and evidence opening were observed on Windows for one saved run. Broader retrieval quality remains unverified. Some failures exit before a durable receipt is written, and `research-open` has no durable receipt; this remains R-01 in the [release checklist](release-checklist.md).
 
-Potential searches include similar false positives, past encoded-input experiments, and reviewed observations for a selected model. Exact model comparisons require compatible test definitions, settings and denominators; vector similarity is not a performance or security ranking.
+## Research features still deferred
 
-## OpenAI evidence (0.3.0)
+| Feature | Current limit |
+| --- | --- |
+| Managed findings and analyst dispositions | Research records remain unreviewed; no finding-approval workflow is implemented |
+| Research notes and separate test-corpus management | Not implemented as managed record types |
+| Automatic indexing after scans | Indexing requires an explicit command |
+| General baseline/retest relationships | Only the documented paired encoding diagnostic is implemented |
+| Search-quality evaluation | One successful saved-run example does not establish relevance across a research collection |
 
-OpenAI keeps the same native report, manifest, summary and ATLAS flow. Supplemental records are `openai-session.json` (model-access check separately from probe execution), `openai-transport.jsonl` (sequenced request/response bodies, status, request ID, usage and finish reasons), and `openai-cost.json` (rate provenance, running estimates, missing usage and optional spending-alert choices). Request-cap changes are transport records. The compatibility generation is labeled separately and is never included in probe evaluated-response counts.
+Collection separation and metadata filtering are organizational features, not demonstrated authorization controls. Similarity is not a security score. Exact model comparisons require compatible tests, settings and denominators.
+
+## Supplemental OpenAI records
+
+OpenAI scan results use the same native report, manifest, summary and handoff format. Supplemental records are `openai-session.json` (model-access check separately from probe execution), `openai-transport.jsonl` (sequenced request/response bodies, status, request ID, usage and finish reasons), and `openai-cost.json` (rate provenance, running estimates, missing usage and optional spending-alert choices). Request-cap changes are transport records. The compatibility generation is labeled separately and is never included in probe evaluated-response counts.
 
 Authentication headers are never persisted. Credential echoes are removed before logging or native report construction; the session records whether response redaction occurred. Provider error-message bodies are omitted because they can include fragments of keys; HTTP status, request ID and reported usage remain. This is an intentional evidence limitation, not exact raw-wire preservation. Historical evidence is never rewritten.
 
