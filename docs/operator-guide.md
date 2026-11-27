@@ -2,7 +2,7 @@
 
 Run a defined Garak campaign, retain original evidence, check execution quality, and investigate candidate mappings with your MITRE ATLAS Agent in Langflow. The runner generates the handoff and can submit it over authenticated MCP after confirmation. Start with the [Install on Windows and open your first ATLAS reply](install-and-verify.md); the [release record](release-v1.md) is authoritative for current validation. Older patch notes describe the status at their original checkpoints.
 
-**Current change:** one `SEND` now requests analysis and the ATLAS Graph Generator's full Kumu URL together. Offline checks pass; the [current-laptop browser acceptance check](inline-kumu-acceptance.md) is pending. Hold the next clean-laptop test until it passes.
+**Current change:** one `SEND` requests analysis and the ATLAS Graph Generator's full Kumu URL together. The [current-laptop acceptance check](inline-kumu-acceptance.md) passed for AML.T0068 on November 27, 2026: the saved reply contains both analysis and URL, and the supplied browser screenshot shows the matching technique. The next guide-only clean-laptop test may proceed; public release/tagging still require owner approval.
 
 The v1 candidate retains [batch execution and consolidated coverage reports](batch.md). Release 0.5.0 added optional **local Chroma research indexing and search of existing runs**, using explicit Ollama EmbeddingGemma embeddings. Private paths remain outside the source. See [research setup, commands and validation limits](patch-0.5.0.md). One saved-run Windows checkpoint with real local EmbeddingGemma is operator-exercised; broader retrieval-quality validation remains pending.
 

@@ -2,7 +2,7 @@
 
 You'll install the tools, send the included sample Garak results to the MITRE ATLAS Agent, and open its reply.
 
-**Next clean-laptop test is on hold.** The new single-`SEND` analysis-and-Kumu path must first pass the [current-laptop acceptance check](inline-kumu-acceptance.md). Its offline checks are not a live pass. The finish-line instructions will be updated after that check succeeds.
+**Finish line:** open the saved analysis in Notepad, copy its full Kumu URL into your browser, and check the displayed technique. One `SEND` returns both analysis and graph link. The [current-laptop AML.T0068 check passed](inline-kumu-acceptance.md); completing this revised guide alone on another clean laptop remains unverified. Public release and tagging still require owner approval.
 
 ## 1. Open Windows PowerShell
 
@@ -626,7 +626,7 @@ flowchart TD
     saved --> handoff["Runner prepares ATLAS handoff"]
     handoff --> confirm["Operator types `SEND` to submit the handoff"]
     confirm -->|"Authenticated MCP"| agent["MITRE ATLAS Agent in Langflow"]
-    agent --> reply["Archived reply: candidate mappings for analyst review"]
+    agent --> reply["Archived reply: candidate analysis and full Kumu URL"]
     saved -->|"Optional local search"| selectRun["Researcher selects a run to index"]
     selectRun --> embed["EmbeddingGemma via local Ollama"]
     embed --> index["Local Chroma index: search saved runs and open linked evidence"]
@@ -651,20 +651,22 @@ Respond to the prompts in order:
 
 1. **ATLAS model provider shown in Langflow:** enter the provider from step 13, such as `OpenAI`.
 2. **ATLAS model name shown in Langflow:** enter exactly the **Model Name** from step 13.
-3. Review the displayed endpoint, `atlas_agent_v110`, Run ID `synthetic-example`, and handoff text. These provider/model labels record your selection; they do not change the flow.
+3. Review the displayed endpoint, `atlas_agent_v110`, Run ID `synthetic-example`, and handoff text. Also check **Expected Kumu project/map**: the supplied flow uses project `99b02113875c5b03b510b4b6968b2566` and map `atlas`. These provider/model labels record your selection; they do not change the flow.
 4. To submit, type **`SEND`** and press Enter. Pressing Enter without SEND cancels.
 5. At the hidden key prompt, paste your **Langflow API key** and press Enter.
 
-Wait for the reply. **This is a separate live submission after the Playground test in Step 13 and can incur API charges.** One MCP submission may trigger multiple model/tool calls; the runner does not measure those charges. Initial data/model loading may also take time. Do not submit a second time while waiting.
+Wait for the reply. This submission requests the analysis, dataset verification and Graph Generator result together. **This is a separate live submission after the Playground test in Step 13 and can incur API charges.** One MCP submission may trigger multiple model/tool calls; the runner does not measure those charges. Initial data/model loading may also take time. Do not submit a second time while waiting.
 
 **You should see:**
 
 - `ATLAS status: response_received_unreviewed`
 - `ATLAS archive:` followed by a folder path
 - `Unreviewed ATLAS reply:` followed by a file path
+- `Kumu status: graph_received_target_and_coverage_checked`
+- `Kumu URL:` followed by the full address
 - `Recorded Garak scan outcome is unchanged.`
 
-If an error or timeout appears, preserve the displayed archive and stop before retrying; the provider may already have processed the request.
+If an error or timeout appears, preserve the displayed archive and stop before retrying; the provider may already have processed the request. If analysis was received but the graph failed, Step 18 can still open the analysis and graph error. Keep that file; the graph checkpoint has not passed. Do not use a separate graph action or repeat `SEND` automatically to bypass the failure.
 
 ### If you mistype the key during Step 17
 
@@ -685,7 +687,7 @@ Get-Content -LiteralPath (Join-Path $failedSubmission 'submission.json') -Raw |
 - If the status is **`execution_unknown`**, either attempt count is nonzero, or the record is missing/unreadable, **do not repeat SEND yet**. The call may already have run. Preserve the archive and review its status before deciding whether to retry.
 - If the key-format check rejected the key and no archive was created, the error `Enter the actual API key without whitespace or control characters.` occurs before a network request. Correct the key and repeat Step 17's command.
 
-A successful submission prints `ATLAS status: response_received_unreviewed`. Continue to Step 18 to open that submission's saved reply.
+A received reply prints `ATLAS status: response_received_unreviewed`. Continue to Step 18 to open that submission's saved reply. Completing the graph check also requires `Kumu status: graph_received_target_and_coverage_checked`.
 
 ## 18. Open the saved ATLAS reply
 
@@ -700,11 +702,21 @@ $atlasSubmission = Read-Host 'Paste the ATLAS archive folder path from step 17'
 notepad.exe "$atlasSubmission\atlas_response.md"
 ```
 
-**You should see:** Notepad displaying the saved ATLAS reply. **This is the core setup finish line.** A reply that says the sample evidence is insufficient is valid; success here means the handoff reached your agent and its reply was saved.
+**You should see:** Notepad displaying the saved ATLAS analysis and a **View Kumu graph** section with the full URL.
 
-The archive is inside `%LOCALAPPDATA%\GarakPlaybook\examples\synthetic-atlas-run\atlas-submissions`. It contains the submitted handoff, reply, submission record and checksums. Keep it private. The reply is **unreviewed analysis**, mappings are **candidates**, and detector flags are **screening results**. ATLAS cannot assess model responses that were not included in the handoff.
+**Where next:** your **Windows browser**.
 
-Record your commit ID from step 3, the final status and the reply path. If you needed an instruction from chat or another laptop, record the step number and missing instruction as a documentation gap. Do not rerun the fourteen-probe campaign for this installation check.
+1. In Notepad, find **Full Kumu URL (copy into your browser)**. Select and copy the complete `https://embed.kumu.io/...` address directly below it.
+2. Open a new tab in your browser, paste that address into the address bar, and press **Enter**.
+3. Compare the displayed technique ID with the reply's **Coverage checked** line. In the observed synthetic example, the graph opened to **AML.T0068 — LLM Prompt Obfuscation**. If the analysis discusses several IDs, check those IDs in the view too; context nodes are not additional findings.
+
+**This is the core setup finish line:** the analysis and full URL are together in the saved reply, the runner's graph checks passed, and the matching technique is visible in Kumu. No new Garak scan or separate graph menu action is needed. A tentative mapping with insufficient evidence to confirm an attack is valid; do not turn it into a confirmed finding to complete the check. If the URL is missing, Kumu cannot open, or the IDs do not match, keep the reply and displayed error for review.
+
+The saved reply may still say **Browser rendering remains unverified**. That records what the runner can check automatically; it cannot see your browser. Record your successful visual check separately and keep the original archive unchanged.
+
+The archive is inside `%LOCALAPPDATA%\GarakPlaybook\examples\synthetic-atlas-run\atlas-submissions`. It contains the original handoff, full request, original returned response, readable reply, submission record and checksums. Keep it private. The reply is **unreviewed analysis**, mappings are **candidates**, and detector flags are **screening results**. ATLAS cannot assess model responses that were not included in the handoff.
+
+Record your commit ID from step 3, both final statuses, the reply path and the browser result. If you needed an instruction from chat or another laptop, record the step number and missing instruction as a documentation gap. Do not rerun the fourteen-probe campaign for this installation check.
 
 ---
 
@@ -761,7 +773,7 @@ uv run langflow run --env-file .env
 
 **You should see:** the existing instance's Welcome message. Use its printed port. Editing an environment-file password does not reset an existing database account; use the installed version's account-recovery procedure if needed.
 
-For a real saved Garak run, set `$savedRun` to that run's directory, review what its handoff will disclose, and use steps 17–18. Do not sanitize by editing hashed original evidence. The new submission also requests a Kumu URL; [current-laptop acceptance](inline-kumu-acceptance.md) is pending before this guide's finish line is updated. The older separate Kumu action remains optional follow-up research.
+For a real saved Garak run, set `$savedRun` to that run's directory, review what its handoff will disclose, and use steps 17–18. Do not sanitize by editing hashed original evidence. One `SEND` requests analysis and the Kumu URL together; [current-laptop acceptance](inline-kumu-acceptance.md) passed for the observed AML.T0068 case. The older separate Kumu action remains optional follow-up research.
 
 ## Optional: index and search locally
 
@@ -891,7 +903,7 @@ Open the indexed original summary:
 | Revised prepared-flow installation path | The setup helper preserves upstream tools/instructions/wires and prepares a model component matching the tested code. Offline request checks cover Responses API, medium reasoning, ATLAS tool schemas and omitted temperature. Importing the generated file and following this revised guide on another clean Windows laptop remain **unverified**. |
 | Synthetic saved-run preparation and archive routing | The guide's fixture assembly is checked offline against the existing renderer/loader. MCP archival is exercised with a synthetic protocol server; this does not validate a new Langflow deployment or paid model. |
 | Optional research search | The maintainer exercised real local EmbeddingGemma indexing, unchanged reindexing, model/probe filters, search and evidence opening. This guide's synthetic example is checked with real embedded Chroma and fake embedding vectors; a fresh Windows installation following every new instruction remains **unverified**. |
-| Analysis and Kumu in one submission | Offline checks cover request/archive preservation, duplicate replies, destination and complete discussed-ID coverage, and failure handling. The current-laptop `AML.T0068` browser acceptance check remains pending. No live pass is claimed. |
+| Analysis and Kumu in one submission | Passed for the current-laptop AML.T0068 case at `82ba06f` on November 27, 2026. Operator console output reports successful analysis and graph URL checks; the uploaded saved reply contains candidate analysis and the same URL; the browser screenshot shows AML.T0068 — LLM Prompt Obfuscation. Internal tool execution remains agent-reported for this submission, and broader research quality remains unverified. See [acceptance evidence](inline-kumu-acceptance.md). |
 | Release scope | The ATLAS submission now requests analysis and its Kumu URL together. Scanner execution, profiles, credentials and the closed fourteen-probe campaign are unchanged. AVID and broader probes remain deferred, and public release/tagging require owner approval. |
 
 The revised instructions still require the clean-laptop test; a documentation or syntax check is not an installation pass. Keep the guide's expected results distinct from observed validation evidence.
