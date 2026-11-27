@@ -177,6 +177,8 @@ The [Microsoft WSL installation guide](https://learn.microsoft.com/en-us/windows
 
 **Where:** the **Ubuntu** window opened after the restart.
 
+**Note:** If your name is already shown at `Create a default Unix user account:` and pressing **Enter** leaves the cursor sitting there, use **Backspace** to erase the displayed name, retype your name, and press **Enter** again.
+
 Ubuntu will finish its first-time setup. Choose a Linux username and password when prompted. Password entry shows no characters; type it and press Enter anyway. Keep this password: Ubuntu will ask for it when you use `sudo`. It is separate from your Windows password and the Langflow password you will create later.
 
 **WSL — Ubuntu:**
