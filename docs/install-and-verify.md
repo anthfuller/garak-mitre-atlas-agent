@@ -520,6 +520,26 @@ if ($LASTEXITCODE -ne 0) { throw 'The discovered ATLAS tool does not match this 
 
 **You should see:** `Validated tool: atlas_agent_v110` and your endpoint. The check also validates the server identity and input schema. If it fails, do not proceed to `SEND`: HTTP 401/403 points to authentication; a tool/schema error points to the exposed flow or Langflow version. Keep the report for diagnosis.
 
+### If you mistype the key during Step 15
+
+**Where:** the same normal **Windows PowerShell** window.
+
+If discovery reports HTTP 401/403, or `Enter the actual API key without quotes, whitespace, or control characters`, wait until the `PS ...>` prompt returns. Keep the failed discovery report. Copy your **Langflow “Garak runner” API key** again, then run only this command:
+
+**Windows PowerShell:**
+
+```powershell
+& $scannerPython "$repo\tools\inspect_atlas_mcp.py" --url $endpoint --output-dir $discoveryDir --api-key-prompt
+```
+
+At the hidden key prompt, paste the key without quotes or surrounding spaces and press **Enter**. Seeing no characters is normal. You do not need to reinstall anything or create another key just because of a typing mistake.
+
+**Recovery succeeds when:** `Discovery status: discovery_complete` appears with `Tool invocations: 0`. Use the **new successful Discovery report path** in Step 15's second block. Continue only after `Validated tool: atlas_agent_v110`.
+
+If you closed PowerShell, use Step 15's first block instead; it restores the variables and asks for the URL again. If a correctly copied key still receives 401/403, check that it is valid and belongs to the same `atlas-researcher` account that owns the flow before trying again. Authentication errors can also mean an expired key or insufficient access.
+
+This recovery repeats **discovery only**; it makes no ATLAS tool call or model request. For a key error after `SEND`, follow the separate recovery below Step 17.
+
 ## 16. Prepare the included sample Garak results
 
 **Where:** the **same normal Windows PowerShell** window.
@@ -609,6 +629,27 @@ Wait for the reply. **This is the paid-call boundary if your ATLAS model provide
 - `Recorded Garak scan outcome is unchanged.`
 
 If an error or timeout appears, preserve the displayed archive and stop before retrying; the provider may already have processed the request.
+
+### If you mistype the key during Step 17
+
+**Where:** the same normal **Windows PowerShell** window, after the failed command returns.
+
+Keep the printed **ATLAS archive** folder. Before repeating `SEND`, inspect the saved submission record with this read-only block:
+
+**Windows PowerShell:**
+
+```powershell
+$failedSubmission = Read-Host 'Paste the ATLAS archive folder path from the failed attempt'
+Get-Content -LiteralPath (Join-Path $failedSubmission 'submission.json') -Raw |
+    ConvertFrom-Json |
+    Select-Object status, tool_call_dispatch_attempts, recorded_tool_call_attempts, error
+```
+
+- If the error is HTTP 401/403, `status` is **`failed_before_tool_call`**, and **both attempt counts are 0**, the handoff was not sent. Copy the correct Langflow key, rerun Step 17's command, review the same handoff, and confirm `SEND` again. A separate archive is created; keep the failed one.
+- If the status is **`execution_unknown`**, either attempt count is nonzero, or the record is missing/unreadable, **do not repeat SEND yet**. The call may already have run. Preserve the archive and review its status before deciding whether to retry.
+- If the key-format check rejected the key and no archive was created, the error `Enter the actual API key without quotes, whitespace, or control characters` occurs before a network request. Correct the key and repeat Step 17's command.
+
+A successful submission prints `ATLAS status: response_received_unreviewed`. Continue to Step 18 to open that submission's saved reply.
 
 ## 18. Open the saved ATLAS reply
 
