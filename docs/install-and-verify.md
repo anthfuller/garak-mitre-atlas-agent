@@ -647,7 +647,7 @@ Get-Content -LiteralPath (Join-Path $failedSubmission 'submission.json') -Raw |
 
 - If the error is HTTP 401/403, `status` is **`failed_before_tool_call`**, and **both attempt counts are 0**, the handoff was not sent. Copy the correct Langflow key, rerun Step 17's command, review the same handoff, and confirm `SEND` again. A separate archive is created; keep the failed one.
 - If the status is **`execution_unknown`**, either attempt count is nonzero, or the record is missing/unreadable, **do not repeat SEND yet**. The call may already have run. Preserve the archive and review its status before deciding whether to retry.
-- If the key-format check rejected the key and no archive was created, the error `Enter the actual API key without quotes, whitespace, or control characters` occurs before a network request. Correct the key and repeat Step 17's command.
+- If the key-format check rejected the key and no archive was created, the error `Enter the actual API key without whitespace or control characters.` occurs before a network request. Correct the key and repeat Step 17's command.
 
 A successful submission prints `ATLAS status: response_received_unreviewed`. Continue to Step 18 to open that submission's saved reply.
 
