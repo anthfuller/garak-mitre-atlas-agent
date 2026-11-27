@@ -16,6 +16,7 @@ docs/headroom-diagnostic.md
 docs/images/garak-atlas-workflow.png
 docs/images/kumu-atlas-aml-t0068.png
 docs/images/kumu-atlas-shared-mitigation.png
+docs/images/langflow-atlas-agent-canvas.png
 docs/inline-kumu-acceptance.md
 docs/install-and-verify.md
 docs/operator-guide.md

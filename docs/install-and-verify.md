@@ -459,6 +459,10 @@ In **ATLAS Vector Store**, keep these supplied values:
 
 **File-attachment checkpoint:** all three Read File boxes show their matching `.md` filenames, the sandbox shows its CSV filename, and the vector-store values match the table. The relative vector path works because Step 10 starts Langflow from the upstream project folder. This is the ATLAS knowledge database; optional Chroma search for your own Garak results comes later. Its embedding component may download model assets on first use.
 
+[![Langflow canvas showing the ATLAS Vector Store, Dataset Sandbox, and Graph Generator beside their three Read File boxes, with the dataset CSV attached to the sandbox.](images/langflow-atlas-agent-canvas.png)](images/langflow-atlas-agent-canvas.png)
+
+Use this canvas from the assisted Windows walkthrough to check your file attachments. Each Read File box holds the instruction file for its neighboring ATLAS tool. The dataset CSV goes directly in ATLAS Dataset Sandbox. The screenshot also shows the model configured in Step 13. The Graph Generator’s Project ID is hidden here.
+
 ## 13. Configure the tested model and verify a dataset lookup
 
 **Where:** the **Langflow flow editor in your Windows browser**, signed in as `atlas-researcher`.
