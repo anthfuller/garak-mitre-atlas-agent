@@ -322,47 +322,114 @@ Wait for **Welcome to Langflow** and its **Open Langflow** address. Startup can 
 
 **You should see:** Langflow's **Welcome to Langflow** screen with **Create first flow** if the account has no flows, or its **Projects** page if flows already exist. Both mean sign-in succeeded. Continue to Step 11. An incorrect-password message is a failed checkpoint; do not turn off login or create another database to continue.
 
-## 11. Import the supplied ATLAS Agent flow
+## 11. Prepare the upload files and import the ATLAS flow
 
-**Where:** your **Windows browser**, on Langflow's **Welcome to Langflow** screen. It may show **Create first flow** and **Already have a flow? Drag and drop to upload.**
+Step 9 created a fresh database for your `atlas-researcher` login. MITRE supplies the connected flow and its data files; the following steps copy those files to one Windows folder for uploading. Keep Langflow running and stay signed in as **`atlas-researcher`**.
 
-Step 9 created a fresh Langflow database for your own login. MITRE's default startup uses its bundled database, which already contains the ATLAS flow. With this fresh database, import the supplied flow once. The JSON file downloaded in Step 8 supplies the components and their connections; you do not build or wire them yourself.
+**Already imported ATLAS Agent v1.1.0?** Keep that flow. Prepare the Windows upload folder below, then go directly to Step 12. Keep any correctly attached files.
 
-If **ATLAS Agent v1.1.0** is already listed in this installation, open it and continue to Step 12 without importing another copy.
+### Put the upload files in Windows Downloads
 
-1. Open **Windows File Explorer** with **Windows+E**.
-2. Press **Ctrl+L** to select File Explorer's address bar. Paste `\\wsl.localhost\Ubuntu-24.04\home` and press **Enter**.
-3. Open your Ubuntu username folder, then **source → atlas-knowledge-base-agent → flows**. Find **ATLAS Agent v1.1.0.json**.
-4. Place File Explorer beside the Langflow browser window.
-5. Drag **ATLAS Agent v1.1.0.json** from File Explorer onto the Langflow welcome page, where it says **Already have a flow? Drag and drop to upload.** Do not use **Create first flow** to build an empty flow.
-6. Wait for the import to finish. If Langflow displays a flow list, click **ATLAS Agent v1.1.0** to open it.
+**Where:** a new, normal **Windows PowerShell** window on the clean laptop. Leave the Ubuntu window running Langflow open.
 
-**You should see:** the **ATLAS Agent v1.1.0** editor with connected components, including **ATLAS Vector Store**, **ATLAS Dataset Sandbox**, **ATLAS Graph Generator**, and **Model Configuration**. Continue to Step 12 to attach the supplied files, then Step 13 to set your model. The fresh import still needs those file selections and your provider credentials.
+Paste this entire block. It finds your Ubuntu home folder, checks all five source files, copies them into **Downloads → ATLAS-Upload**, and opens that folder in Windows File Explorer. It does not move or modify the source files, database, or flow.
 
-Langflow may put the imported flow in a default project. Keep that project; Step 14 uses the project containing this flow. If you already have a Projects page instead of the welcome screen, **Upload a flow** can import the same JSON file. See the [flow import reference](https://docs.langflow.org/concepts-flows-import).
+**Windows PowerShell:**
 
-## 12. Attach the ATLAS data and instruction files
+```powershell
+& {
+    $ErrorActionPreference = 'Stop'
+    $linuxHome = ((& wsl.exe -d Ubuntu-24.04 -- printenv HOME) | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0 -or $linuxHome -notmatch '^/') {
+        throw 'Could not read the Ubuntu home folder. Stop and keep this error.'
+    }
 
-**Where:** the **Langflow flow editor in your Windows browser**.
+    $atlasSource = '\\wsl.localhost\Ubuntu-24.04' + $linuxHome.Replace('/', '\') + '\source\atlas-knowledge-base-agent'
+    $uploadFolder = Join-Path $env:USERPROFILE 'Downloads\ATLAS-Upload'
+    $files = @(
+        'flows\ATLAS Agent v1.1.0.json'
+        'prompts\tool-contracts\ATLAS Vector Store.md'
+        'prompts\tool-contracts\ATLAS Dataset Sandbox.md'
+        'prompts\tool-contracts\ATLAS Graph Generator.md'
+        'data\atlas-data\v2026-07\atlas-nodes-with-emb-text-v2026-07.csv'
+    )
+    foreach ($file in $files) {
+        $sourceFile = Join-Path $atlasSource $file
+        if (-not (Test-Path -LiteralPath $sourceFile -PathType Leaf)) {
+            throw "Required source file not found: $sourceFile"
+        }
+    }
+    New-Item -ItemType Directory -Path $uploadFolder -Force | Out-Null
+    foreach ($file in $files) {
+        Copy-Item -LiteralPath (Join-Path $atlasSource $file) -Destination $uploadFolder
+    }
+    Write-Host "Upload folder ready: $uploadFolder"
+    Get-ChildItem -LiteralPath $uploadFolder -File | Select-Object Name
+    Invoke-Item -LiteralPath $uploadFolder
+}
+```
 
-The supplied flow JSON leaves the file-upload selections empty. MITRE's bundled database already had these uploads; your fresh import needs them attached once. Keep the existing wires between components. Use the same Windows file-picker route from step 11 to reach the upstream folder.
+**You should see:** `Upload folder ready:` followed by the Windows folder path, a list of five files, and an open File Explorer window containing:
 
-For each **Read File** component, follow its wire to the named input on **Prompt Template**. Click **+** beside **Files** and upload the matching file below. If an old file is selected, remove it using **X** first. You can zoom in on the canvas to read labels.
+- `ATLAS Agent v1.1.0.json`
+- `ATLAS Vector Store.md`
+- `ATLAS Dataset Sandbox.md`
+- `ATLAS Graph Generator.md`
+- `atlas-nodes-with-emb-text-v2026-07.csv`
 
-| Read File connects to | File under `atlas-knowledge-base-agent` |
+If the block prints an error, keep that exact message; do not proceed to an upload with missing files. The preparation block has been checked against the pinned upstream file list; its execution on the clean Windows laptop remains to be confirmed.
+
+### Import the flow once
+
+**Where:** your **Windows browser**, signed in to Langflow, with the **ATLAS-Upload** File Explorer window beside it.
+
+1. If **ATLAS Agent v1.1.0** already appears in your project, open it and continue to Step 12.
+2. Otherwise, drag **ATLAS Agent v1.1.0.json** from the Windows **ATLAS-Upload** folder onto Langflow's welcome page or the large blank area of the project's **Flows** page.
+3. Wait for **ATLAS Agent v1.1.0** to appear, then open it.
+
+Drag-and-drop import was confirmed during the clean-laptop walkthrough. A **33%** indicator under **Get started** is its optional onboarding checklist, not installation or upload progress.
+
+**You should see:** the connected **ATLAS Agent v1.1.0** flow, including **ATLAS Vector Store**, **ATLAS Dataset Sandbox**, **ATLAS Graph Generator**, three **Read File** boxes, and **Model Configuration**. The supplied JSON creates the components and wires. Keep the project that contains the imported flow, such as **Starter Project**; Step 14 uses that project's MCP server.
+
+## 12. Attach the ATLAS instruction files and dataset
+
+**Where:** the **ATLAS Agent v1.1.0 flow editor in your Windows browser**, with **Downloads → ATLAS-Upload** open beside it in File Explorer.
+
+If that Windows folder is missing or does not contain all five files, run [Put the upload files in Windows Downloads](#put-the-upload-files-in-windows-downloads) above, then return here. You do not need to import the flow again.
+
+### Attach the three instruction files
+
+Keep the existing wires. For each row below, use the matching **Read File** box. If the correct filename already appears in the box, that attachment is done.
+
+| Read File box in the imported layout | File to attach | Existing Prompt Template connection |
+| --- | --- | --- |
+| **Top**, beside ATLAS Vector Store | `ATLAS Vector Store.md` | `vector_store_contract` |
+| **Middle**, beside ATLAS Dataset Sandbox | `ATLAS Dataset Sandbox.md` | `dataset_sandbox_contract` |
+| **Bottom**, beside ATLAS Graph Generator | `ATLAS Graph Generator.md` | `graph_generator_contract` |
+
+1. Click **Select files** in that **Read File** box. A Langflow **My Files** window opens.
+2. If the required file is already listed, select it. Otherwise, drag that one `.md` file from the Windows **ATLAS-Upload** folder into the **large dashed upload box** inside **My Files**, wait for its filename to appear, and select it.
+3. Click the bottom-right **Select files** button to attach it to this component.
+4. Check that the correct filename now appears **inside that Read File box**, then repeat for the next row.
+
+Uploading into **My Files** stores a file in your account. Selecting it and confirming with **Select files** attaches it to the component. You do not need to open the `.md` file in an editor. The right-hand component settings do not need changing.
+
+### Attach the dataset CSV
+
+In **ATLAS Dataset Sandbox**, click **Select file** under **CSV File**. Choose **atlas-nodes-with-emb-text-v2026-07.csv** from **Downloads → ATLAS-Upload** and confirm the selection. If Langflow's **My Files** window opens first, use the same upload-and-select sequence above for this CSV. If a Windows file picker opens, choose **Downloads → ATLAS-Upload**, select the CSV, and click **Open**.
+
+**You should see:** the CSV filename inside **ATLAS Dataset Sandbox**. This CSV belongs in the sandbox's **CSV File** field; its `.md` instruction file belongs in the middle **Read File** box.
+
+### Check the vector-store values
+
+In **ATLAS Vector Store**, keep these supplied values:
+
+| Field | Value |
 | --- | --- |
-| `vector_store_contract` | `prompts\tool-contracts\ATLAS Vector Store.md` |
-| `dataset_sandbox_contract` | `prompts\tool-contracts\ATLAS Dataset Sandbox.md` |
-| `graph_generator_contract` | `prompts\tool-contracts\ATLAS Graph Generator.md` |
+| **Collection Name** | `atlas-vectors-v2026-07` |
+| **Persistence Path** | `./data/atlas-data/vectors` |
 
-Then check these two components:
-
-| Component | What to do |
-| --- | --- |
-| **ATLAS Dataset Sandbox** | Replace the **CSV File** selection with `data\atlas-data\v2026-07\atlas-nodes-with-emb-text-v2026-07.csv`. |
-| **ATLAS Vector Store** | Set **Collection Name** to `atlas-vectors-v2026-07` and **Persistence Path** to `./data/atlas-data/vectors`. |
-
-**You should see:** the three selected `.md` filenames, the selected CSV filename, and those vector-store values. The relative vector path works because step 10 starts Langflow from the upstream project folder. This is the ATLAS knowledge database; optional Chroma search for your own Garak results comes later. Its embedding component may download model assets on first use.
+**File-attachment checkpoint:** all three Read File boxes show their matching `.md` filenames, the sandbox shows its CSV filename, and the vector-store values match the table. The relative vector path works because Step 10 starts Langflow from the upstream project folder. This is the ATLAS knowledge database; optional Chroma search for your own Garak results comes later. Its embedding component may download model assets on first use.
 
 ## 13. Configure the model used by the ATLAS Agent
 
