@@ -8,7 +8,7 @@ Start at Step 1 and follow the guide until you open the Kumu graph from your sav
 
 The local guide runs Langflow on `127.0.0.1` over HTTP. Use a unique Langflow password. An InPrivate window keeps the lab login separate from your regular browser session. HTTP traffic remains unencrypted. Before allowing access from another device, configure HTTPS with a trusted certificate matching the server hostname. See the [guide's browser and HTTPS guidance](docs/install-and-verify.md#10-start-langflow-and-sign-in). **HTTPS deployment remains unverified by this walkthrough.**
 
-**The assisted Windows walkthrough passed. An independent guide-only install remains unverified.** On the current laptop, one observed `SEND` returned candidate analysis and a full Kumu URL together in the saved reply; the browser displayed **AML.T0068 — LLM Prompt Obfuscation**. See [evidence and limits](docs/inline-kumu-acceptance.md). Public release and tagging remain unapproved.
+**The assisted Windows walkthrough passed. An independent guide-only install remains unverified.** On the current laptop, one observed `SEND` returned candidate analysis and a full Kumu URL together in the saved reply; the browser displayed **AML.T0068 — LLM Prompt Obfuscation**. See [evidence and limits](docs/inline-kumu-acceptance.md).
 
 Review candidate technique mappings and search saved evidence locally with Chroma and EmbeddingGemma.
 
@@ -24,7 +24,7 @@ ATLAS supports investigation of candidate techniques and related mitigations/cas
 
 Example from the original lab. Follow Direct prompt injection (`AML.T0051.000`) and LLM Jailbreak (`AML.T0054`) to their shared mitigation, AI Red Team (`AML.M0035`). These relationships give an analyst a lead to investigate. Confirming a finding requires reviewing the saved Garak evidence.
 
-**Unpublished v1.0.0 candidate; no public release or tag yet.** See the [v1 release instructions](docs/public-v1.md).
+See the [v1 scope and validation record](docs/release-v1.md).
 
 I maintain this project in my personal capacity. It does not represent the views of my employer or imply employer endorsement. Use it only on systems you own or are authorized to test. You are responsible for securing your deployment and credentials. The software is provided as is under the [MIT License](LICENSE), which contains the full warranty disclaimer and limitation of liability.
 
@@ -43,7 +43,7 @@ This is a model-testing and research workflow. It does not by itself establish e
 
 ## Probe coverage
 
-Garak 0.17.0 listed **191 probe IDs**. V1 enables **14**. The [compatibility table](docs/compatibility.md) shows which probe/model pairs have live evidence, the tested settings, and remaining gaps. Enabling a probe does not establish compatibility with every model. The remaining **177** are candidates for phased v2 validation; they are not supported by this v1 candidate. The fourteen-probe campaign remains closed.
+Garak 0.17.0 listed **191 probe IDs**. V1 enables **14**. The [compatibility table](docs/compatibility.md) shows which probe/model pairs have live evidence, the tested settings, and remaining gaps. Enabling a probe does not establish compatibility with every model. The remaining **177** are candidates for phased v2 validation; they are not supported by v1. The fourteen-probe campaign remains closed.
 
 ## Install on Windows and open your first ATLAS reply
 
@@ -139,7 +139,7 @@ Follow [Optional: index and search locally](docs/install-and-verify.md#optional-
 
 [Clean Windows testing](docs/clean-windows.md) uses synthetic reports, fake local HTTP endpoints and real embedded Chroma. It does not scan a real model or make paid calls. Desktop actions are mocked. Windows full validation passed at `09e8128`, and seven targeted Windows delta checks passed at `4fedd3f`. Later reply-formatting, prepared-flow and inline Kumu code changes have separate offline checks and the observed assisted Windows walkthrough; they are listed in the [release record](docs/release-v1.md). An independent guide-only install remains unverified.
 
-Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. The final tree and reachable history are checked for the exact candidate submitted for approval. No public visibility change or tag has been authorized. Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
+Public source uses an allowlist; private configuration, actual evidence, keys, environments and databases stay outside Git. Tracked files and reachable Git history are reviewed against the [public allowlist](docs/public-file-list.txt). Original project code and documentation are available under the [MIT License](LICENSE), including its warranty and liability terms. Separately installed components and models retain their own terms. See [third-party notices](THIRD_PARTY.md).
 
 ## Optional encoding headroom diagnostic
 

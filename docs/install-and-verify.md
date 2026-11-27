@@ -2,7 +2,7 @@
 
 You'll install the tools, send the included sample Garak results to the MITRE ATLAS Agent, and open its reply.
 
-**Finish line:** open the saved analysis in Notepad, copy its full Kumu URL into your browser, and check the displayed technique. One `SEND` returns both analysis and graph link. The [current-laptop AML.T0068 check passed](inline-kumu-acceptance.md); completing this revised guide alone on another clean laptop remains unverified. Public release and tagging still require owner approval.
+**Finish line:** open the saved analysis in Notepad, copy its full Kumu URL into your browser, and check the displayed technique. One `SEND` returns both analysis and graph link. The [current-laptop AML.T0068 check passed](inline-kumu-acceptance.md); completing this revised guide alone on another clean laptop remains unverified.
 
 ## 1. Open Windows PowerShell
 
@@ -98,7 +98,7 @@ Set-Location -LiteralPath $repo
 git rev-parse HEAD
 ```
 
-After the repository is made public, this HTTPS clone needs no GitHub account or sign-in. **During private candidate review**, only accounts granted access can clone it; Git may open a browser sign-in window. Use the account that can view [the repository](https://github.com/anthfuller/garak-mitre-atlas-agent). If Git reports **Repository not found**, check the URL and, while the repository is private, that account's access. A network error needs resolving before continuing. The clone command does not publish the repository or change its visibility.
+Clone the repository with the HTTPS command above. A public HTTPS clone requires no GitHub sign-in.
 
 **You should see:** cloning completes, the prompt ends in `\source\garak-mitre-atlas-agent>`, and Git prints a 40-character commit ID. Record that ID with your test results. It identifies the instructions and code you tested.
 
@@ -907,6 +907,6 @@ Open the indexed original summary:
 | Synthetic saved-run preparation and archive routing | The guide's fixture assembly is checked offline against the existing renderer/loader. MCP archival is exercised with a synthetic protocol server; this does not validate a new Langflow deployment or paid model. |
 | Optional research search | The maintainer exercised real local EmbeddingGemma indexing, unchanged reindexing, model/probe filters, search and evidence opening. This guide's synthetic example is checked with real embedded Chroma and fake embedding vectors; a fresh Windows installation following every new instruction remains **unverified**. |
 | Analysis and Kumu in one submission | Passed for the current-laptop AML.T0068 case at `82ba06f` on November 27, 2026. Operator console output reports successful analysis and graph URL checks; the uploaded saved reply contains candidate analysis and the same URL; the browser screenshot shows AML.T0068 — LLM Prompt Obfuscation. Internal tool execution remains agent-reported for this submission, and broader research quality remains unverified. See [acceptance evidence](inline-kumu-acceptance.md). |
-| Release scope | The ATLAS submission now requests analysis and its Kumu URL together. Scanner execution, profiles, credentials and the closed fourteen-probe campaign are unchanged. AVID and broader probes remain deferred, and public release/tagging require owner approval. |
+| Release scope | The ATLAS submission now requests analysis and its Kumu URL together. Scanner execution, profiles, credentials and the closed fourteen-probe campaign are unchanged. AVID and broader probes remain deferred. |
 
-An independent guide-only install remains unverified; document and syntax checks do not establish that pass. The assisted walkthrough is the installation evidence available for this candidate. Publication requires owner approval with this limitation disclosed. Keep expected results distinct from observed validation evidence.
+An independent guide-only install remains unverified; document and syntax checks do not establish that pass. The assisted walkthrough is the installation evidence available for this guide. Keep expected results distinct from observed validation evidence.
