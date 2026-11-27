@@ -1,6 +1,6 @@
 # Analysis and Kumu URL in one submission
 
-**Status: current-laptop acceptance passed for AML.T0068 on November 27, 2026, using runtime commit `82ba06f63c582b933f7493c77a60656ccf2e51b3`.** The next guide-only clean-laptop test may proceed. Public release and tagging still require owner approval. No existing flow import, model edit, file reattachment, new Garak scan or separate graph action was needed for this checkpoint.
+**Status: the current-laptop saved-file and browser checks passed for AML.T0068 on November 27, 2026, using runtime commit `82ba06f63c582b933f7493c77a60656ccf2e51b3`.** The additional submission-record invocation-count check requested by the Reviewer remains open, as detailed below. Public release and tagging still require owner approval. No existing flow import, model edit, file reattachment, new Garak scan or separate graph action was needed for the observed result.
 
 ## Observed result
 
@@ -19,6 +19,8 @@ Evidence fingerprints (original uploads retained privately):
 - `Kumu_link.png` SHA-256: `4dff2951affd6146e8786576e6d0567dce4ab44c5ab44ed3923e9e702bc2ac64`.
 
 This pass covers the saved-file and browser finish line for one synthetic case. Internal Dataset Sandbox/Graph Generator execution remains agent-reported for this submission; no internal tool trace or complete raw archive was supplied for this review. Broader research quality and a guide-only fresh installation remain unverified.
+
+**Submission-record check requested by the Reviewer remains open:** the supplied console transcript shows one `SEND`, but `submission.json` from archive `[archive identifier removed]` has not been supplied. The older uploaded record belongs to a different submission and cannot establish this invocation count. To close this additional record-level check, verify that the matching record reports `tool_call_dispatch_attempts: 1`, `recorded_tool_call_attempts: 1` and `automatic_retries: 0`. No new model call is needed. The observed saved-file and browser results above remain passed.
 
 ## What changed
 

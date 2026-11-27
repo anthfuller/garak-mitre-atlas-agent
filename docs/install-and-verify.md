@@ -708,6 +708,11 @@ notepad.exe "$atlasSubmission\atlas_response.md"
 
 1. In Notepad, find **Full Kumu URL (copy into your browser)**. Select and copy the complete `https://embed.kumu.io/...` address directly below it.
 2. Open a new tab in your browser, paste that address into the address bar, and press **Enter**.
+
+[![Kumu displays the AML.T0068 technique description beside a graph centered on LLM Prompt Obfuscation.](images/kumu-atlas-aml-t0068.png)](images/kumu-atlas-aml-t0068.png)
+
+Expected view for the sample handoff. Kumu opens with AML.T0068 — LLM Prompt Obfuscation selected. The surrounding nodes show related ATLAS records for investigation.
+
 3. Compare the displayed technique ID with the reply's **Coverage checked** line. In the observed synthetic example, the graph opened to **AML.T0068 — LLM Prompt Obfuscation**. If the analysis discusses several IDs, check those IDs in the view too; context nodes are not additional findings.
 
 **This is the core setup finish line:** the analysis and full URL are together in the saved reply, the runner's graph checks passed, and the matching technique is visible in Kumu. No new Garak scan or separate graph menu action is needed. A tentative mapping with insufficient evidence to confirm an attack is valid; do not turn it into a confirmed finding to complete the check. If the URL is missing, Kumu cannot open, or the IDs do not match, keep the reply and displayed error for review.

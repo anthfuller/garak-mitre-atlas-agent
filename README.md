@@ -16,6 +16,12 @@ ATLAS supports investigation of candidate techniques and related mitigations/cas
 
 ![Workflow from a saved Garak run and reviewed handoff to the MITRE ATLAS Agent in Langflow and an archived reply with candidate mappings for analyst review; optional local search uses EmbeddingGemma via Ollama and a Chroma index.](docs/images/garak-atlas-workflow.png)
 
+## Example investigation
+
+[![Two ATLAS techniques connect to the same AI Red Team mitigation in Kumu.](docs/images/kumu-atlas-shared-mitigation.png)](docs/images/kumu-atlas-shared-mitigation.png)
+
+Example from the original lab. Follow Direct prompt injection (`AML.T0051.000`) and LLM Jailbreak (`AML.T0054`) to their shared mitigation, AI Red Team (`AML.M0035`). These relationships give an analyst a lead to investigate. Confirming a finding requires reviewing the saved Garak evidence.
+
 **Unpublished v1.0.0 candidate; no public release or tag yet.** See the [v1 release instructions](docs/public-v1.md).
 
 I maintain this project in my personal capacity. It does not represent the views of my employer or imply employer endorsement. Use it only on systems you own or are authorized to test. You are responsible for securing your deployment and credentials. The software is provided as is under the [MIT License](LICENSE), which contains the full warranty disclaimer and limitation of liability.
