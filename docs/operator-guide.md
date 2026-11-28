@@ -84,10 +84,10 @@ No private scan configuration is required. The runner prints the saved scan resu
 3. At **ATLAS model provider shown in Langflow**, enter `OpenAI` for the install guide's tested flow.
 4. At **ATLAS model name shown in Langflow**, enter `gpt-6.1-sol` for that flow. If your flow differs, enter its actual provider and model. These labels record what you use; they do not change Langflow. **Pressing Enter without a value at either prompt cancels before submission.**
 5. Review **ATLAS submission review**: Run ID, endpoint, tool, provider/model, **Expected Kumu project/map**, and the displayed handoff. Submit only the evidence you intend to share with that agent and its model provider.
-6. Type uppercase **`SEND`** and press Enter to authorize the submission. Enter without `SEND` cancels.
+6. **ATLAS can incur model charges.** One submission may cause multiple model/tool calls; the runner does not measure those charges. Type uppercase **`SEND`** and press Enter to authorize the submission. Enter without `SEND` cancels.
 7. At **Langflow API key (hidden; session only)**, paste your **Langflow “Garak runner” API key** and press Enter. Nothing appears while entering it. This is not your OpenAI key or Langflow password. If you need to create a Langflow key, follow [Step 14](install-and-verify.md#14-enable-mcp-access-and-create-a-langflow-api-key).
 
-**ATLAS can incur model charges.** One submission may cause multiple model/tool calls; the runner does not measure those charges. Keep both terminals open and wait. **Action 4 already requests the analysis and Kumu graph together.** Action 5 is a separate follow-up for intentionally selecting a different set of IDs; it is not the next step after action 4.
+Keep both terminals open and wait. **Action 4 already requests the analysis and Kumu graph together.** Action 5 is a separate follow-up for intentionally selecting a different set of IDs; it is not the next step after action 4.
 
 ### Read the outcome and open the reply
 

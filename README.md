@@ -4,7 +4,9 @@ Turn saved Garak evidence into an ATLAS investigation with candidate technique m
 
 **New laptop? Start with [Install on Windows and open your first ATLAS reply](docs/install-and-verify.md).**
 
-Start at Step 1 and follow the guide until you open the Kumu graph from your saved ATLAS reply. Return here only if you want to run live scans.
+Start at Step 1 and follow the guide until you open the Kumu graph from your saved ATLAS reply.
+
+Already installed? Open the [operator guide](docs/operator-guide.md) to reopen a saved graph, send a saved run to ATLAS, or start a new scan.
 
 The local guide runs Langflow on `127.0.0.1` over HTTP. Use a unique Langflow password. An InPrivate window keeps the lab login separate from your regular browser session. HTTP traffic remains unencrypted. Before allowing access from another device, configure HTTPS with a trusted certificate matching the server hostname. See the [guide's browser and HTTPS guidance](docs/install-and-verify.md#10-start-langflow-and-sign-in). **HTTPS deployment remains unverified by this walkthrough.**
 
